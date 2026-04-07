@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ── Build & Test ────────────────────────────────────────────────────────────
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Generate Gradle wrapper
+        working-directory: backend
+        run: gradle wrapper --gradle-version 8.10.2
+        env:
+          # Use the Gradle binary already present in the runner
+          GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('backend/**/*.gradle', 'backend/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Build (compile + test)
+        working-directory: backend
+        run: ./gradlew build --no-daemon
+        env:
+          # Testcontainers needs Docker (available on ubuntu-latest)
+          TESTCONTAINERS_RYUK_DISABLED: "true"
+
+  # ── Docker image build ──────────────────────────────────────────────────────
+  docker-build:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image (verify only, no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: jobhoppr:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
