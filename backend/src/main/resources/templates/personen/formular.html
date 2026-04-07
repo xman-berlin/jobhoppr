@@ -93,7 +93,7 @@
       <h2 class="card-title text-lg mb-4">Standorte</h2>
 
       <div id="orte-liste">
-        <div th:each="ort : ${person.orte}" th:fragment="ort-eintrag"
+        <div th:each="ort : ${person.orte}"
              th:id="'ort-' + ${ort.id}" class="flex items-center gap-3 p-3 rounded-lg bg-base-200 mb-2">
           <div class="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
             <div>
@@ -106,9 +106,9 @@
                  th:text="${#numbers.formatDecimal(ort.lat,1,4)} + ', ' + ${#numbers.formatDecimal(ort.lon,1,4)}">–</div>
           </div>
           <button class="btn btn-xs btn-ghost btn-circle text-error"
-                  th:hx-delete="@{/personen/{pid}/orte/{oid}(pid=${person.id},oid=${ort.id})}"
-                  hx-target="${'#ort-' + ort.id}"
-                  hx-swap="outerHTML">✕</button>
+                   th:hx-delete="@{/personen/{pid}/orte/{oid}(pid=${person.id},oid=${ort.id})}"
+                   th:attr="hx-target='#ort-' + ${ort.id}"
+                   hx-swap="outerHTML">✕</button>
         </div>
       </div>
 

@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public interface PersonRepository extends JpaRepository<Person, UUID> {
 
-    @Query("SELECT p FROM Person p LEFT JOIN FETCH p.orte LEFT JOIN FETCH p.kompetenzen WHERE p.id = :id")
+    @Query("SELECT p FROM Person p LEFT JOIN FETCH p.orte WHERE p.id = :id")
     Optional<Person> findByIdWithDetails(UUID id);
 
     Page<Person> findAllByOrderByNachnameAscVornameAsc(Pageable pageable);

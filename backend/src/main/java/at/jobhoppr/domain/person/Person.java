@@ -1,6 +1,7 @@
 package at.jobhoppr.domain.person;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.BatchSize;
 import lombok.*;
 
 import java.time.OffsetDateTime;
@@ -40,6 +41,7 @@ public class Person {
     private List<PersonOrt> orte = new ArrayList<>();
 
     @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @BatchSize(size = 50)
     private Set<PersonKompetenz> kompetenzen = new HashSet<>();
 
     @PrePersist @PreUpdate

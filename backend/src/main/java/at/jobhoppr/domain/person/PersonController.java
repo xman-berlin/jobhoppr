@@ -99,7 +99,7 @@ public class PersonController {
                 new PersonService.OrtRequest(ortRolle, ortTyp, bezeichnung, lat, lon, umkreisKm));
         model.addAttribute("ort", ort);
         model.addAttribute("personId", id);
-        return "personen/formular :: ort-eintrag";
+        return "personen/ort-fragment :: ort-eintrag";
     }
 
     @DeleteMapping("/{personId}/orte/{ortId}")
