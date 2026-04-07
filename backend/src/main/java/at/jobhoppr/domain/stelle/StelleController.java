@@ -1,5 +1,7 @@
 package at.jobhoppr.domain.stelle;
 
+import at.jobhoppr.domain.bis.BerufRepository;
+import at.jobhoppr.domain.bis.KompetenzRepository;
 import io.github.wimdeblauwe.htmx.spring.boot.mvc.HxRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -10,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -19,6 +22,8 @@ import java.util.stream.Collectors;
 public class StelleController {
 
     private final StelleService stelleService;
+    private final BerufRepository berufRepository;
+    private final KompetenzRepository kompetenzRepository;
 
     @GetMapping
     public String liste(@RequestParam(defaultValue = "0") int page, Model model) {
@@ -37,8 +42,22 @@ public class StelleController {
 
     @GetMapping("/{id}")
     public String bearbeiten(@PathVariable UUID id, Model model) {
-        model.addAttribute("stelle", stelleService.findById(id));
+        Stelle stelle = stelleService.findById(id);
+        model.addAttribute("stelle", stelle);
         model.addAttribute("isNeu", false);
+        if (stelle.getBerufId() != null) {
+            berufRepository.findById(stelle.getBerufId())
+                    .ifPresent(b -> model.addAttribute("berufName", b.getName()));
+        }
+        List<StelleService.KompetenzEintrag> kompetenzen = stelleService.findKompetenzen(id);
+        model.addAttribute("stelleKompetenzen", kompetenzen);
+        if (!kompetenzen.isEmpty()) {
+            List<Integer> ids = kompetenzen.stream()
+                    .map(StelleService.KompetenzEintrag::kompetenzId).toList();
+            Map<Integer, String> namen = kompetenzRepository.findAllById(ids).stream()
+                    .collect(Collectors.toMap(k -> k.getId(), k -> k.getName()));
+            model.addAttribute("kompetenzNamen", namen);
+        }
         return "stellen/formular";
     }
 
@@ -84,6 +103,32 @@ public class StelleController {
         return ResponseEntity.ok()
                 .header("HX-Trigger", "{\"showToast\":\"Stelle gelöscht\"}")
                 .body("");
+    }
+
+    // ── HTMX fragments for StelleKompetenz ───────────────────────────────────
+
+    @PostMapping("/{id}/kompetenzen")
+    @HxRequest
+    public String kompetenzHinzufuegen(
+            @PathVariable UUID id,
+            @RequestParam Integer kompetenzId,
+            @RequestParam(defaultValue = "true") boolean pflicht,
+            Model model) {
+
+        StelleKompetenz sk = stelleService.kompetenzHinzufuegen(id, kompetenzId, pflicht);
+        model.addAttribute("sk", sk);
+        model.addAttribute("stelleId", id);
+        kompetenzRepository.findById(kompetenzId)
+                .ifPresent(k -> model.addAttribute("kompetenzName", k.getName()));
+        return "stellen/kompetenz-fragment :: kompetenz-eintrag";
+    }
+
+    @DeleteMapping("/{stelleId}/kompetenzen/{kompetenzId}")
+    @HxRequest
+    public ResponseEntity<String> kompetenzEntfernen(
+            @PathVariable UUID stelleId, @PathVariable Integer kompetenzId) {
+        stelleService.kompetenzEntfernen(stelleId, kompetenzId);
+        return ResponseEntity.ok().body("");
     }
 
     private StelleService.StelleRequest buildRequest(

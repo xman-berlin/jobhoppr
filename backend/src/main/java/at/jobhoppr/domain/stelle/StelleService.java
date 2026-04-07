@@ -45,6 +45,34 @@ public class StelleService {
         return aktualisiereFelder(s, req);
     }
 
+    @Transactional(readOnly = true)
+    public List<KompetenzEintrag> findKompetenzen(UUID stelleId) {
+        Stelle s = stelleRepository.findByIdWithKompetenzen(stelleId)
+                .orElseThrow(() -> new EntityNotFoundException("Stelle nicht gefunden: " + stelleId));
+        return s.getKompetenzen().stream()
+                .map(sk -> new KompetenzEintrag(sk.getId().getKompetenzId(), sk.getPflicht()))
+                .toList();
+    }
+
+    public StelleKompetenz kompetenzHinzufuegen(UUID stelleId, Integer kompetenzId, boolean pflicht) {
+        Stelle s = findById(stelleId);
+        if (!kompetenzRepository.existsById(kompetenzId))
+            throw new IllegalArgumentException("Kompetenz nicht gefunden: " + kompetenzId);
+        StelleKompetenz sk = new StelleKompetenz();
+        sk.setId(new StelleKompetenz.StelleKompetenzId(stelleId, kompetenzId));
+        sk.setStelle(s);
+        sk.setPflicht(pflicht);
+        s.getKompetenzen().add(sk);
+        stelleRepository.save(s);
+        return sk;
+    }
+
+    public void kompetenzEntfernen(UUID stelleId, Integer kompetenzId) {
+        Stelle s = findById(stelleId);
+        s.getKompetenzen().removeIf(sk -> sk.getId().getKompetenzId().equals(kompetenzId));
+        stelleRepository.save(s);
+    }
+
     public void loeschen(UUID id) {
         stelleRepository.deleteById(id);
     }

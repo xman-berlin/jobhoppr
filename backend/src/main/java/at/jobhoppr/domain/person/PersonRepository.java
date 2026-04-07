@@ -13,5 +13,8 @@ public interface PersonRepository extends JpaRepository<Person, UUID> {
     @Query("SELECT p FROM Person p LEFT JOIN FETCH p.orte WHERE p.id = :id")
     Optional<Person> findByIdWithDetails(UUID id);
 
+    @Query("SELECT p FROM Person p LEFT JOIN FETCH p.kompetenzen WHERE p.id = :id")
+    Optional<Person> findByIdWithKompetenzen(UUID id);
+
     Page<Person> findAllByOrderByNachnameAscVornameAsc(Pageable pageable);
 }

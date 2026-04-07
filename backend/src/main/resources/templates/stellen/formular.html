@@ -17,7 +17,7 @@
     <div class="lg:col-span-2 card bg-base-100 shadow">
       <div class="card-body">
         <h2 class="card-title text-lg mb-4">Stammdaten</h2>
-        <form th:action="${isNeu} ? '/stellen' : '/stellen/' + stelle.id"
+        <form th:action="${isNeu} ? '/stellen' : '/stellen/' + ${stelle.id}"
               method="post">
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -51,10 +51,11 @@
               <input type="hidden" id="beruf-id" name="berufId" th:value="${stelle.berufId}"/>
               <input type="text" id="beruf-input" class="input input-bordered"
                      placeholder="Beruf suchen..."
-                     hx-get="/api/bis/berufe/suche"
+                     hx-get="/bis/berufe"
                      hx-trigger="keyup changed delay:300ms"
                      hx-target="#beruf-vorschlaege"
-                     name="_beruf_suche"
+                     name="q"
+                     th:value="${berufName}"
                      autocomplete="off"/>
               <div id="beruf-vorschlaege" class="relative z-10"></div>
             </div>
@@ -85,17 +86,61 @@
         </div>
       </div>
 
-      <!-- Kompetenzen list -->
+      <!-- Kompetenzen -->
       <div class="card bg-base-100 shadow">
         <div class="card-body">
           <h2 class="card-title text-base">Kompetenzen</h2>
-          <div th:if="${stelle.kompetenzen.empty}" class="text-sm text-base-content/50">Keine Kompetenzen.</div>
-          <div th:each="sk : ${stelle.kompetenzen}"
-               class="flex items-center gap-2 text-sm py-1 border-b border-base-200 last:border-0">
-            <span class="badge badge-sm"
-                  th:classappend="${sk.pflicht} ? 'badge-error' : 'badge-ghost'"
-                  th:text="${sk.pflicht} ? 'Pflicht' : 'Optional'">Pflicht</span>
-            <span th:text="${sk.id.kompetenzId}">–</span>
+
+          <div id="kompetenzen-liste">
+            <div th:if="${stelleKompetenzen == null or stelleKompetenzen.empty}"
+                 class="text-sm text-base-content/50 mb-2">Keine Kompetenzen.</div>
+            <div th:each="sk : ${stelleKompetenzen}"
+                 th:id="'sk-' + ${sk.kompetenzId}"
+                 class="flex items-center gap-2 text-sm py-1 border-b border-base-200 last:border-0">
+              <span class="badge badge-sm"
+                    th:classappend="${sk.pflicht} ? 'badge-error' : 'badge-ghost'"
+                    th:text="${sk.pflicht} ? 'Pflicht' : 'Optional'">Pflicht</span>
+              <span class="flex-1 font-medium"
+                    th:text="${kompetenzNamen != null and kompetenzNamen[sk.kompetenzId] != null}
+                              ? ${kompetenzNamen[sk.kompetenzId]}
+                              : 'ID ' + ${sk.kompetenzId}">Kompetenz</span>
+              <button class="btn btn-xs btn-ghost btn-circle text-error"
+                      th:hx-delete="@{/stellen/{sid}/kompetenzen/{kid}(sid=${stelle.id},kid=${sk.kompetenzId})}"
+                      th:attr="hx-target='#sk-' + ${sk.kompetenzId}"
+                      hx-swap="outerHTML">✕</button>
+            </div>
+          </div>
+
+          <!-- Add Kompetenz form -->
+          <div class="collapse collapse-arrow bg-base-200 mt-2">
+            <input type="checkbox"/>
+            <div class="collapse-title text-sm font-medium">+ Kompetenz hinzufügen</div>
+            <div class="collapse-content">
+              <div class="flex flex-col gap-2 pt-2">
+                <div class="form-control relative">
+                  <label class="label"><span class="label-text text-xs">Kompetenz suchen</span></label>
+                  <input type="text" id="kompetenz-input" class="input input-bordered input-sm"
+                         placeholder="Kompetenz suchen..."
+                         hx-get="/bis/kompetenzen"
+                         hx-trigger="keyup changed delay:300ms"
+                         hx-target="#kompetenz-vorschlaege"
+                         name="q"
+                         autocomplete="off"/>
+                  <div id="kompetenz-vorschlaege" class="relative z-10"></div>
+                </div>
+                <div class="form-control">
+                  <label class="label"><span class="label-text text-xs">Typ</span></label>
+                  <select id="kompetenz-pflicht" class="select select-bordered select-sm">
+                    <option value="true">Pflicht</option>
+                    <option value="false">Optional</option>
+                  </select>
+                </div>
+                <input type="hidden" id="kompetenz-id"/>
+                <button type="button" class="btn btn-secondary btn-sm"
+                        th:data-stelle-id="${stelle.id}"
+                        onclick="addKompetenz(this)">Hinzufügen</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -104,13 +149,27 @@
         <div class="card-body">
           <h2 class="card-title text-base text-error">Gefahrenzone</h2>
           <button class="btn btn-error btn-outline btn-sm w-full"
-                  hx-delete="${'/stellen/' + stelle.id}"
+                  th:hx-delete="@{/stellen/{id}(id=${stelle.id})}"
                   hx-confirm="Stelle wirklich löschen?"
                   hx-push-url="/stellen">Löschen</button>
         </div>
       </div>
     </div>
   </div>
+
+  <script>
+    function addKompetenz(btn) {
+      var stelleId = btn.dataset.stelleId;
+      var kompetenzId = document.getElementById('kompetenz-id').value;
+      var pflicht = document.getElementById('kompetenz-pflicht').value;
+      if (!kompetenzId) { alert('Bitte zuerst eine Kompetenz auswählen.'); return; }
+      htmx.ajax('POST', '/stellen/' + stelleId + '/kompetenzen',
+        { target: '#kompetenzen-liste', swap: 'beforeend',
+          values: { kompetenzId: kompetenzId, pflicht: pflicht } });
+      document.getElementById('kompetenz-id').value = '';
+      document.getElementById('kompetenz-input').value = '';
+    }
+  </script>
 
 </div>
 </body>

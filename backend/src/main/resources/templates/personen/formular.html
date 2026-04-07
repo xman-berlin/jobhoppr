@@ -18,7 +18,7 @@
     <div class="lg:col-span-2 card bg-base-100 shadow">
       <div class="card-body">
         <h2 class="card-title text-lg mb-4">Stammdaten</h2>
-        <form th:action="${isNeu} ? '/personen' : '/personen/' + person.id"
+        <form th:action="${isNeu} ? '/personen' : '/personen/' + ${person.id}"
               method="post">
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -41,18 +41,15 @@
               <label class="label"><span class="label-text font-medium">Beruf (BIS)</span></label>
               <input type="text" id="beruf-input" class="input input-bordered"
                      placeholder="Beruf suchen..."
-                     hx-get="/api/bis/berufe/suche"
+                     hx-get="/bis/berufe"
                      hx-trigger="keyup changed delay:300ms"
                      hx-target="#beruf-vorschlaege"
-                     name="_beruf_suche"
+                     name="q"
+                     th:value="${berufName}"
                      autocomplete="off"/>
               <input type="hidden" id="beruf-id" name="berufId"
                      th:value="${person.berufId}"/>
               <div id="beruf-vorschlaege" class="relative z-10"></div>
-              <div th:if="${person.berufId != null}" class="mt-1">
-                <span class="badge badge-outline text-xs" id="beruf-label"
-                      th:text="'Beruf-ID: ' + ${person.berufId}">–</span>
-              </div>
             </div>
           </div>
 
@@ -66,7 +63,7 @@
       </div>
     </div>
 
-    <!-- Sidebar: Matches + Delete -->
+    <!-- Sidebar: Matches + Kompetenzen + Delete -->
     <div class="flex flex-col gap-4" th:if="${!isNeu}">
       <div class="card bg-base-100 shadow">
         <div class="card-body">
@@ -75,11 +72,72 @@
              class="btn btn-accent btn-sm w-full">Matches anzeigen</a>
         </div>
       </div>
+
+      <!-- Kompetenzen -->
+      <div class="card bg-base-100 shadow">
+        <div class="card-body">
+          <h2 class="card-title text-base">Kompetenzen</h2>
+
+          <div id="kompetenzen-liste">
+            <div th:if="${personKompetenzen == null or personKompetenzen.empty}"
+                 class="text-sm text-base-content/50 mb-2">Keine Kompetenzen.</div>
+            <div th:each="pk : ${personKompetenzen}"
+                 th:id="'pk-' + ${pk.kompetenzId}"
+                 class="flex items-center gap-2 text-sm py-1 border-b border-base-200 last:border-0">
+              <span class="flex-1">
+                <span class="font-medium"
+                      th:text="${kompetenzNamen != null and kompetenzNamen[pk.kompetenzId] != null}
+                                ? ${kompetenzNamen[pk.kompetenzId]}
+                                : 'ID ' + ${pk.kompetenzId}">Kompetenz</span>
+                <span class="text-xs text-base-content/50 ml-1" th:text="${pk.niveau}">GRUNDKENNTNISSE</span>
+              </span>
+              <button class="btn btn-xs btn-ghost btn-circle text-error"
+                      th:hx-delete="@{/personen/{pid}/kompetenzen/{kid}(pid=${person.id},kid=${pk.kompetenzId})}"
+                      th:attr="hx-target='#pk-' + ${pk.kompetenzId}"
+                      hx-swap="outerHTML">✕</button>
+            </div>
+          </div>
+
+          <!-- Add Kompetenz form -->
+          <div class="collapse collapse-arrow bg-base-200 mt-2">
+            <input type="checkbox"/>
+            <div class="collapse-title text-sm font-medium">+ Kompetenz hinzufügen</div>
+            <div class="collapse-content">
+              <div class="flex flex-col gap-2 pt-2">
+                <div class="form-control relative">
+                  <label class="label"><span class="label-text text-xs">Kompetenz suchen</span></label>
+                  <input type="text" id="kompetenz-input" class="input input-bordered input-sm"
+                         placeholder="Kompetenz suchen..."
+                         hx-get="/bis/kompetenzen"
+                         hx-trigger="keyup changed delay:300ms"
+                         hx-target="#kompetenz-vorschlaege"
+                         name="q"
+                         autocomplete="off"/>
+                  <div id="kompetenz-vorschlaege" class="relative z-10"></div>
+                </div>
+                <div class="form-control">
+                  <label class="label"><span class="label-text text-xs">Niveau</span></label>
+                  <select id="kompetenz-niveau" class="select select-bordered select-sm">
+                    <option value="GRUNDKENNTNISSE">Grundkenntnisse</option>
+                    <option value="FORTGESCHRITTEN">Fortgeschritten</option>
+                    <option value="EXPERTE">Experte</option>
+                  </select>
+                </div>
+                <input type="hidden" id="kompetenz-id"/>
+                <button type="button" class="btn btn-primary btn-sm"
+                        th:data-person-id="${person.id}"
+                        onclick="addKompetenz(this)">Hinzufügen</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="card bg-base-100 shadow border border-error/20">
         <div class="card-body">
           <h2 class="card-title text-base text-error">Gefahrenzone</h2>
           <button class="btn btn-error btn-outline btn-sm w-full"
-                  hx-delete="${'/personen/' + person.id}"
+                  th:hx-delete="@{/personen/{id}(id=${person.id})}"
                   hx-confirm="Person wirklich löschen?"
                   hx-push-url="/personen">Löschen</button>
         </div>
@@ -118,7 +176,7 @@
         <div class="collapse-title text-sm font-medium">+ Standort hinzufügen</div>
         <div class="collapse-content">
           <form class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2"
-                hx-post="${'/personen/' + person.id + '/orte'}"
+                th:attr="hx-post='/personen/' + ${person.id} + '/orte'"
                 hx-target="#orte-liste"
                 hx-swap="beforeend">
 
@@ -157,6 +215,20 @@
       </div>
     </div>
   </div>
+
+  <script>
+    function addKompetenz(btn) {
+      var personId = btn.dataset.personId;
+      var kompetenzId = document.getElementById('kompetenz-id').value;
+      var niveau = document.getElementById('kompetenz-niveau').value;
+      if (!kompetenzId) { alert('Bitte zuerst eine Kompetenz auswählen.'); return; }
+      htmx.ajax('POST', '/personen/' + personId + '/kompetenzen',
+        { target: '#kompetenzen-liste', swap: 'beforeend',
+          values: { kompetenzId: kompetenzId, niveau: niveau } });
+      document.getElementById('kompetenz-id').value = '';
+      document.getElementById('kompetenz-input').value = '';
+    }
+  </script>
 
 </div>
 </body>

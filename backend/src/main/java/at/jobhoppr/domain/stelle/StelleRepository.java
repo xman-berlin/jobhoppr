@@ -13,5 +13,8 @@ public interface StelleRepository extends JpaRepository<Stelle, UUID> {
     @Query("SELECT s FROM Stelle s LEFT JOIN FETCH s.kompetenzen WHERE s.id = :id")
     Optional<Stelle> findByIdWithDetails(UUID id);
 
+    @Query("SELECT s FROM Stelle s LEFT JOIN FETCH s.kompetenzen WHERE s.id = :id")
+    Optional<Stelle> findByIdWithKompetenzen(UUID id);
+
     Page<Stelle> findAllByOrderByErstelltAmDesc(Pageable pageable);
 }

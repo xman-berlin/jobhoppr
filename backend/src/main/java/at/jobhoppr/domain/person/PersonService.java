@@ -34,6 +34,17 @@ public class PersonService {
                 .orElseThrow(() -> new EntityNotFoundException("Person nicht gefunden: " + id));
     }
 
+    @Transactional(readOnly = true)
+    public List<KompetenzEintrag> findKompetenzen(UUID personId) {
+        Person p = personRepository.findByIdWithKompetenzen(personId)
+                .orElseThrow(() -> new EntityNotFoundException("Person nicht gefunden: " + personId));
+        return p.getKompetenzen().stream()
+                .map(pk -> new KompetenzEintrag(pk.getId().getKompetenzId(), pk.getNiveau()))
+                .toList();
+    }
+
+    public record KompetenzEintrag(Integer kompetenzId, String niveau) {}
+
     public Person erstellen(PersonCreateRequest req) {
         validiereReferenzen(req.berufId(), req.kompetenzIds());
         Person p = new Person();
@@ -88,6 +99,25 @@ public class PersonService {
                     throw new IllegalArgumentException("Kompetenz nicht gefunden: " + kid);
             }
         }
+    }
+
+    public PersonKompetenz kompetenzHinzufuegen(UUID personId, Integer kompetenzId, String niveau) {
+        Person p = findById(personId);
+        if (!kompetenzRepository.existsById(kompetenzId))
+            throw new IllegalArgumentException("Kompetenz nicht gefunden: " + kompetenzId);
+        PersonKompetenz pk = new PersonKompetenz();
+        pk.setId(new PersonKompetenz.PersonKompetenzId(personId, kompetenzId));
+        pk.setPerson(p);
+        pk.setNiveau(niveau);
+        p.getKompetenzen().add(pk);
+        personRepository.save(p);
+        return pk;
+    }
+
+    public void kompetenzEntfernen(UUID personId, Integer kompetenzId) {
+        Person p = findById(personId);
+        p.getKompetenzen().removeIf(pk -> pk.getId().getKompetenzId().equals(kompetenzId));
+        personRepository.save(p);
     }
 
     public record PersonCreateRequest(
