@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head><title>Match-Modell</title></head>
+<body>
+<div layout:fragment="content">
+
+  <div class="flex items-center gap-4 mb-6">
+    <a href="/" class="btn btn-ghost btn-sm">← Dashboard</a>
+    <h1 class="text-2xl font-bold">Match-Modell konfigurieren</h1>
+  </div>
+
+  <div class="max-w-xl">
+    <div class="card bg-base-100 shadow">
+      <div class="card-body">
+        <h2 class="card-title mb-4" th:text="${modell.name}">Standard-Modell</h2>
+
+        <form hx-put="/match-modell"
+              hx-swap="none"
+              id="modell-form">
+
+          <!-- Geo-Filter -->
+          <div class="form-control mb-4">
+            <label class="label cursor-pointer">
+              <span class="label-text font-medium">Geo-Filter aktiv</span>
+              <input type="checkbox" name="geoAktiv" class="checkbox checkbox-primary"
+                     th:checked="${modell.geoAktiv}" value="true"/>
+            </label>
+            <p class="text-xs text-base-content/50 ml-1">
+              Wenn aktiv, werden nur Personen/Stellen innerhalb des definierten Umkreises berücksichtigt.
+            </p>
+          </div>
+
+          <!-- Beruf-Filter strikt -->
+          <div class="form-control mb-6">
+            <label class="label cursor-pointer">
+              <span class="label-text font-medium">Beruf-Filter strikt</span>
+              <input type="checkbox" name="berufFilterStrikt" class="checkbox checkbox-warning"
+                     th:checked="${modell.berufFilterStrikt}" value="true"/>
+            </label>
+            <p class="text-xs text-base-content/50 ml-1">
+              Wenn aktiv, werden nur Kandidaten mit exakt passendem Beruf angezeigt.
+            </p>
+          </div>
+
+          <div class="divider text-xs text-base-content/40">Gewichtungen (Summe = 1.0)</div>
+
+          <!-- Gewicht Kompetenz -->
+          <div class="form-control mb-4">
+            <label class="label">
+              <span class="label-text font-medium">Kompetenz-Gewicht</span>
+              <span class="label-text-alt font-bold text-primary"
+                    id="lbl-kompetenz"
+                    th:text="${#numbers.formatDecimal(modell.gewichtKompetenz, 1, 2)}">0.75</span>
+            </label>
+            <input type="range" name="gewichtKompetenz" min="0" max="1" step="0.05"
+                   class="range range-primary range-sm"
+                   th:value="${modell.gewichtKompetenz}"
+                   oninput="updateGewichte(this)"/>
+            <div class="w-full flex justify-between text-xs px-2 mt-1 text-base-content/40">
+              <span>0</span><span>0.25</span><span>0.5</span><span>0.75</span><span>1</span>
+            </div>
+          </div>
+
+          <!-- Gewicht Beruf -->
+          <div class="form-control mb-6">
+            <label class="label">
+              <span class="label-text font-medium">Beruf-Gewicht</span>
+              <span class="label-text-alt font-bold text-secondary"
+                    id="lbl-beruf"
+                    th:text="${#numbers.formatDecimal(modell.gewichtBeruf, 1, 2)}">0.25</span>
+            </label>
+            <input type="range" name="gewichtBeruf" min="0" max="1" step="0.05"
+                   class="range range-secondary range-sm"
+                   th:value="${modell.gewichtBeruf}"
+                   oninput="updateGewichte(this)"/>
+            <div class="w-full flex justify-between text-xs px-2 mt-1 text-base-content/40">
+              <span>0</span><span>0.25</span><span>0.5</span><span>0.75</span><span>1</span>
+            </div>
+          </div>
+
+          <div class="card-actions justify-end">
+            <button type="submit" class="btn btn-primary">Speichern</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="alert alert-info mt-4 text-sm">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <span>Änderungen wirken sich sofort auf alle zukünftigen Matching-Abfragen aus.</span>
+    </div>
+  </div>
+
+  <script>
+    function updateGewichte(el) {
+      const form = document.getElementById('modell-form');
+      const kInput = form.querySelector('[name="gewichtKompetenz"]');
+      const bInput = form.querySelector('[name="gewichtBeruf"]');
+      const kLabel = document.getElementById('lbl-kompetenz');
+      const bLabel = document.getElementById('lbl-beruf');
+
+      if (el.name === 'gewichtKompetenz') {
+        const val = parseFloat(el.value);
+        kLabel.textContent = val.toFixed(2);
+        const bVal = Math.max(0, Math.min(1, (1 - val)));
+        bInput.value = bVal.toFixed(2);
+        bLabel.textContent = bVal.toFixed(2);
+      } else {
+        const val = parseFloat(el.value);
+        bLabel.textContent = val.toFixed(2);
+        const kVal = Math.max(0, Math.min(1, (1 - val)));
+        kInput.value = kVal.toFixed(2);
+        kLabel.textContent = kVal.toFixed(2);
+      }
+    }
+  </script>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head><title>Stellen</title></head>
+<body>
+<div layout:fragment="content">
+
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold">Stellen</h1>
+    <a href="/stellen/neu" class="btn btn-secondary btn-sm">+ Neue Stelle</a>
+  </div>
+
+  <div class="card bg-base-100 shadow overflow-x-auto">
+    <table class="table table-zebra">
+      <thead>
+        <tr>
+          <th>Titel</th>
+          <th class="hidden sm:table-cell">Unternehmen</th>
+          <th class="hidden md:table-cell">Ort</th>
+          <th class="hidden sm:table-cell">Erstellt</th>
+          <th class="text-right">Aktionen</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="s : ${seite.content}" th:id="'stelle-' + ${s.id}">
+          <td>
+            <a th:href="@{/stellen/{id}(id=${s.id})}"
+               class="font-medium hover:text-secondary"
+               th:text="${s.titel}">Stelle</a>
+          </td>
+          <td class="hidden sm:table-cell text-sm text-base-content/60"
+              th:text="${s.unternehmen ?: '–'}">–</td>
+          <td class="hidden md:table-cell text-sm text-base-content/60"
+              th:text="${s.ortBezeichnung}">Wien</td>
+          <td class="hidden sm:table-cell text-sm text-base-content/60"
+              th:text="${#temporals.format(s.erstelltAm, 'dd.MM.yyyy')}">–</td>
+          <td class="text-right">
+            <div class="flex gap-2 justify-end">
+              <a th:href="@{/stellen/{id}/matches(id=${s.id})}"
+                 class="btn btn-xs btn-outline btn-accent">Matches</a>
+              <a th:href="@{/stellen/{id}(id=${s.id})}"
+                 class="btn btn-xs btn-outline">Bearbeiten</a>
+              <button class="btn btn-xs btn-outline btn-error"
+                      hx-delete="${'/stellen/' + s.id}"
+                      hx-target="${'#stelle-' + s.id}"
+                      hx-swap="outerHTML"
+                      hx-confirm="Stelle wirklich löschen?">Löschen</button>
+            </div>
+          </td>
+        </tr>
+        <tr th:if="${seite.empty}">
+          <td colspan="5" class="text-center text-base-content/50 py-8">Keine Stellen vorhanden.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="flex justify-center mt-6" th:if="${seite.totalPages > 1}">
+    <div class="join">
+      <a th:href="@{/stellen(page=${currentPage - 1})}"
+         class="join-item btn btn-sm"
+         th:classappend="${currentPage == 0} ? 'btn-disabled' : ''">«</a>
+      <th:block th:each="i : ${#numbers.sequence(0, seite.totalPages - 1)}">
+        <a th:href="@{/stellen(page=${i})}"
+           class="join-item btn btn-sm"
+           th:classappend="${i == currentPage} ? 'btn-active' : ''"
+           th:text="${i + 1}">1</a>
+      </th:block>
+      <a th:href="@{/stellen(page=${currentPage + 1})}"
+         class="join-item btn btn-sm"
+         th:classappend="${currentPage >= seite.totalPages - 1} ? 'btn-disabled' : ''">»</a>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

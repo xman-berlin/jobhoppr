@@ -23,11 +23,6 @@ backend/out/
 *.war
 *.ear
 
-# Node / Angular
-frontend/node_modules/
-frontend/dist/
-frontend/.angular/
-
 # Docker
 docker-compose.override.yml
 
@@ -37,3 +32,8 @@ logs/
 
 # Test reports
 backend/src/test/resources/testcontainers.properties
+
+# SQLite (local tool artifact)
+*.db
+*.db-shm
+*.db-wal

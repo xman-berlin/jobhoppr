@@ -1,75 +1,182 @@
 # JobHoppr
 
-AMS-basiertes Matching zwischen Arbeitssuchenden und offenen Stellen.
+AMS-basiertes Job-Matching zwischen Arbeitssuchenden und offenen Stellen in Österreich.
+
+[![CI](https://github.com/xman-berlin/jobhoppr/actions/workflows/ci.yml/badge.svg)](https://github.com/xman-berlin/jobhoppr/actions/workflows/ci.yml)
 
 ## About
 
-JobHoppr ist eine Webanwendung, die Arbeitssuchende (Personen) mit offenen Stellen matched. Als Datenbasis
-für Berufe und Kompetenzen wird das österreichische AMS-Berufsinformationssystem (BIS) verwendet — Berufe
-und Kompetenzen werden einmalig als Seed-Daten importiert. Das Matching basiert auf gewichteten Kriterien
-(Kompetenzen, Beruf), wobei das Gewichtungsmodell zentral konfigurierbar ist.
+JobHoppr matches job seekers (**Personen**) with open positions (**Stellen**) using Austrian AMS occupational data (BIS) for Berufe and Kompetenzen.
 
-Geo ist ein **binärer Pflicht-Filter** (kein Score-Anteil): Liegt keine Ortsangabe der Person (Wohnort
-oder Arbeitsort) im konfigurierten Umkreis der Stelle, wird der Match vollständig ausgeblendet.
-Beide Seiten (Person, Arbeitgeber) sehen ihre Match-Liste absteigend nach Punktzahl.
+Matching runs entirely as a **native PostgreSQL CTE query** with a PostGIS geo-filter — scales to 1M+ rows with no Java-side processing.
+
+Geo is a **binary mandatory filter**: if no Personort falls within the Stelle's radius, the match is excluded entirely. The weighting model (Beruf vs. Kompetenz) is configurable in the UI.
 
 ## Tech Stack
 
 | Layer | Choice |
 |-------|--------|
-| Frontend | Angular 19, Standalone Components, Angular Material, TypeScript |
-| Backend | Spring Boot 3.3, Java 21, Gradle |
-| Datenbank | PostgreSQL 16 + PostGIS |
-| ORM | Spring Data JPA + Hibernate Spatial |
-| API-Stil | REST (OpenAPI 3 / Springdoc) |
-| Geo-Filter | PostGIS `ST_DWithin` auf EPSG:4326 Koordinaten |
-| Build/Deploy | Docker Compose |
-| Tests Backend | JUnit 5, Testcontainers |
-| Tests Frontend | Jasmine + Karma, Playwright (E2E, optional) |
+| Frontend | Thymeleaf + HTMX + DaisyUI (CDN, Corporate theme) |
+| Backend | Spring Boot 3.3, Java 21, Gradle 8.10 |
+| Database | PostgreSQL 16 + PostGIS |
+| ORM | Spring Data JPA + `JdbcTemplate` (native SQL for matching) |
+| Geo-filter | PostGIS `ST_DWithin` on `GEOGRAPHY(POINT,4326)` with GiST index |
+| Geocoding | Nominatim (OpenStreetMap) proxy + GeoNames AT PLZ lookup |
+| Schema | Flyway (migrations in `backend/src/main/resources/db/migration/`) |
+| Build | Multi-stage Dockerfile (`gradle:8.10.2-jdk21` → `eclipse-temurin:21-jre`) |
+| Deploy | Docker Compose |
 
-## Getting Started
+## Quick Start (Docker — recommended)
 
-### Prerequisites
-
-- Docker & Docker Compose
-- Java 21 (für lokale Backend-Entwicklung ohne Docker)
-- Node.js 20+ / npm (für lokale Frontend-Entwicklung ohne Docker)
-
-### Installation
+**Prerequisites:** Docker 24+ with Docker Compose v2.
 
 ```bash
-git clone git@github.com:<your-user>/jobhoppr.git
+git clone https://github.com/xman-berlin/jobhoppr.git
 cd jobhoppr
+
+# Start with demo data (200 Personen, 80 Stellen)
+SPRING_PROFILES_ACTIVE=dev docker compose up --build
 ```
 
-### Environment Variables
+Open **http://localhost:8080** — the app is ready once you see:
 
-Kopiere `.env.example` nach `.env` und passe die Werte an:
+```
+Started JobhopprApplication in X seconds
+Dev-Testdaten vollständig generiert.
+```
+
+To stop and remove all data:
 
 ```bash
-SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/jobhoppr
-SPRING_DATASOURCE_USERNAME=jobhoppr
-SPRING_DATASOURCE_PASSWORD=jobhoppr
-SPRING_JPA_HIBERNATE_DDL_AUTO=update
+docker compose down -v
 ```
 
-### Development
+## Configuration
+
+Copy `.env.example` to `.env` to override defaults:
 
 ```bash
-docker compose up --build
+cp .env.example .env
 ```
 
-- Frontend: http://localhost:4200
-- Backend API: http://localhost:8080
-- Swagger UI: http://localhost:8080/swagger-ui.html
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `POSTGRES_DB` | `jobhoppr` | Database name |
+| `POSTGRES_USER` | `jobhoppr` | DB user |
+| `POSTGRES_PASSWORD` | `jobhoppr_secret` | DB password |
+| `SPRING_PROFILES_ACTIVE` | `prod` | Use `dev` for seed data |
+
+## Local Backend Development (without Docker frontend)
+
+Run PostGIS in Docker, then start Spring Boot locally — faster iteration cycle:
+
+```bash
+# 1. Start only the database
+docker compose up db -d
+
+# 2. Start backend with dev seed data (from backend/ directory)
+cd backend
+./gradlew bootRun --args='--spring.profiles.active=dev'
+```
+
+> **Note:** `gradlew` is intentionally not committed. The Dockerfile uses the
+> `gradle:8.10.2-jdk21-jammy` base image. For local development, install
+> Gradle 8.10 or use `gradle wrapper` to generate the wrapper scripts.
+
+Alternatively, generate the wrapper once:
+
+```bash
+cd backend
+gradle wrapper --gradle-version 8.10.2
+./gradlew bootRun --args='--spring.profiles.active=dev'
+```
+
+## Running Tests
+
+```bash
+cd backend
+
+# All tests (requires a running PostGIS — use docker compose up db -d first)
+./gradlew test
+
+# Single test class
+./gradlew test --tests "at.jobhoppr.matching.MatchServiceTest"
+```
+
+## Project Structure
+
+```
+jobhoppr/
+├── Dockerfile                    Multi-stage: gradle build → JRE runtime
+├── docker-compose.yml            PostGIS 16 + Spring Boot backend
+├── .env.example                  Environment variable template
+└── backend/
+    └── src/
+        ├── main/
+        │   ├── java/at/jobhoppr/
+        │   │   ├── config/           IndexController, GlobalExceptionHandler, WebConfig
+        │   │   ├── domain/bis/       Beruf, Kompetenz (BIS reference data, read-only)
+        │   │   ├── domain/geo/       PlzOrt, Bundesland, GeoRestController
+        │   │   ├── domain/person/    Person, PersonOrt, PersonKompetenz, PersonService
+        │   │   ├── domain/stelle/    Stelle, StelleKompetenz, StelleService
+        │   │   ├── domain/matching/  MatchModell, MatchService (CTE), MatchResult
+        │   │   └── seed/             BisSeedRunner, PlzSeedRunner, BundeslandSeedRunner,
+        │   │                         DevDataSeeder (@Profile("dev"))
+        │   └── resources/
+        │       ├── application.properties
+        │       ├── application-dev.properties
+        │       ├── db/migration/     V1__schema.sql, V2__fix_char_columns.sql
+        │       ├── seed/             AT_plz.tsv (GeoNames), bis_berufe.json, bis_kompetenzen.json
+        │       └── templates/        Thymeleaf: layout, index, personen/*, stellen/*, match-modell/*
+        └── test/
+            └── java/at/jobhoppr/
+                ├── matching/         MatchServiceTest (unit)
+                └── integration/      *IT.java (Testcontainers)
+```
+
+## Seed Data
+
+| Runner | Content | Source |
+|--------|---------|--------|
+| `BundeslandSeedRunner` | 9 Austrian states with centroid + radius | Hard-coded |
+| `PlzSeedRunner` | 18,957 Austrian postal codes with coordinates | GeoNames AT.txt (CC-BY 4.0) |
+| `BisSeedRunner` | 25 Berufe + 35 Kompetenzen across 5 clusters | Simplified AMS-BIS data |
+| `DevDataSeeder` | 200 Personen + 80 Stellen with realistic Austrian names | `@Profile("dev")` only |
+
+## Matching Algorithm
+
+The matching runs as a single PostgreSQL CTE query (`MatchRepository`):
+
+1. **Geo-filter** (mandatory when `geoAktiv=true`): `ST_DWithin(person_ort.standort, stelle.standort, umkreis_km * 1000)`
+2. **Beruf-filter** (optional, when `berufFilterStrikt=true`): exact Beruf ID match
+3. **Kompetenz-score**: weighted intersection of Pflicht and optional Kompetenzen
+4. **Total score**: `(gewicht_beruf × beruf_score + gewicht_kompetenz × kompetenz_score)`
+5. **Top 50** by total score descending
+
+The active `MatchModell` (weights + flags) is edited at `/match-modell` and takes effect immediately on all subsequent queries.
+
+## Key Domain Terms
+
+| Term | Meaning |
+|------|---------|
+| `Person` | Job seeker |
+| `Stelle` | Job posting |
+| `Beruf` | Occupation (from AMS BIS) |
+| `Kompetenz` | Skill/competency (from AMS BIS) |
+| `PersonOrt` | Location entry for a person (Wohnort or Arbeitsort) |
+| `OrtRolle` | `WOHNORT` (home) / `ARBEITSORT` (work) |
+| `MatchModell` | Active weighting configuration |
 
 ## Project Status
 
-- [ ] Phase 1: Projektgerüst (Mono-Repo, Docker, CI-Basis)
-- [ ] Phase 2: Backend — Domain-Modell & CRUD-APIs
-- [ ] Phase 3: BIS-Seed-Import (Berufe + Kompetenzen)
-- [ ] Phase 4: Matching-Engine & Match-Modell
-- [ ] Phase 5: Frontend — Angular 19 CRUD & Match-Listen
-- [ ] Phase 6: Integration, E2E-Tests, Feinschliff
+- [x] Phase 1: Project scaffold (monorepo, Docker, Flyway schema)
+- [x] Phase 2: Backend domain model & CRUD (Person, Stelle, MatchModell)
+- [x] Phase 3: BIS seed import (Berufe + Kompetenzen)
+- [x] Phase 4: Matching engine (PostgreSQL CTE, PostGIS)
+- [x] Phase 5: Frontend (Thymeleaf + HTMX + DaisyUI — lists, forms, match views)
+- [x] Phase 6: Docker Compose, DevDataSeeder, full integration
+- [ ] Phase 7: Integration tests (Testcontainers), MatchService unit tests
 
-See [plan.md](./plan.md) for the full implementation plan.
+## License
+
+MIT
