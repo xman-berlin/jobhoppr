@@ -144,7 +144,6 @@ public class MatchRepository {
 
     public List<MatchResult> findTopPersonenForStelle(UUID stelleId, MatchModell modell) {
         boolean geoAktiv = Boolean.TRUE.equals(modell.getGeoAktiv());
-        boolean berufStrikt = Boolean.TRUE.equals(modell.getBerufFilterStrikt());
         double wB = modell.getGewichtBeruf();
         double wK = modell.getGewichtKompetenz();
 
@@ -155,13 +154,12 @@ public class MatchRepository {
                         rs.getDouble("beruf_score"),
                         rs.getDouble("kompetenz_score"),
                         rs.getDouble("gesamt_score")),
-                stelleId.toString(), geoAktiv, berufStrikt,
+                stelleId.toString(), geoAktiv, false,
                 wB, wK, wB, wK);
     }
 
     public List<MatchResult> findTopStellenForPerson(UUID personId, MatchModell modell) {
         boolean geoAktiv = Boolean.TRUE.equals(modell.getGeoAktiv());
-        boolean berufStrikt = Boolean.TRUE.equals(modell.getBerufFilterStrikt());
         double wB = modell.getGewichtBeruf();
         double wK = modell.getGewichtKompetenz();
 
@@ -172,7 +170,7 @@ public class MatchRepository {
                         rs.getDouble("beruf_score"),
                         rs.getDouble("kompetenz_score"),
                         rs.getDouble("gesamt_score")),
-                personId.toString(), personId.toString(), geoAktiv, berufStrikt,
+                personId.toString(), personId.toString(), geoAktiv, false,
                 wB, wK, wB, wK);
     }
 }

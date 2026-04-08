@@ -1,9 +1,9 @@
-# Plan: JobHoppr — AMS-Matching für Arbeitslose und offene Stellen
+# Plan: JobHoppr — Matching für Arbeitslose und offene Stellen
 
 ## Context
 
 JobHoppr ist eine Webanwendung, die Arbeitssuchende (Personen) mit offenen Stellen matched. Als Datenbasis
-für Berufe und Kompetenzen wird das österreichische AMS-Berufsinformationssystem (BIS) verwendet — Berufe
+für Berufe und Kompetenzen wird das österreichische Berufsinformationssystem (BIS) verwendet — Berufe
 und Kompetenzen werden einmalig als Seed-Daten importiert. Das Matching basiert auf gewichteten Kriterien
 (Kompetenzen, Beruf), wobei das Gewichtungsmodell zentral konfigurierbar ist.
 
@@ -472,7 +472,7 @@ Ziel: Realistisches Demo-Datensatz das alle Features zeigt.
 - [ ] Templates: `stellen/liste.html`, `stellen/formular.html`
 
 ### Phase 3: Seed-Import
-- [ ] `scripts/scrape-bis.py` — scraped AMS-BIS, speichert `bis_berufe.json`, `bis_kompetenzen.json`
+- [ ] `scripts/scrape-bis.py` — scraped BIS, speichert `bis_berufe.json`, `bis_kompetenzen.json`
 - [ ] Script ausführen, JSONs in `seed/data/` einchecken
 - [ ] `BisSeedRunner` — Jackson-Import, idempotent (`COUNT(*) = 0` check)
 - [ ] GeoNames `AT.zip` herunterladen, `AT.txt` als `AT_plz.tsv` in `seed/data/` einchecken

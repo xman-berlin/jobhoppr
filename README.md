@@ -1,12 +1,12 @@
 # JobHoppr
 
-AMS-basiertes Job-Matching zwischen Arbeitssuchenden und offenen Stellen in Österreich.
+Job-Matching zwischen Arbeitssuchenden und offenen Stellen.
 
 [![CI](https://github.com/xman-berlin/jobhoppr/actions/workflows/ci.yml/badge.svg)](https://github.com/xman-berlin/jobhoppr/actions/workflows/ci.yml)
 
 ## About
 
-JobHoppr matches job seekers (**Personen**) with open positions (**Stellen**) using Austrian AMS occupational data (BIS) for Berufe and Kompetenzen.
+JobHoppr matches job seekers (**Personen**) with open positions (**Stellen**) using Austrian occupational data (BIS) for Berufe and Kompetenzen.
 
 Matching runs entirely as a **native PostgreSQL CTE query** with a PostGIS geo-filter — scales to 1M+ rows with no Java-side processing.
 
@@ -140,7 +140,7 @@ jobhoppr/
 |--------|---------|--------|
 | `BundeslandSeedRunner` | 9 Austrian states with centroid + radius | Hard-coded |
 | `PlzSeedRunner` | 18,957 Austrian postal codes with coordinates | GeoNames AT.txt (CC-BY 4.0) |
-| `BisSeedRunner` | 25 Berufe + 35 Kompetenzen across 5 clusters | Simplified AMS-BIS data |
+| `BisSeedRunner` | 25 Berufe + 35 Kompetenzen across 5 clusters | Simplified BIS data |
 | `DevDataSeeder` | 200 Personen + 80 Stellen with realistic Austrian names | `@Profile("dev")` only |
 
 ## Matching Algorithm
@@ -161,8 +161,8 @@ The active `MatchModell` (weights + flags) is edited at `/match-modell` and take
 |------|---------|
 | `Person` | Job seeker |
 | `Stelle` | Job posting |
-| `Beruf` | Occupation (from AMS BIS) |
-| `Kompetenz` | Skill/competency (from AMS BIS) |
+| `Beruf` | Occupation (from BIS) |
+| `Kompetenz` | Skill/competency (from BIS) |
 | `PersonOrt` | Location entry for a person (Wohnort or Arbeitsort) |
 | `OrtRolle` | `WOHNORT` (home) / `ARBEITSORT` (work) |
 | `MatchModell` | Active weighting configuration |

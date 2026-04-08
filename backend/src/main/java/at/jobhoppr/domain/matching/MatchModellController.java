@@ -25,12 +25,16 @@ public class MatchModellController {
     @HxRequest
     public ResponseEntity<String> speichern(
             @RequestParam(defaultValue = "false") boolean geoAktiv,
-            @RequestParam(defaultValue = "false") boolean berufFilterStrikt,
             @RequestParam double gewichtKompetenz,
-            @RequestParam double gewichtBeruf) {
+            @RequestParam double gewichtBeruf,
+            @RequestParam(defaultValue = "0.25") double scoreSchwellenwert,
+            @RequestParam(defaultValue = "0.20") double gewichtLehrberuf,
+            @RequestParam(defaultValue = "0.40") double gewichtInteressen,
+            @RequestParam(defaultValue = "0.40") double gewichtVoraussetzungen) {
 
         matchModellService.aktualisieren(new MatchModellService.MatchModellRequest(
-                geoAktiv, berufFilterStrikt, gewichtKompetenz, gewichtBeruf));
+                geoAktiv, gewichtKompetenz, gewichtBeruf,
+                scoreSchwellenwert, gewichtLehrberuf, gewichtInteressen, gewichtVoraussetzungen));
 
         return ResponseEntity.ok()
                 .header("HX-Trigger", "{\"showToast\":\"Gespeichert\"}")

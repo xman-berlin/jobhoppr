@@ -24,14 +24,23 @@ public class MatchModell {
     @Column(name = "geo_aktiv", nullable = false)
     private Boolean geoAktiv = true;
 
-    @Column(name = "beruf_filter_strikt", nullable = false)
-    private Boolean berufFilterStrikt = false;
-
     @Column(name = "gewicht_kompetenz", nullable = false)
     private Double gewichtKompetenz = 0.75;
 
     @Column(name = "gewicht_beruf", nullable = false)
     private Double gewichtBeruf = 0.25;
+
+    @Column(name = "score_schwellenwert", nullable = false)
+    private Double scoreSchwellenwert = 0.25;
+
+    @Column(name = "gewicht_lehrberuf", nullable = false)
+    private Double gewichtLehrberuf = 0.20;
+
+    @Column(name = "gewicht_interessen", nullable = false)
+    private Double gewichtInteressen = 0.40;
+
+    @Column(name = "gewicht_voraussetzungen", nullable = false)
+    private Double gewichtVoraussetzungen = 0.40;
 
     @Column(name = "erstellt_am", insertable = false, updatable = false)
     private OffsetDateTime erstelltAm;

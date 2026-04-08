@@ -15,7 +15,7 @@
   {"id": 14, "name": "DATEV / BMD",             "bereich": "Finanzen",     "typ": "FACHLICH",       "parent_id": null},
   {"id": 15, "name": "Bilanzierung",            "bereich": "Finanzen",     "typ": "FACHLICH",       "parent_id": null},
   {"id": 16, "name": "Kostenrechnung",          "bereich": "Finanzen",     "typ": "FACHLICH",       "parent_id": null},
-  {"id": 17, "name": "Österreichisches Steuerrecht", "bereich": "Finanzen","typ": "FACHLICH",       "parent_id": null},
+  {"id": 17, "name": "Steuerrecht",                "bereich": "Finanzen",     "typ": "FACHLICH",       "parent_id": null},
   {"id": 18, "name": "Medizinische Grundkenntnisse", "bereich": "Gesundheit","typ": "FACHLICH",    "parent_id": null},
   {"id": 19, "name": "Erste Hilfe",             "bereich": "Gesundheit",   "typ": "ZERTIFIKAT",     "parent_id": null},
   {"id": 20, "name": "Pflegedokumentation",     "bereich": "Gesundheit",   "typ": "FACHLICH",       "parent_id": null},

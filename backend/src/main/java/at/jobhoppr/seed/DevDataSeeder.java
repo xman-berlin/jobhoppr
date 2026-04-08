@@ -194,7 +194,7 @@ public class DevDataSeeder implements ApplicationRunner {
             "TechCorp GmbH", "DataSoft AG", "InnoSystems GmbH", "IT-Lösungen Austria",
             "Raiffeisen Bank", "Erste Group", "UNIQA Insurance", "Wien Energie",
             "AKH Wien", "LKH Graz", "Sanatorium Hera", "ÖGK",
-            "Wiener Volksschulen", "BFI Wien", "AMS Österreich", "Bildungszentrum Plus",
+            "Wiener Volksschulen", "BFI Wien", "WAFF Wien", "Bildungszentrum Plus",
             "AVL List GmbH", "Anton Paar GmbH", "Palfinger AG", "Kapsch TrafficCom",
             "Frequentis AG", "Atomic Austria", "Blum GmbH", "Doka GmbH",
             "Knorr-Bremse GmbH", "Engel Austria GmbH", "Andritz AG", "Voestalpine AG"

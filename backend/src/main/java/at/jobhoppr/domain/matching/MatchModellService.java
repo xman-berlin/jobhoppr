@@ -21,15 +21,21 @@ public class MatchModellService {
     public MatchModell aktualisieren(MatchModellRequest req) {
         MatchModell m = getAktives();
         m.setGeoAktiv(req.geoAktiv());
-        m.setBerufFilterStrikt(req.berufFilterStrikt());
         m.setGewichtKompetenz(req.gewichtKompetenz());
         m.setGewichtBeruf(req.gewichtBeruf());
+        m.setScoreSchwellenwert(req.scoreSchwellenwert());
+        m.setGewichtLehrberuf(req.gewichtLehrberuf());
+        m.setGewichtInteressen(req.gewichtInteressen());
+        m.setGewichtVoraussetzungen(req.gewichtVoraussetzungen());
         return matchModellRepository.save(m);
     }
 
     public record MatchModellRequest(
             boolean geoAktiv,
-            boolean berufFilterStrikt,
             double gewichtKompetenz,
-            double gewichtBeruf) {}
+            double gewichtBeruf,
+            double scoreSchwellenwert,
+            double gewichtLehrberuf,
+            double gewichtInteressen,
+            double gewichtVoraussetzungen) {}
 }

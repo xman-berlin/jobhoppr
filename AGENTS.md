@@ -1,17 +1,19 @@
 # AGENTS.md — JobHoppr
 
 Guidelines for agentic coding agents working in this repository.
-See `plan.md` for the full implementation plan and phase checklist.
+See `plan-matchmodell-migration.md` for the full implementation plan and phase checklist.
 
 ---
 
 ## Project Overview
 
-Monorepo: **Angular 19 frontend** (`frontend/`) + **Spring Boot 3.3 backend** (`backend/`).
+**Spring Boot 3.3 backend** (`backend/`) with server-rendered frontend via **Thymeleaf + HTMX + DaisyUI**.
+There is no separate frontend directory — all templates live in `backend/src/main/resources/templates/`.
+
 Language of the domain: **German (Austrian)** — all domain terms, variable names, entity names,
 and API paths use German (e.g. `Person`, `Stelle`, `Beruf`, `Kompetenz`, `PersonOrt`).
-Code-level constructs (types, interfaces, method logic) use English idioms where Java/TypeScript
-conventions demand it, but domain identifiers stay German.
+Code-level constructs (method logic, Java idioms) use English where Java conventions demand it,
+but domain identifiers stay German.
 
 ---
 
@@ -37,23 +39,8 @@ docker compose down              # Stop and remove containers
 ```
 Run Gradle commands from `backend/` (or prefix with `-p backend` from repo root).
 
-### Frontend (Angular / npm)
-```bash
-# Run from frontend/
-npm start                        # ng serve — dev server on port 4200
-npm run build                    # ng build (production)
-npm test                         # ng test — Karma/Jasmine unit tests (watch mode)
-npm run test -- --watch=false    # Single run, no watch
-# Single spec file:
-npx ng test --include="**/match.service.spec.ts" --watch=false
-npx ng test --include="**/person-form/**" --watch=false
-```
-
 ### Linting
 ```bash
-# Frontend
-npm run lint                     # ng lint (ESLint)
-
 # Backend — no dedicated linter; Checkstyle/SpotBugs may be added later
 ./gradlew check                  # Runs tests + any static analysis configured
 ```
@@ -67,27 +54,30 @@ jobhoppr/
 ├── backend/                     # Spring Boot Gradle project (Java 21)
 │   ├── build.gradle
 │   └── src/
-│       ├── main/java/at/jobhoppr/
-│       │   ├── config/          # OpenApiConfig
-│       │   ├── domain/
-│       │   │   ├── bis/         # Beruf, Kompetenz (read-only BIS reference data)
-│       │   │   ├── matching/    # MatchService, MatchModell, criteria, filters
-│       │   │   ├── person/      # Person, PersonOrt, PersonKompetenz
-│       │   │   └── stelle/      # Stelle, StelleKompetenz
-│       │   └── seed/            # BisSeedRunner + JSON seed files
+│       ├── main/
+│       │   ├── java/at/jobhoppr/
+│       │   │   ├── config/          # Web/OpenAPI config
+│       │   │   ├── domain/
+│       │   │   │   ├── bis/         # Beruf, Kompetenz (read-only BIS reference data)
+│       │   │   │   ├── geo/         # Bundesland, PlzOrt, GeoLocation
+│       │   │   │   ├── matching/    # MatchService, MatchModell, MatchRepository
+│       │   │   │   ├── person/      # Person, PersonOrt, PersonKompetenz
+│       │   │   │   └── stelle/      # Stelle, StelleKompetenz
+│       │   │   └── seed/            # BisSeedRunner + JSON seed files
+│       │   └── resources/
+│       │       ├── db/migration/    # Flyway SQL migrations (V1, V2, ...)
+│       │       ├── seed/            # bis_berufe.json, bis_kompetenzen.json
+│       │       └── templates/       # Thymeleaf HTML templates
+│       │           ├── layout.html
+│       │           ├── index.html
+│       │           ├── bis/
+│       │           ├── personen/    # liste, formular, matches, fragments
+│       │           ├── stellen/     # liste, formular, matches, fragments
+│       │           └── match-modell/
 │       └── test/java/at/jobhoppr/
-│           ├── matching/        # MatchServiceTest (unit)
+│           ├── matching/        # Unit tests (plain JUnit 5 + Mockito)
 │           └── integration/     # *IT.java (Testcontainers)
-└── frontend/                    # Angular 19 standalone
-    └── src/app/
-        ├── core/
-        │   ├── api/             # Angular services (HttpClient)
-        │   └── models/          # TypeScript interfaces mirroring backend DTOs
-        ├── features/
-        │   ├── persons/         # person-list, person-form, person-matches
-        │   ├── stellen/         # stellen-list, stellen-form, stellen-matches
-        │   └── match-modell/    # match-modell-editor
-        └── shared/              # person-ort-input, kompetenz-select, beruf-select
+└── scripts/                     # Utility scripts (scraping, load testing)
 ```
 
 ---
@@ -130,46 +120,40 @@ jobhoppr/
 
 ---
 
-## Code Style — Frontend (Angular 19 / TypeScript)
+## Code Style — Frontend (Thymeleaf + HTMX + DaisyUI)
 
 ### General
-- Angular 19 **Standalone Components** only — no `NgModule`.
-- `"strict": true` in `tsconfig.json` — no `any`, no non-null assertion abuse.
-- Use Angular signals or RxJS `Observable`s for async; prefer signals for local state.
-- All HTTP calls go through Angular services in `core/api/`; components never call `HttpClient` directly.
+- All UI is **server-rendered Thymeleaf** — no SPA, no client-side routing.
+- **HTMX** handles dynamic interactions: partial page updates, form submissions, autocomplete.
+  Use `hx-get`, `hx-post`, `hx-swap`, `hx-target` attributes on HTML elements.
+- **DaisyUI 4** (Tailwind CSS component library) for all UI components — use DaisyUI class names
+  (`btn`, `card`, `table`, `modal`, `stat`, etc.) over raw Tailwind utilities.
+- No JavaScript files — behaviour is driven entirely by HTMX attributes and Thymeleaf fragments.
+
+### Template Structure
+- `layout.html` — base layout with navbar; all pages extend it via `th:replace` or `th:insert`.
+- Feature templates live in subdirectories matching the domain: `personen/`, `stellen/`, `match-modell/`, `bis/`.
+- **Fragments** for HTMX partial responses: `*-fragment.html` files return only the swapped HTML chunk.
+- Use `th:fragment` for reusable partials; reference with `th:replace="~{template :: fragment}"`.
+
+### Controllers
+- Controllers render Thymeleaf views for full-page requests and return fragment strings for HTMX partials.
+- HTMX fragment endpoints are annotated with `@GetMapping` / `@PostMapping` and return a `String`
+  view name (e.g. `"personen/kompetenz-fragment :: row"`).
+- Pass model data via `Model.addAttribute()`; keep controllers thin — delegate to services.
+
+### Forms
+- Use standard HTML `<form>` with Thymeleaf `th:object` and `th:field` bindings.
+- HTMX form submissions use `hx-post` / `hx-put` with `hx-swap="outerHTML"` or redirect via
+  `HtmxResponse` / `HX-Redirect` response header.
 
 ### Naming
 | Type | Convention | Example |
 |------|------------|---------|
-| Components | `PascalCase` + `Component` | `PersonListComponent` |
-| Services | `PascalCase` + `Service` | `PersonService` |
-| Interfaces/Models | `PascalCase` | `Person`, `MatchResult`, `PersonOrt` |
-| Enums | `PascalCase` | `OrtTyp`, `OrtRolle` |
-| Files | `kebab-case` | `person-list.component.ts` |
-| Feature folders | `kebab-case` | `person-list/`, `match-modell-editor/` |
-| Enum values | `SCREAMING_SNAKE_CASE` | `OrtTyp.GENAU`, `KompetenzNiveau.EXPERTE` |
-
-### Imports
-- Use path aliases configured in `tsconfig.json` (e.g. `@core/`, `@features/`, `@shared/`).
-- Order: Angular core → Angular CDK/Material → third-party → `@core` → `@features` → relative.
-- No barrel `index.ts` files unless a module boundary genuinely benefits from one.
-
-### Components
-- Declare all dependencies (imports) directly in the `@Component` `imports` array.
-- Use `OnPush` change detection for all components.
-- Reactive Forms (`FormGroup`, `FormControl`) for all user-input forms.
-- Angular Material components for all UI elements (tables, forms, dialogs, snackbars).
-
-### Error Handling
-- A global HTTP interceptor catches 4xx/5xx and displays `MatSnackBar` messages.
-- Components show `mat-spinner` during async operations; use a `loading` signal/observable.
-- Never swallow errors silently — always surface them via the interceptor or component UI.
-
-### TypeScript
-- Interfaces (not classes) for data models in `core/models/`.
-- Avoid `any`; use `unknown` + type narrowing when type is genuinely unknown.
-- Prefer `readonly` arrays and properties on interfaces.
-- Enums mirror their Java counterparts exactly (same values, same casing).
+| Template files | `kebab-case.html` | `person-form.html`, `kompetenz-fragment.html` |
+| Template dirs | `kebab-case` | `personen/`, `match-modell/` |
+| `th:fragment` names | `camelCase` | `th:fragment="kompetenzRow"` |
+| URL paths | `kebab-case` | `/personen/{id}/matches` |
 
 ---
 
@@ -181,8 +165,8 @@ Key German domain terms used throughout the codebase:
 |------|---------|
 | `Person` | Job seeker |
 | `Stelle` | Job posting |
-| `Beruf` | Occupation (from AMS BIS) |
-| `Kompetenz` | Skill/competency (from AMS BIS) |
+| `Beruf` | Occupation (from BIS) |
+| `Kompetenz` | Skill/competency (from BIS) |
 | `PersonOrt` | Location entry for a person (Wohnort or Arbeitsort) |
 | `OrtRolle` | `WOHNORT` (home) \| `ARBEITSORT` (work) |
 | `OrtTyp` | `GENAU` (precise, with radius) \| `REGION` (regional area) |
@@ -198,8 +182,9 @@ Key German domain terms used throughout the codebase:
 
 - **Geo is a mandatory filter, not a score**: A person either passes the geo filter and is ranked,
   or is completely excluded. `gewicht_geo` does not exist — only `gewicht_kompetenz` and `gewicht_beruf`.
-- **Exactly one active `MatchModell`**: PUT `/api/match-modell` updates the single active record in-place.
+- **Exactly one active `MatchModell`**: the single record is updated in-place; no new rows are created.
 - **BIS data is read-only after seed**: Never mutate `bis_beruf` or `bis_kompetenz` via the API.
 - **`BisSeedRunner` is idempotent**: It checks `COUNT(*) FROM bis_beruf` before inserting; safe to restart.
 - **PostGIS `ST_Distance` returns metres**: Divide by 1000 to get km. Use `::geography` cast.
 - **Coordinates are EPSG:4326** (lat/lon decimal degrees); stored as `DOUBLE PRECISION`, not PostGIS geometry columns.
+- **`kompetenz_closure` must be populated before the app serves traffic**: `match_kompetenz()` reads from it; an empty closure table causes all competency scores to return 0.0. `BisSeedRunner` fills it on first start.

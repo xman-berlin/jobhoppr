@@ -21,7 +21,7 @@
               id="modell-form">
 
           <!-- Geo-Filter -->
-          <div class="form-control mb-4">
+          <div class="form-control mb-6">
             <label class="label cursor-pointer">
               <span class="label-text font-medium">Geo-Filter aktiv</span>
               <input type="checkbox" name="geoAktiv" class="checkbox checkbox-primary"
@@ -32,19 +32,7 @@
             </p>
           </div>
 
-          <!-- Beruf-Filter strikt -->
-          <div class="form-control mb-6">
-            <label class="label cursor-pointer">
-              <span class="label-text font-medium">Beruf-Filter strikt</span>
-              <input type="checkbox" name="berufFilterStrikt" class="checkbox checkbox-warning"
-                     th:checked="${modell.berufFilterStrikt}" value="true"/>
-            </label>
-            <p class="text-xs text-base-content/50 ml-1">
-              Wenn aktiv, werden nur Kandidaten mit exakt passendem Beruf angezeigt.
-            </p>
-          </div>
-
-          <div class="divider text-xs text-base-content/40">Gewichtungen (Summe = 1.0)</div>
+          <div class="divider text-xs text-base-content/40">Gewichtungen Standard (Summe = 1.0)</div>
 
           <!-- Gewicht Kompetenz -->
           <div class="form-control mb-4">
@@ -57,7 +45,7 @@
             <input type="range" name="gewichtKompetenz" min="0" max="1" step="0.05"
                    class="range range-primary range-sm"
                    th:value="${modell.gewichtKompetenz}"
-                   oninput="updateGewichte(this)"/>
+                   oninput="updateGewichteStandard(this)"/>
             <div class="w-full flex justify-between text-xs px-2 mt-1 text-base-content/40">
               <span>0</span><span>0.25</span><span>0.5</span><span>0.75</span><span>1</span>
             </div>
@@ -74,10 +62,72 @@
             <input type="range" name="gewichtBeruf" min="0" max="1" step="0.05"
                    class="range range-secondary range-sm"
                    th:value="${modell.gewichtBeruf}"
-                   oninput="updateGewichte(this)"/>
+                   oninput="updateGewichteStandard(this)"/>
             <div class="w-full flex justify-between text-xs px-2 mt-1 text-base-content/40">
               <span>0</span><span>0.25</span><span>0.5</span><span>0.75</span><span>1</span>
             </div>
+          </div>
+
+          <!-- Score-Schwellenwert -->
+          <div class="form-control mb-6">
+            <label class="label">
+              <span class="label-text font-medium">Score-Schwellenwert</span>
+              <span class="label-text-alt font-bold text-accent"
+                    id="lbl-schwellenwert"
+                    th:text="${#numbers.formatDecimal(modell.scoreSchwellenwert * 100, 1, 0) + '%'}">25%</span>
+            </label>
+            <input type="range" name="scoreSchwellenwert" min="0" max="1" step="0.05"
+                   class="range range-accent range-sm"
+                   th:value="${modell.scoreSchwellenwert}"
+                   oninput="document.getElementById('lbl-schwellenwert').textContent = Math.round(this.value * 100) + '%'"/>
+            <div class="w-full flex justify-between text-xs px-2 mt-1 text-base-content/40">
+              <span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span>
+            </div>
+            <p class="text-xs text-base-content/50 ml-1 mt-1">Kandidaten unter diesem Score werden ausgeblendet.</p>
+          </div>
+
+          <div class="divider text-xs text-base-content/40">Gewichtungen Lehrstellenmatching (Summe = 1.0)</div>
+
+          <!-- Gewicht Lehrberuf -->
+          <div class="form-control mb-4">
+            <label class="label">
+              <span class="label-text font-medium">Lehrberuf-Gewicht</span>
+              <span class="label-text-alt font-bold text-primary"
+                    id="lbl-lehrberuf"
+                    th:text="${#numbers.formatDecimal(modell.gewichtLehrberuf, 1, 2)}">0.20</span>
+            </label>
+            <input type="range" name="gewichtLehrberuf" min="0" max="1" step="0.05"
+                   class="range range-primary range-sm"
+                   th:value="${modell.gewichtLehrberuf}"
+                   oninput="updateGewichteLehr(this)"/>
+          </div>
+
+          <!-- Gewicht Interessen -->
+          <div class="form-control mb-4">
+            <label class="label">
+              <span class="label-text font-medium">Interessen-Gewicht</span>
+              <span class="label-text-alt font-bold text-secondary"
+                    id="lbl-interessen"
+                    th:text="${#numbers.formatDecimal(modell.gewichtInteressen, 1, 2)}">0.40</span>
+            </label>
+            <input type="range" name="gewichtInteressen" min="0" max="1" step="0.05"
+                   class="range range-secondary range-sm"
+                   th:value="${modell.gewichtInteressen}"
+                   oninput="updateGewichteLehr(this)"/>
+          </div>
+
+          <!-- Gewicht Voraussetzungen -->
+          <div class="form-control mb-6">
+            <label class="label">
+              <span class="label-text font-medium">Voraussetzungs-Gewicht</span>
+              <span class="label-text-alt font-bold text-accent"
+                    id="lbl-voraussetzungen"
+                    th:text="${#numbers.formatDecimal(modell.gewichtVoraussetzungen, 1, 2)}">0.40</span>
+            </label>
+            <input type="range" name="gewichtVoraussetzungen" min="0" max="1" step="0.05"
+                   class="range range-accent range-sm"
+                   th:value="${modell.gewichtVoraussetzungen}"
+                   oninput="updateGewichteLehr(this)"/>
           </div>
 
           <div class="card-actions justify-end">
@@ -97,7 +147,7 @@
   </div>
 
   <script>
-    function updateGewichte(el) {
+    function updateGewichteStandard(el) {
       const form = document.getElementById('modell-form');
       const kInput = form.querySelector('[name="gewichtKompetenz"]');
       const bInput = form.querySelector('[name="gewichtBeruf"]');
@@ -107,15 +157,46 @@
       if (el.name === 'gewichtKompetenz') {
         const val = parseFloat(el.value);
         kLabel.textContent = val.toFixed(2);
-        const bVal = Math.max(0, Math.min(1, (1 - val)));
+        const bVal = Math.max(0, Math.min(1, 1 - val));
         bInput.value = bVal.toFixed(2);
         bLabel.textContent = bVal.toFixed(2);
       } else {
         const val = parseFloat(el.value);
         bLabel.textContent = val.toFixed(2);
-        const kVal = Math.max(0, Math.min(1, (1 - val)));
+        const kVal = Math.max(0, Math.min(1, 1 - val));
         kInput.value = kVal.toFixed(2);
         kLabel.textContent = kVal.toFixed(2);
+      }
+    }
+
+    function updateGewichteLehr(el) {
+      const form = document.getElementById('modell-form');
+      const lbInput = form.querySelector('[name="gewichtLehrberuf"]');
+      const iInput  = form.querySelector('[name="gewichtInteressen"]');
+      const vInput  = form.querySelector('[name="gewichtVoraussetzungen"]');
+      const lbLabel = document.getElementById('lbl-lehrberuf');
+      const iLabel  = document.getElementById('lbl-interessen');
+      const vLabel  = document.getElementById('lbl-voraussetzungen');
+
+      const val = parseFloat(el.value);
+      el.labels && (el.labels[0].querySelector('span.label-text-alt').textContent = val.toFixed(2));
+
+      // Redistribute remaining weight equally between the other two
+      const remaining = Math.max(0, 1 - val);
+      const half = Math.round(remaining / 2 * 20) / 20; // round to 0.05
+
+      if (el.name === 'gewichtLehrberuf') {
+        lbLabel.textContent = val.toFixed(2);
+        iInput.value = half.toFixed(2);  iLabel.textContent = half.toFixed(2);
+        vInput.value = (remaining - half).toFixed(2); vLabel.textContent = (remaining - half).toFixed(2);
+      } else if (el.name === 'gewichtInteressen') {
+        iLabel.textContent = val.toFixed(2);
+        const other = Math.max(0, 1 - val - parseFloat(lbInput.value));
+        vInput.value = other.toFixed(2); vLabel.textContent = other.toFixed(2);
+      } else {
+        vLabel.textContent = val.toFixed(2);
+        const other = Math.max(0, 1 - val - parseFloat(lbInput.value));
+        iInput.value = other.toFixed(2); iLabel.textContent = other.toFixed(2);
       }
     }
   </script>
