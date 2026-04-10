@@ -1,7 +1,9 @@
 package at.jobhoppr.domain.stelle;
 
 import at.jobhoppr.domain.bis.BerufSpezialisierungRepository;
+import at.jobhoppr.domain.bis.InteressensgebietRepository;
 import at.jobhoppr.domain.bis.KompetenzRepository;
+import at.jobhoppr.domain.bis.VoraussetzungRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -10,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -20,10 +23,17 @@ public class StelleService {
     private final StelleRepository stelleRepository;
     private final BerufSpezialisierungRepository berufSpezialisierungRepository;
     private final KompetenzRepository kompetenzRepository;
+    private final InteressensgebietRepository interessensgebietRepository;
+    private final VoraussetzungRepository voraussetzungRepository;
 
     @Transactional(readOnly = true)
     public Page<Stelle> findAll(Pageable pageable) {
         return stelleRepository.findAllByOrderByErstelltAmDesc(pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Stelle> findAllByTyp(StelleTyp typ, Pageable pageable) {
+        return stelleRepository.findAllByTypOrderByErstelltAmDesc(typ, pageable);
     }
 
     @Transactional(readOnly = true)
@@ -33,13 +43,13 @@ public class StelleService {
     }
 
     public Stelle erstellen(StelleRequest req) {
-        validiereReferenzen(req.berufSpezialisierungId(), req.kompetenzEintraege());
+        validiereReferenzen(req.berufSpezialisierungId(), req.kompetenzEintraege(), req.interessenIds(), req.voraussetzungIds());
         Stelle s = new Stelle();
         return aktualisiereFelder(s, req);
     }
 
     public Stelle aktualisieren(UUID id, StelleRequest req) {
-        validiereReferenzen(req.berufSpezialisierungId(), req.kompetenzEintraege());
+        validiereReferenzen(req.berufSpezialisierungId(), req.kompetenzEintraege(), req.interessenIds(), req.voraussetzungIds());
         Stelle s = findById(id);
         s.getKompetenzen().clear();
         return aktualisiereFelder(s, req);
@@ -85,6 +95,12 @@ public class StelleService {
         s.setOrtLat(req.ortLat());
         s.setOrtLon(req.ortLon());
         s.setBerufSpezialisierungId(req.berufSpezialisierungId());
+        s.setTyp(req.typ() != null ? req.typ() : StelleTyp.STANDARD);
+        // Interessen + Voraussetzungen ersetzen
+        s.getInteressenIds().clear();
+        if (req.interessenIds() != null) s.getInteressenIds().addAll(req.interessenIds());
+        s.getVoraussetzungIds().clear();
+        if (req.voraussetzungIds() != null) s.getVoraussetzungIds().addAll(req.voraussetzungIds());
         if (req.kompetenzEintraege() != null) {
             for (KompetenzEintrag ke : req.kompetenzEintraege()) {
                 StelleKompetenz sk = new StelleKompetenz();
@@ -97,7 +113,8 @@ public class StelleService {
         return stelleRepository.save(s);
     }
 
-    private void validiereReferenzen(Integer berufSpezialisierungId, List<KompetenzEintrag> kompetenzen) {
+    private void validiereReferenzen(Integer berufSpezialisierungId, List<KompetenzEintrag> kompetenzen,
+                                     Set<Integer> interessenIds, Set<Integer> voraussetzungIds) {
         if (berufSpezialisierungId != null && !berufSpezialisierungRepository.existsById(berufSpezialisierungId))
             throw new IllegalArgumentException("BerufSpezialisierung nicht gefunden: " + berufSpezialisierungId);
         if (kompetenzen != null) {
@@ -106,12 +123,26 @@ public class StelleService {
                     throw new IllegalArgumentException("Kompetenz nicht gefunden: " + ke.kompetenzId());
             }
         }
+        if (interessenIds != null) {
+            for (Integer iid : interessenIds) {
+                if (!interessensgebietRepository.existsById(iid))
+                    throw new IllegalArgumentException("Interessensgebiet nicht gefunden: " + iid);
+            }
+        }
+        if (voraussetzungIds != null) {
+            for (Integer vid : voraussetzungIds) {
+                if (!voraussetzungRepository.existsById(vid))
+                    throw new IllegalArgumentException("Voraussetzung nicht gefunden: " + vid);
+            }
+        }
     }
 
     public record StelleRequest(
             String titel, String unternehmen, String beschreibung,
             String ortBezeichnung, double ortLat, double ortLon,
-            Integer berufSpezialisierungId, List<KompetenzEintrag> kompetenzEintraege) {}
+            Integer berufSpezialisierungId, StelleTyp typ,
+            Set<Integer> interessenIds, Set<Integer> voraussetzungIds,
+            List<KompetenzEintrag> kompetenzEintraege) {}
 
     public record KompetenzEintrag(Integer kompetenzId, boolean pflicht) {}
 }

@@ -1,7 +1,9 @@
 package at.jobhoppr.domain.person;
 
 import at.jobhoppr.domain.bis.BerufSpezialisierungRepository;
+import at.jobhoppr.domain.bis.InteressensgebietRepository;
 import at.jobhoppr.domain.bis.KompetenzRepository;
+import at.jobhoppr.domain.bis.VoraussetzungRepository;
 import io.github.wimdeblauwe.htmx.spring.boot.mvc.HxRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -24,6 +27,8 @@ public class PersonController {
     private final PersonService personService;
     private final BerufSpezialisierungRepository berufSpezialisierungRepository;
     private final KompetenzRepository kompetenzRepository;
+    private final InteressensgebietRepository interessensgebietRepository;
+    private final VoraussetzungRepository voraussetzungRepository;
 
     @GetMapping
     public String liste(@RequestParam(defaultValue = "0") int page, Model model) {
@@ -37,6 +42,8 @@ public class PersonController {
     public String neu(Model model) {
         model.addAttribute("person", new Person());
         model.addAttribute("isNeu", true);
+        model.addAttribute("alleInteressen", interessensgebietRepository.findAll());
+        model.addAttribute("alleVoraussetzungen", voraussetzungRepository.findAll());
         return "personen/formular";
     }
 
@@ -59,6 +66,8 @@ public class PersonController {
                     .collect(Collectors.toMap(k -> k.getId(), k -> k.getName()));
             model.addAttribute("kompetenzNamen", namen);
         }
+        model.addAttribute("alleInteressen", interessensgebietRepository.findAll());
+        model.addAttribute("alleVoraussetzungen", voraussetzungRepository.findAll());
         return "personen/formular";
     }
 
@@ -68,10 +77,14 @@ public class PersonController {
             @RequestParam String nachname,
             @RequestParam(required = false) String email,
             @RequestParam(required = false) Integer berufSpezialisierungId,
+            @RequestParam(required = false) Boolean suchtLehrstelle,
+            @RequestParam(required = false) Set<Integer> interessenIds,
+            @RequestParam(required = false) Set<Integer> voraussetzungIds,
             @RequestParam(required = false) List<Integer> kompetenzIds) {
 
         Person p = personService.erstellen(new PersonService.PersonCreateRequest(
-                vorname, nachname, email, berufSpezialisierungId, kompetenzIds));
+                vorname, nachname, email, berufSpezialisierungId,
+                suchtLehrstelle, interessenIds, voraussetzungIds, kompetenzIds));
         return "redirect:/personen/" + p.getId();
     }
 
@@ -82,10 +95,14 @@ public class PersonController {
             @RequestParam String nachname,
             @RequestParam(required = false) String email,
             @RequestParam(required = false) Integer berufSpezialisierungId,
+            @RequestParam(required = false) Boolean suchtLehrstelle,
+            @RequestParam(required = false) Set<Integer> interessenIds,
+            @RequestParam(required = false) Set<Integer> voraussetzungIds,
             @RequestParam(required = false) List<Integer> kompetenzIds) {
 
         personService.aktualisieren(id, new PersonService.PersonCreateRequest(
-                vorname, nachname, email, berufSpezialisierungId, kompetenzIds));
+                vorname, nachname, email, berufSpezialisierungId,
+                suchtLehrstelle, interessenIds, voraussetzungIds, kompetenzIds));
         return "redirect:/personen/" + id;
     }
 

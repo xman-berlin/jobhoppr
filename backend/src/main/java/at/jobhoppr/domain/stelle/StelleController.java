@@ -1,7 +1,9 @@
 package at.jobhoppr.domain.stelle;
 
 import at.jobhoppr.domain.bis.BerufSpezialisierungRepository;
+import at.jobhoppr.domain.bis.InteressensgebietRepository;
 import at.jobhoppr.domain.bis.KompetenzRepository;
+import at.jobhoppr.domain.bis.VoraussetzungRepository;
 import io.github.wimdeblauwe.htmx.spring.boot.mvc.HxRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -24,11 +27,21 @@ public class StelleController {
     private final StelleService stelleService;
     private final BerufSpezialisierungRepository berufSpezialisierungRepository;
     private final KompetenzRepository kompetenzRepository;
+    private final InteressensgebietRepository interessensgebietRepository;
+    private final VoraussetzungRepository voraussetzungRepository;
 
     @GetMapping
-    public String liste(@RequestParam(defaultValue = "0") int page, Model model) {
+    public String liste(@RequestParam(defaultValue = "0") int page,
+                        @RequestParam(required = false) String typ,
+                        Model model) {
         Pageable pageable = PageRequest.of(page, 20);
-        model.addAttribute("seite", stelleService.findAll(pageable));
+        if (typ != null && !typ.isBlank()) {
+            StelleTyp stelleTyp = StelleTyp.valueOf(typ.toUpperCase());
+            model.addAttribute("seite", stelleService.findAllByTyp(stelleTyp, pageable));
+            model.addAttribute("typFilter", stelleTyp);
+        } else {
+            model.addAttribute("seite", stelleService.findAll(pageable));
+        }
         model.addAttribute("currentPage", page);
         return "stellen/liste";
     }
@@ -37,6 +50,8 @@ public class StelleController {
     public String neu(Model model) {
         model.addAttribute("stelle", new Stelle());
         model.addAttribute("isNeu", true);
+        model.addAttribute("alleInteressen", interessensgebietRepository.findAll());
+        model.addAttribute("alleVoraussetzungen", voraussetzungRepository.findAll());
         return "stellen/formular";
     }
 
@@ -58,6 +73,8 @@ public class StelleController {
                     .collect(Collectors.toMap(k -> k.getId(), k -> k.getName()));
             model.addAttribute("kompetenzNamen", namen);
         }
+        model.addAttribute("alleInteressen", interessensgebietRepository.findAll());
+        model.addAttribute("alleVoraussetzungen", voraussetzungRepository.findAll());
         return "stellen/formular";
     }
 
@@ -70,11 +87,15 @@ public class StelleController {
             @RequestParam double ortLat,
             @RequestParam double ortLon,
             @RequestParam(required = false) Integer berufSpezialisierungId,
+            @RequestParam(required = false) String typ,
+            @RequestParam(required = false) Set<Integer> interessenIds,
+            @RequestParam(required = false) Set<Integer> voraussetzungIds,
             @RequestParam(required = false) List<Integer> kompetenzIds,
             @RequestParam(required = false) List<Boolean> pflichtFlags) {
 
         Stelle s = stelleService.erstellen(buildRequest(titel, unternehmen, beschreibung,
-                ortBezeichnung, ortLat, ortLon, berufSpezialisierungId, kompetenzIds, pflichtFlags));
+                ortBezeichnung, ortLat, ortLon, berufSpezialisierungId, typ,
+                interessenIds, voraussetzungIds, kompetenzIds, pflichtFlags));
         return "redirect:/stellen/" + s.getId();
     }
 
@@ -88,11 +109,15 @@ public class StelleController {
             @RequestParam double ortLat,
             @RequestParam double ortLon,
             @RequestParam(required = false) Integer berufSpezialisierungId,
+            @RequestParam(required = false) String typ,
+            @RequestParam(required = false) Set<Integer> interessenIds,
+            @RequestParam(required = false) Set<Integer> voraussetzungIds,
             @RequestParam(required = false) List<Integer> kompetenzIds,
             @RequestParam(required = false) List<Boolean> pflichtFlags) {
 
         stelleService.aktualisieren(id, buildRequest(titel, unternehmen, beschreibung,
-                ortBezeichnung, ortLat, ortLon, berufSpezialisierungId, kompetenzIds, pflichtFlags));
+                ortBezeichnung, ortLat, ortLon, berufSpezialisierungId, typ,
+                interessenIds, voraussetzungIds, kompetenzIds, pflichtFlags));
         return "redirect:/stellen/" + id;
     }
 
@@ -134,7 +159,12 @@ public class StelleController {
     private StelleService.StelleRequest buildRequest(
             String titel, String unternehmen, String beschreibung,
             String ortBezeichnung, double ortLat, double ortLon,
-            Integer berufSpezialisierungId, List<Integer> kompetenzIds, List<Boolean> pflichtFlags) {
+            Integer berufSpezialisierungId, String typStr,
+            Set<Integer> interessenIds, Set<Integer> voraussetzungIds,
+            List<Integer> kompetenzIds, List<Boolean> pflichtFlags) {
+
+        StelleTyp typ = (typStr != null && !typStr.isBlank())
+                ? StelleTyp.valueOf(typStr.toUpperCase()) : StelleTyp.STANDARD;
 
         List<StelleService.KompetenzEintrag> kompetenzen = null;
         if (kompetenzIds != null) {
@@ -146,6 +176,7 @@ public class StelleController {
             }
         }
         return new StelleService.StelleRequest(titel, unternehmen, beschreibung,
-                ortBezeichnung, ortLat, ortLon, berufSpezialisierungId, kompetenzen);
+                ortBezeichnung, ortLat, ortLon, berufSpezialisierungId, typ,
+                interessenIds, voraussetzungIds, kompetenzen);
     }
 }

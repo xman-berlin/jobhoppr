@@ -62,13 +62,13 @@ public class Stelle {
     private List<StelleKompetenz> kompetenzen = new ArrayList<>();
 
     /** IDs der Interessensgebiete (stelle_interesse join table) */
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "stelle_interesse", joinColumns = @JoinColumn(name = "stelle_id"))
     @Column(name = "interessensgebiet_id")
     private Set<Integer> interessenIds = new LinkedHashSet<>();
 
     /** IDs der Voraussetzungen (stelle_voraussetzung join table) */
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "stelle_voraussetzung", joinColumns = @JoinColumn(name = "stelle_id"))
     @Column(name = "voraussetzung_id")
     private Set<Integer> voraussetzungIds = new LinkedHashSet<>();

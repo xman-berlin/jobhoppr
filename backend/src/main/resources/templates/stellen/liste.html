@@ -7,7 +7,14 @@
 <div layout:fragment="content">
 
   <div class="flex items-center justify-between mb-6">
-    <h1 class="text-2xl font-bold">Stellen</h1>
+    <div class="flex items-center gap-3">
+      <h1 class="text-2xl font-bold">Stellen</h1>
+      <span th:if="${typFilter != null and typFilter.name() == 'LEHRSTELLE'}"
+            class="badge badge-warning">Lehrstellen</span>
+      <span th:if="${typFilter != null and typFilter.name() == 'STANDARD'}"
+            class="badge badge-primary">Stellen</span>
+      <a th:if="${typFilter != null}" href="/stellen" class="btn btn-xs btn-ghost">× Alle anzeigen</a>
+    </div>
     <a href="/stellen/neu" class="btn btn-secondary btn-sm">+ Neue Stelle</a>
   </div>
 
@@ -58,16 +65,16 @@
   <!-- Pagination -->
   <div class="flex justify-center mt-6" th:if="${seite.totalPages > 1}">
     <div class="join">
-      <a th:href="@{/stellen(page=${currentPage - 1})}"
+      <a th:href="${typFilter != null} ? @{/stellen(page=${currentPage - 1},typ=${typFilter.name()})} : @{/stellen(page=${currentPage - 1})}"
          class="join-item btn btn-sm"
          th:classappend="${currentPage == 0} ? 'btn-disabled' : ''">«</a>
       <th:block th:each="i : ${#numbers.sequence(0, seite.totalPages - 1)}">
-        <a th:href="@{/stellen(page=${i})}"
+        <a th:href="${typFilter != null} ? @{/stellen(page=${i},typ=${typFilter.name()})} : @{/stellen(page=${i})}"
            class="join-item btn btn-sm"
            th:classappend="${i == currentPage} ? 'btn-active' : ''"
            th:text="${i + 1}">1</a>
       </th:block>
-      <a th:href="@{/stellen(page=${currentPage + 1})}"
+      <a th:href="${typFilter != null} ? @{/stellen(page=${currentPage + 1},typ=${typFilter.name()})} : @{/stellen(page=${currentPage + 1})}"
          class="join-item btn btn-sm"
          th:classappend="${currentPage >= seite.totalPages - 1} ? 'btn-disabled' : ''">»</a>
     </div>

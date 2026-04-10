@@ -17,4 +17,8 @@ public interface StelleRepository extends JpaRepository<Stelle, UUID> {
     Optional<Stelle> findByIdWithKompetenzen(UUID id);
 
     Page<Stelle> findAllByOrderByErstelltAmDesc(Pageable pageable);
+
+    Page<Stelle> findAllByTypOrderByErstelltAmDesc(StelleTyp typ, Pageable pageable);
+
+    long countByTyp(StelleTyp typ);
 }

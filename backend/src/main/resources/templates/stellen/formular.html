@@ -21,6 +21,22 @@
               method="post">
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+            <!-- Stellen-Typ -->
+            <div class="form-control sm:col-span-2">
+              <label class="label"><span class="label-text font-medium">Stellen-Typ *</span></label>
+              <div class="join">
+                <input type="radio" name="typ" value="STANDARD" class="join-item btn btn-sm"
+                       aria-label="Standard"
+                       th:checked="${stelle.typ == null or stelle.typ.name() == 'STANDARD'}"
+                       onchange="onTypChange(this.value)"/>
+                <input type="radio" name="typ" value="LEHRSTELLE" class="join-item btn btn-sm"
+                       aria-label="Lehrstelle"
+                       th:checked="${stelle.typ != null and stelle.typ.name() == 'LEHRSTELLE'}"
+                       onchange="onTypChange(this.value)"/>
+              </div>
+            </div>
+
             <div class="form-control sm:col-span-2">
               <label class="label"><span class="label-text font-medium">Titel *</span></label>
               <input type="text" name="titel" class="input input-bordered"
@@ -66,6 +82,45 @@
             </div>
           </div>
 
+          <!-- Interessen + Voraussetzungen (Lehrstelle) -->
+          <div id="lehrstelle-bereich"
+               th:style="${stelle.typ != null and stelle.typ.name() == 'LEHRSTELLE'} ? '' : 'display:none'">
+
+            <div class="divider text-xs text-base-content/40 mt-4">Lehrstellenmatching</div>
+
+            <div class="form-control mb-4">
+              <label class="label"><span class="label-text font-medium">Interessensgebiete</span></label>
+              <div class="flex flex-wrap gap-2 p-3 border border-base-300 rounded-lg bg-base-50">
+                <th:block th:each="ig : ${alleInteressen}">
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" name="interessenIds" class="checkbox checkbox-sm checkbox-primary"
+                           th:value="${ig.id}"
+                           th:checked="${stelle.interessenIds != null and stelle.interessenIds.contains(ig.id)}"/>
+                    <span class="text-sm" th:text="${ig.name}">Interesse</span>
+                  </label>
+                </th:block>
+                <span th:if="${alleInteressen == null or alleInteressen.empty}"
+                      class="text-sm text-base-content/50">Keine Interessensgebiete vorhanden.</span>
+              </div>
+            </div>
+
+            <div class="form-control mb-4">
+              <label class="label"><span class="label-text font-medium">Voraussetzungen</span></label>
+              <div class="flex flex-wrap gap-2 p-3 border border-base-300 rounded-lg bg-base-50">
+                <th:block th:each="vr : ${alleVoraussetzungen}">
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" name="voraussetzungIds" class="checkbox checkbox-sm checkbox-secondary"
+                           th:value="${vr.id}"
+                           th:checked="${stelle.voraussetzungIds != null and stelle.voraussetzungIds.contains(vr.id)}"/>
+                    <span class="text-sm" th:text="${vr.name}">Voraussetzung</span>
+                  </label>
+                </th:block>
+                <span th:if="${alleVoraussetzungen == null or alleVoraussetzungen.empty}"
+                      class="text-sm text-base-content/50">Keine Voraussetzungen vorhanden.</span>
+              </div>
+            </div>
+          </div>
+
           <div class="card-actions justify-end mt-6">
             <a href="/stellen" class="btn btn-ghost">Abbrechen</a>
             <button type="submit" class="btn btn-secondary">
@@ -86,8 +141,9 @@
         </div>
       </div>
 
-      <!-- Kompetenzen -->
-      <div class="card bg-base-100 shadow">
+      <!-- Kompetenzen (nur Standard) -->
+      <div class="card bg-base-100 shadow" id="kompetenz-sidebar"
+           th:style="${stelle.typ != null and stelle.typ.name() == 'LEHRSTELLE'} ? 'display:none' : ''">
         <div class="card-body">
           <h2 class="card-title text-base">Kompetenzen</h2>
 
@@ -158,6 +214,18 @@
   </div>
 
   <script>
+    function onTypChange(val) {
+      var lehrBereich = document.getElementById('lehrstelle-bereich');
+      var kompSidebar = document.getElementById('kompetenz-sidebar');
+      if (val === 'LEHRSTELLE') {
+        lehrBereich.style.display = '';
+        if (kompSidebar) kompSidebar.style.display = 'none';
+      } else {
+        lehrBereich.style.display = 'none';
+        if (kompSidebar) kompSidebar.style.display = '';
+      }
+    }
+
     function addKompetenz(btn) {
       var stelleId = btn.dataset.stelleId;
       var kompetenzId = document.getElementById('kompetenz-id').value;

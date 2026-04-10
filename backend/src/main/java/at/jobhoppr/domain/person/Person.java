@@ -56,13 +56,13 @@ public class Person {
     private Set<PersonKompetenz> kompetenzen = new HashSet<>();
 
     /** IDs der Interessensgebiete (person_interesse join table) */
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "person_interesse", joinColumns = @JoinColumn(name = "person_id"))
     @Column(name = "interessensgebiet_id")
     private Set<Integer> interessenIds = new LinkedHashSet<>();
 
     /** IDs der Voraussetzungen (person_voraussetzung join table) */
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "person_voraussetzung", joinColumns = @JoinColumn(name = "person_id"))
     @Column(name = "voraussetzung_id")
     private Set<Integer> voraussetzungIds = new LinkedHashSet<>();

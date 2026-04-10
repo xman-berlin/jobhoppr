@@ -1,7 +1,9 @@
 package at.jobhoppr.domain.person;
 
 import at.jobhoppr.domain.bis.BerufSpezialisierungRepository;
+import at.jobhoppr.domain.bis.InteressensgebietRepository;
 import at.jobhoppr.domain.bis.KompetenzRepository;
+import at.jobhoppr.domain.bis.VoraussetzungRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -10,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -20,6 +23,8 @@ public class PersonService {
     private final PersonRepository personRepository;
     private final BerufSpezialisierungRepository berufSpezialisierungRepository;
     private final KompetenzRepository kompetenzRepository;
+    private final InteressensgebietRepository interessensgebietRepository;
+    private final VoraussetzungRepository voraussetzungRepository;
 
     @Transactional(readOnly = true)
     public Page<Person> findAll(Pageable pageable) {
@@ -44,15 +49,15 @@ public class PersonService {
     public record KompetenzEintrag(Integer kompetenzId, String niveau) {}
 
     public Person erstellen(PersonCreateRequest req) {
-        validiereReferenzen(req.berufSpezialisierungId(), req.kompetenzIds());
+        validiereReferenzen(req.berufSpezialisierungId(), req.kompetenzIds(), req.interessenIds(), req.voraussetzungIds());
         Person p = new Person();
-        return aktualisiereFelder(p, req.vorname(), req.nachname(), req.email(), req.berufSpezialisierungId());
+        return aktualisiereFelder(p, req);
     }
 
     public Person aktualisieren(UUID id, PersonCreateRequest req) {
-        validiereReferenzen(req.berufSpezialisierungId(), req.kompetenzIds());
+        validiereReferenzen(req.berufSpezialisierungId(), req.kompetenzIds(), req.interessenIds(), req.voraussetzungIds());
         Person p = findById(id);
-        return aktualisiereFelder(p, req.vorname(), req.nachname(), req.email(), req.berufSpezialisierungId());
+        return aktualisiereFelder(p, req);
     }
 
     public void loeschen(UUID id) {
@@ -80,21 +85,40 @@ public class PersonService {
         personRepository.save(p);
     }
 
-    private Person aktualisiereFelder(Person p, String vorname, String nachname, String email, Integer berufSpezialisierungId) {
-        p.setVorname(vorname);
-        p.setNachname(nachname);
-        p.setEmail(email);
-        p.setBerufSpezialisierungId(berufSpezialisierungId);
+    private Person aktualisiereFelder(Person p, PersonCreateRequest req) {
+        p.setVorname(req.vorname());
+        p.setNachname(req.nachname());
+        p.setEmail(req.email());
+        p.setBerufSpezialisierungId(req.berufSpezialisierungId());
+        p.setSuchtLehrstelle(req.suchtLehrstelle() != null && req.suchtLehrstelle());
+        // Interessen + Voraussetzungen ersetzen
+        p.getInteressenIds().clear();
+        if (req.interessenIds() != null) p.getInteressenIds().addAll(req.interessenIds());
+        p.getVoraussetzungIds().clear();
+        if (req.voraussetzungIds() != null) p.getVoraussetzungIds().addAll(req.voraussetzungIds());
         return personRepository.save(p);
     }
 
-    private void validiereReferenzen(Integer berufSpezialisierungId, List<Integer> kompetenzIds) {
+    private void validiereReferenzen(Integer berufSpezialisierungId, List<Integer> kompetenzIds,
+                                     Set<Integer> interessenIds, Set<Integer> voraussetzungIds) {
         if (berufSpezialisierungId != null && !berufSpezialisierungRepository.existsById(berufSpezialisierungId))
             throw new IllegalArgumentException("BerufSpezialisierung nicht gefunden: " + berufSpezialisierungId);
         if (kompetenzIds != null) {
             for (Integer kid : kompetenzIds) {
                 if (!kompetenzRepository.existsById(kid))
                     throw new IllegalArgumentException("Kompetenz nicht gefunden: " + kid);
+            }
+        }
+        if (interessenIds != null) {
+            for (Integer iid : interessenIds) {
+                if (!interessensgebietRepository.existsById(iid))
+                    throw new IllegalArgumentException("Interessensgebiet nicht gefunden: " + iid);
+            }
+        }
+        if (voraussetzungIds != null) {
+            for (Integer vid : voraussetzungIds) {
+                if (!voraussetzungRepository.existsById(vid))
+                    throw new IllegalArgumentException("Voraussetzung nicht gefunden: " + vid);
             }
         }
     }
@@ -120,7 +144,9 @@ public class PersonService {
 
     public record PersonCreateRequest(
             String vorname, String nachname, String email,
-            Integer berufSpezialisierungId, List<Integer> kompetenzIds) {}
+            Integer berufSpezialisierungId, Boolean suchtLehrstelle,
+            Set<Integer> interessenIds, Set<Integer> voraussetzungIds,
+            List<Integer> kompetenzIds) {}
 
     public record OrtRequest(
             String ortRolle, String ortTyp, String bezeichnung,
