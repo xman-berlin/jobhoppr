@@ -1,6 +1,6 @@
 package at.jobhoppr.domain.person;
 
-import at.jobhoppr.domain.bis.BerufRepository;
+import at.jobhoppr.domain.bis.BerufSpezialisierungRepository;
 import at.jobhoppr.domain.bis.KompetenzRepository;
 import io.github.wimdeblauwe.htmx.spring.boot.mvc.HxRequest;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class PersonController {
 
     private final PersonService personService;
-    private final BerufRepository berufRepository;
+    private final BerufSpezialisierungRepository berufSpezialisierungRepository;
     private final KompetenzRepository kompetenzRepository;
 
     @GetMapping
@@ -45,8 +45,8 @@ public class PersonController {
         Person person = personService.findById(id);
         model.addAttribute("person", person);
         model.addAttribute("isNeu", false);
-        if (person.getBerufId() != null) {
-            berufRepository.findById(person.getBerufId())
+        if (person.getBerufSpezialisierungId() != null) {
+            berufSpezialisierungRepository.findByIdWithPfad(person.getBerufSpezialisierungId())
                     .ifPresent(b -> model.addAttribute("berufName", b.getName()));
         }
         // Kompetenznamen als Map<kompetenzId, name> für das Template
@@ -67,11 +67,11 @@ public class PersonController {
             @RequestParam String vorname,
             @RequestParam String nachname,
             @RequestParam(required = false) String email,
-            @RequestParam(required = false) Integer berufId,
+            @RequestParam(required = false) Integer berufSpezialisierungId,
             @RequestParam(required = false) List<Integer> kompetenzIds) {
 
         Person p = personService.erstellen(new PersonService.PersonCreateRequest(
-                vorname, nachname, email, berufId, kompetenzIds));
+                vorname, nachname, email, berufSpezialisierungId, kompetenzIds));
         return "redirect:/personen/" + p.getId();
     }
 
@@ -81,11 +81,11 @@ public class PersonController {
             @RequestParam String vorname,
             @RequestParam String nachname,
             @RequestParam(required = false) String email,
-            @RequestParam(required = false) Integer berufId,
+            @RequestParam(required = false) Integer berufSpezialisierungId,
             @RequestParam(required = false) List<Integer> kompetenzIds) {
 
         personService.aktualisieren(id, new PersonService.PersonCreateRequest(
-                vorname, nachname, email, berufId, kompetenzIds));
+                vorname, nachname, email, berufSpezialisierungId, kompetenzIds));
         return "redirect:/personen/" + id;
     }
 

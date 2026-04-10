@@ -1,6 +1,6 @@
 package at.jobhoppr.domain.stelle;
 
-import at.jobhoppr.domain.bis.BerufRepository;
+import at.jobhoppr.domain.bis.BerufSpezialisierungRepository;
 import at.jobhoppr.domain.bis.KompetenzRepository;
 import io.github.wimdeblauwe.htmx.spring.boot.mvc.HxRequest;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class StelleController {
 
     private final StelleService stelleService;
-    private final BerufRepository berufRepository;
+    private final BerufSpezialisierungRepository berufSpezialisierungRepository;
     private final KompetenzRepository kompetenzRepository;
 
     @GetMapping
@@ -45,8 +45,8 @@ public class StelleController {
         Stelle stelle = stelleService.findById(id);
         model.addAttribute("stelle", stelle);
         model.addAttribute("isNeu", false);
-        if (stelle.getBerufId() != null) {
-            berufRepository.findById(stelle.getBerufId())
+        if (stelle.getBerufSpezialisierungId() != null) {
+            berufSpezialisierungRepository.findByIdWithPfad(stelle.getBerufSpezialisierungId())
                     .ifPresent(b -> model.addAttribute("berufName", b.getName()));
         }
         List<StelleService.KompetenzEintrag> kompetenzen = stelleService.findKompetenzen(id);
@@ -69,12 +69,12 @@ public class StelleController {
             @RequestParam String ortBezeichnung,
             @RequestParam double ortLat,
             @RequestParam double ortLon,
-            @RequestParam(required = false) Integer berufId,
+            @RequestParam(required = false) Integer berufSpezialisierungId,
             @RequestParam(required = false) List<Integer> kompetenzIds,
             @RequestParam(required = false) List<Boolean> pflichtFlags) {
 
         Stelle s = stelleService.erstellen(buildRequest(titel, unternehmen, beschreibung,
-                ortBezeichnung, ortLat, ortLon, berufId, kompetenzIds, pflichtFlags));
+                ortBezeichnung, ortLat, ortLon, berufSpezialisierungId, kompetenzIds, pflichtFlags));
         return "redirect:/stellen/" + s.getId();
     }
 
@@ -87,12 +87,12 @@ public class StelleController {
             @RequestParam String ortBezeichnung,
             @RequestParam double ortLat,
             @RequestParam double ortLon,
-            @RequestParam(required = false) Integer berufId,
+            @RequestParam(required = false) Integer berufSpezialisierungId,
             @RequestParam(required = false) List<Integer> kompetenzIds,
             @RequestParam(required = false) List<Boolean> pflichtFlags) {
 
         stelleService.aktualisieren(id, buildRequest(titel, unternehmen, beschreibung,
-                ortBezeichnung, ortLat, ortLon, berufId, kompetenzIds, pflichtFlags));
+                ortBezeichnung, ortLat, ortLon, berufSpezialisierungId, kompetenzIds, pflichtFlags));
         return "redirect:/stellen/" + id;
     }
 
@@ -134,7 +134,7 @@ public class StelleController {
     private StelleService.StelleRequest buildRequest(
             String titel, String unternehmen, String beschreibung,
             String ortBezeichnung, double ortLat, double ortLon,
-            Integer berufId, List<Integer> kompetenzIds, List<Boolean> pflichtFlags) {
+            Integer berufSpezialisierungId, List<Integer> kompetenzIds, List<Boolean> pflichtFlags) {
 
         List<StelleService.KompetenzEintrag> kompetenzen = null;
         if (kompetenzIds != null) {
@@ -146,6 +146,6 @@ public class StelleController {
             }
         }
         return new StelleService.StelleRequest(titel, unternehmen, beschreibung,
-                ortBezeichnung, ortLat, ortLon, berufId, kompetenzen);
+                ortBezeichnung, ortLat, ortLon, berufSpezialisierungId, kompetenzen);
     }
 }

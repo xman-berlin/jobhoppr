@@ -8,7 +8,7 @@
          th:data-id="${beruf.id}"
          th:data-name="${beruf.name}">
         <span class="font-medium text-sm" th:text="${beruf.name}">Beruf</span>
-        <span class="text-xs text-base-content/60" th:text="${beruf.bereich}">Bereich</span>
+        <span class="text-xs text-base-content/60" th:text="${beruf.pfad}">Pfad</span>
       </a>
     </li>
     <li th:if="${#lists.isEmpty(berufe)}">

@@ -1,8 +1,6 @@
 package at.jobhoppr.domain.person;
 
-import at.jobhoppr.domain.bis.Beruf;
-import at.jobhoppr.domain.bis.BerufRepository;
-import at.jobhoppr.domain.bis.Kompetenz;
+import at.jobhoppr.domain.bis.BerufSpezialisierungRepository;
 import at.jobhoppr.domain.bis.KompetenzRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +18,7 @@ import java.util.UUID;
 public class PersonService {
 
     private final PersonRepository personRepository;
-    private final BerufRepository berufRepository;
+    private final BerufSpezialisierungRepository berufSpezialisierungRepository;
     private final KompetenzRepository kompetenzRepository;
 
     @Transactional(readOnly = true)
@@ -46,15 +44,15 @@ public class PersonService {
     public record KompetenzEintrag(Integer kompetenzId, String niveau) {}
 
     public Person erstellen(PersonCreateRequest req) {
-        validiereReferenzen(req.berufId(), req.kompetenzIds());
+        validiereReferenzen(req.berufSpezialisierungId(), req.kompetenzIds());
         Person p = new Person();
-        return aktualisiereFelder(p, req.vorname(), req.nachname(), req.email(), req.berufId());
+        return aktualisiereFelder(p, req.vorname(), req.nachname(), req.email(), req.berufSpezialisierungId());
     }
 
     public Person aktualisieren(UUID id, PersonCreateRequest req) {
-        validiereReferenzen(req.berufId(), req.kompetenzIds());
+        validiereReferenzen(req.berufSpezialisierungId(), req.kompetenzIds());
         Person p = findById(id);
-        return aktualisiereFelder(p, req.vorname(), req.nachname(), req.email(), req.berufId());
+        return aktualisiereFelder(p, req.vorname(), req.nachname(), req.email(), req.berufSpezialisierungId());
     }
 
     public void loeschen(UUID id) {
@@ -82,17 +80,17 @@ public class PersonService {
         personRepository.save(p);
     }
 
-    private Person aktualisiereFelder(Person p, String vorname, String nachname, String email, Integer berufId) {
+    private Person aktualisiereFelder(Person p, String vorname, String nachname, String email, Integer berufSpezialisierungId) {
         p.setVorname(vorname);
         p.setNachname(nachname);
         p.setEmail(email);
-        p.setBerufId(berufId);
+        p.setBerufSpezialisierungId(berufSpezialisierungId);
         return personRepository.save(p);
     }
 
-    private void validiereReferenzen(Integer berufId, List<Integer> kompetenzIds) {
-        if (berufId != null && !berufRepository.existsById(berufId))
-            throw new IllegalArgumentException("Beruf nicht gefunden: " + berufId);
+    private void validiereReferenzen(Integer berufSpezialisierungId, List<Integer> kompetenzIds) {
+        if (berufSpezialisierungId != null && !berufSpezialisierungRepository.existsById(berufSpezialisierungId))
+            throw new IllegalArgumentException("BerufSpezialisierung nicht gefunden: " + berufSpezialisierungId);
         if (kompetenzIds != null) {
             for (Integer kid : kompetenzIds) {
                 if (!kompetenzRepository.existsById(kid))
@@ -122,7 +120,7 @@ public class PersonService {
 
     public record PersonCreateRequest(
             String vorname, String nachname, String email,
-            Integer berufId, List<Integer> kompetenzIds) {}
+            Integer berufSpezialisierungId, List<Integer> kompetenzIds) {}
 
     public record OrtRequest(
             String ortRolle, String ortTyp, String bezeichnung,

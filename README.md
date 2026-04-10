@@ -17,13 +17,13 @@ Geo is a **binary mandatory filter**: if no Personort falls within the Stelle's 
 | Layer | Choice |
 |-------|--------|
 | Frontend | Thymeleaf + HTMX + DaisyUI (CDN, Corporate theme) |
-| Backend | Spring Boot 3.3, Java 21, Gradle 8.10 |
+| Backend | Spring Boot 3.3, Java 21, Maven |
 | Database | PostgreSQL 16 + PostGIS |
 | ORM | Spring Data JPA + `JdbcTemplate` (native SQL for matching) |
 | Geo-filter | PostGIS `ST_DWithin` on `GEOGRAPHY(POINT,4326)` with GiST index |
 | Geocoding | Nominatim (OpenStreetMap) proxy + GeoNames AT PLZ lookup |
 | Schema | Flyway (migrations in `backend/src/main/resources/db/migration/`) |
-| Build | Multi-stage Dockerfile (`gradle:8.10.2-jdk21` → `eclipse-temurin:21-jre`) |
+| Build | Multi-stage Dockerfile (`maven:3.9` → `eclipse-temurin:21-jre`) |
 | Deploy | Docker Compose |
 
 ## Quick Start (Docker — recommended)
@@ -63,32 +63,23 @@ cp .env.example .env
 |----------|---------|-------------|
 | `POSTGRES_DB` | `jobhoppr` | Database name |
 | `POSTGRES_USER` | `jobhoppr` | DB user |
-| `POSTGRES_PASSWORD` | `jobhoppr_secret` | DB password |
+| `POSTGRES_PASSWORD` | `jobhoppr` | DB password |
 | `SPRING_PROFILES_ACTIVE` | `prod` | Use `dev` for seed data |
 
-## Local Backend Development (without Docker frontend)
+## Local Development (empfohlen)
 
-Run PostGIS in Docker, then start Spring Boot locally — faster iteration cycle:
+Run PostGIS in Docker, then start Spring Boot locally — deutlich schneller als `docker compose up --build`:
 
 ```bash
-# 1. Start only the database
+# 1. Nur die Datenbank starten
 docker compose up db -d
 
-# 2. Start backend with dev seed data (from backend/ directory)
+# 2. Backend starten (ohne Testdaten)
 cd backend
-./gradlew bootRun --args='--spring.profiles.active=dev'
-```
+mvn spring-boot:run
 
-> **Note:** `gradlew` is intentionally not committed. The Dockerfile uses the
-> `gradle:8.10.2-jdk21-jammy` base image. For local development, install
-> Gradle 8.10 or use `gradle wrapper` to generate the wrapper scripts.
-
-Alternatively, generate the wrapper once:
-
-```bash
-cd backend
-gradle wrapper --gradle-version 8.10.2
-./gradlew bootRun --args='--spring.profiles.active=dev'
+# 2b. Backend mit Dev-Testdaten starten (200 Personen, 80 Stellen, 10 Lehrstellen)
+mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
 ## Running Tests
@@ -96,18 +87,24 @@ gradle wrapper --gradle-version 8.10.2
 ```bash
 cd backend
 
-# All tests (requires a running PostGIS — use docker compose up db -d first)
-./gradlew test
+# Alle Tests (benötigt laufende DB — vorher: docker compose up db -d)
+mvn test
 
-# Single test class
-./gradlew test --tests "at.jobhoppr.matching.MatchServiceTest"
+# Einzelne Testklasse
+mvn test -Dtest="MatchServiceTest"
+
+# Einzelne Methode
+mvn test -Dtest="MatchServiceTest#geoFilterBlocksOutOfRange"
+
+# Alle Integrationstests
+mvn test -Dtest="*IT"
 ```
 
 ## Project Structure
 
 ```
 jobhoppr/
-├── Dockerfile                    Multi-stage: gradle build → JRE runtime
+├── Dockerfile                    Multi-stage: Maven build → JRE runtime
 ├── docker-compose.yml            PostGIS 16 + Spring Boot backend
 ├── .env.example                  Environment variable template
 └── backend/

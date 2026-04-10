@@ -20,11 +20,11 @@ Das System muss bei 1+ Mio. Personen und Stellen unter 1 Sekunde Antwortzeit ble
 ## Progress
 
 - [x] Phase 1: Schema-Migration (Beruf-Hierarchie + Closure Table + neue KO-Felder)
-- [ ] Phase 2: BIS-Seed-Daten (Scraping + Import der echten BIS-Daten)
-- [ ] Phase 3: JPA-Entities + Services anpassen
-- [ ] Phase 4: Closure-Table-Pflege (KompetenzClosureService)
-- [ ] Phase 5: PostgreSQL Score-Funktionen (Flyway)
-- [ ] Phase 6: MatchRepository + MatchService + Sortierung
+- [x] Phase 2: BIS-Seed-Daten (Scraping + Import der echten BIS-Daten)
+- [x] Phase 3: JPA-Entities + Services anpassen
+- [x] Phase 4: Closure-Table-Pflege (KompetenzClosureService)
+- [x] Phase 5: PostgreSQL Score-Funktionen (Flyway)
+- [x] Phase 6: MatchRepository + MatchService + Sortierung
 - [ ] Phase 7: Lehrstellenmatching
 - [ ] Phase 8: Frontend anpassen
 - [ ] Phase 9: Tests

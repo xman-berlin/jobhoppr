@@ -21,27 +21,11 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-
-      - name: Generate Gradle wrapper
-        working-directory: backend
-        run: gradle wrapper --gradle-version 8.10.2
-        env:
-          # Use the Gradle binary already present in the runner
-          GRADLE_OPTS: "-Dorg.gradle.daemon=false"
-
-      - name: Cache Gradle packages
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('backend/**/*.gradle', 'backend/gradle/wrapper/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+          cache: 'maven'
 
       - name: Build (compile + test)
         working-directory: backend
-        run: ./gradlew build --no-daemon
+        run: mvn -B verify --no-transfer-progress
         env:
           # Testcontainers needs Docker (available on ubuntu-latest)
           TESTCONTAINERS_RYUK_DISABLED: "true"

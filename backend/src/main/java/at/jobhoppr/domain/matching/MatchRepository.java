@@ -1,176 +1,331 @@
 package at.jobhoppr.domain.matching;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
 /**
- * Executes the matching CTE queries via JdbcTemplate (native SQL, PostGIS).
- * Two symmetric queries:
- *  - findTopPersonenForStelle: given a Stelle, rank Persons
- *  - findTopStellenForPerson:  given a Person, rank Stellen
+ * Führt die Matching-CTE-Queries via {@link NamedParameterJdbcTemplate} aus.
+ * <p>
+ * Zwei symmetrische Queries:
+ * <ul>
+ *   <li>{@link #findTopStellenForPerson} — feste Person, rankt passende Stellen</li>
+ *   <li>{@link #findTopPersonenForStelle} — feste Stelle, rankt passende Personen</li>
+ * </ul>
+ * Score-Funktionen werden via {@code CROSS JOIN LATERAL} einmalig aufgerufen (P3-Fix).
+ * Sortierung wird in Java aus {@link SortierParameter} validiert — kein String-Concat (kein SQL-Injection-Risiko).
+ * </p>
  */
 @Repository
 @RequiredArgsConstructor
 public class MatchRepository {
 
-    private final JdbcTemplate jdbc;
+    private final NamedParameterJdbcTemplate jdbc;
 
-    private static final String PERSONEN_FOR_STELLE = """
-        WITH stelle_data AS (
-            SELECT s.id, s.standort, s.beruf_id,
-                   COUNT(sk.kompetenz_id) FILTER (WHERE sk.pflicht = TRUE)  AS total_pflicht,
-                   COUNT(sk.kompetenz_id) FILTER (WHERE sk.pflicht = FALSE) AS total_optional
-            FROM stelle s
-            LEFT JOIN stelle_kompetenz sk ON sk.stelle_id = s.id
-            WHERE s.id = ?::uuid
-            GROUP BY s.id, s.standort, s.beruf_id
-        ),
+    // ────────────────────────────────────────────────────────────────────────────
+    // Query: Stellen für Person
+    // ────────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Sortier-sichere ORDER BY-Klausel: zwei separate Templates je nach Sortierkriterium
+     * damit PostgreSQL den richtigen Index (score vs. erstellt_am) nutzen kann (P4-Hinweis).
+     */
+    private static final String STELLEN_FOR_PERSON_ORDER_SCORE_DESC =
+        "ORDER BY score DESC, s.erstellt_am DESC";
+    private static final String STELLEN_FOR_PERSON_ORDER_SCORE_ASC =
+        "ORDER BY score ASC,  s.erstellt_am DESC";
+    private static final String STELLEN_FOR_PERSON_ORDER_DATUM_DESC =
+        "ORDER BY s.erstellt_am DESC, score DESC";
+    private static final String STELLEN_FOR_PERSON_ORDER_DATUM_ASC =
+        "ORDER BY s.erstellt_am ASC,  score DESC";
+
+    private static final String STELLEN_FOR_PERSON_BASE = """
+        WITH
         geo_kandidaten AS (
-            SELECT DISTINCT po.person_id
-            FROM person_ort po, stelle_data sd
-            WHERE ? = FALSE
-               OR ST_DWithin(po.standort, sd.standort, po.umkreis_km * 1000)
+          SELECT DISTINCT s.id
+          FROM stelle s
+          WHERE EXISTS (
+            SELECT 1 FROM person_ort po
+            WHERE po.person_id = :person_id
+              AND (
+                po.bundesweit = TRUE
+                OR ST_DWithin(po.standort::geography, s.standort::geography, po.umkreis_km * 1000)
+                OR (
+                  po.geo_location_id IS NOT NULL
+                  AND s.geo_location_id IS NOT NULL
+                  AND EXISTS (
+                    WITH RECURSIVE ancestors AS (
+                      SELECT id, parent_id FROM geo_location WHERE id = s.geo_location_id
+                      UNION ALL
+                      SELECT gl.id, gl.parent_id FROM geo_location gl
+                      JOIN ancestors a ON gl.id = a.parent_id
+                    )
+                    SELECT 1 FROM ancestors WHERE id = po.geo_location_id
+                  )
+                )
+              )
+          )
         ),
-        beruf_kandidaten AS (
-            SELECT p.id AS person_id, p.beruf_id, p.vorname, p.nachname
-            FROM person p
-            JOIN geo_kandidaten gk ON gk.person_id = p.id
-            WHERE ? = FALSE
-               OR p.beruf_id = (SELECT beruf_id FROM stelle_data)
+        muss_ko AS (
+          SELECT DISTINCT sk.stelle_id
+          FROM stelle_kompetenz sk
+          WHERE sk.pflicht = TRUE
+            AND sk.stelle_id IN (SELECT id FROM geo_kandidaten)
+            AND NOT EXISTS (
+              SELECT 1 FROM person_kompetenz pk
+              JOIN kompetenz_closure cc ON cc.vorfahre_id = pk.kompetenz_id
+              WHERE pk.person_id = :person_id
+                AND cc.nachfahre_id = sk.kompetenz_id
+            )
         ),
-        kompetenz_scores AS (
+        arbeitszeit_ko AS (
+          SELECT DISTINCT sa.stelle_id
+          FROM stelle_arbeitszeit sa
+          WHERE sa.pflicht = TRUE
+            AND sa.stelle_id IN (SELECT id FROM geo_kandidaten)
+            AND sa.stelle_id NOT IN (SELECT stelle_id FROM muss_ko)
+            AND sa.modell IN (
+              SELECT modell FROM person_arbeitszeit_ausschluss WHERE person_id = :person_id
+            )
+        ),
+        kandidaten AS (
+          SELECT id FROM geo_kandidaten
+          EXCEPT SELECT stelle_id FROM muss_ko
+          EXCEPT SELECT stelle_id FROM arbeitszeit_ko
+        ),
+        scores AS (
+          SELECT
+            s.id,
+            s.titel,
+            s.unternehmen,
+            s.typ,
+            s.erstellt_am,
+            bd.om,
+            bd.sm,
+            bd.fm,
+            bd.qm,
+            CASE s.typ
+              WHEN 'STANDARD'   THEN
+                (:w_beruf     * bd.om + :w_kompetenz * bd.sm)
+                / NULLIF(:w_beruf + :w_kompetenz, 0)
+              WHEN 'LEHRSTELLE' THEN
+                (:w_lehrberuf * bd.om + :w_interessen * bd.fm + :w_voraussetzungen * bd.qm)
+                / NULLIF(:w_lehrberuf + :w_interessen + :w_voraussetzungen, 0)
+              ELSE 0.0
+            END AS score
+          FROM stelle s
+          CROSS JOIN LATERAL (
             SELECT
-                bk.person_id,
-                bk.beruf_id,
-                bk.vorname,
-                bk.nachname,
-                COALESCE(
-                    (COUNT(pk.kompetenz_id) FILTER (WHERE sk.pflicht = TRUE)  * 2.0
-                   + COUNT(pk.kompetenz_id) FILTER (WHERE sk.pflicht = FALSE))
-                   / NULLIF((SELECT total_pflicht * 2 + total_optional FROM stelle_data), 0),
-                   0.0
-                ) AS kompetenz_score
-            FROM beruf_kandidaten bk
-            LEFT JOIN person_kompetenz pk ON pk.person_id = bk.person_id
-            LEFT JOIN stelle_kompetenz sk
-                ON sk.kompetenz_id = pk.kompetenz_id
-               AND sk.stelle_id = (SELECT id FROM stelle_data)
-            GROUP BY bk.person_id, bk.beruf_id, bk.vorname, bk.nachname
+              match_beruf(:person_id, s.id)           AS om,
+              match_kompetenz(:person_id, s.id)       AS sm,
+              match_interessen(:person_id, s.id)      AS fm,
+              match_voraussetzungen(:person_id, s.id) AS qm
+          ) bd
+          WHERE s.id IN (SELECT id FROM kandidaten)
         )
         SELECT
-            ks.person_id                                                                    AS target_id,
-            ks.vorname || ' ' || ks.nachname                                               AS target_name,
-            CASE WHEN ks.beruf_id = (SELECT beruf_id FROM stelle_data) THEN 1.0 ELSE 0.0 END AS beruf_score,
-            ks.kompetenz_score,
-            (? * CASE WHEN ks.beruf_id = (SELECT beruf_id FROM stelle_data) THEN 1.0 ELSE 0.0 END
-             + ? * ks.kompetenz_score)
-            / NULLIF(? + ?, 0)                                                             AS gesamt_score
-        FROM kompetenz_scores ks
-        ORDER BY gesamt_score DESC
-        LIMIT 50
+          s.id                                                          AS target_id,
+          s.titel || COALESCE(' – ' || s.unternehmen, '')              AS target_name,
+          s.typ,
+          s.erstellt_am,
+          s.om, s.sm, s.fm, s.qm, s.score
+        FROM scores s
+        WHERE s.score >= :schwellenwert
         """;
 
-    private static final String STELLEN_FOR_PERSON = """
-        WITH person_data AS (
-            SELECT p.id, p.beruf_id
-            FROM person p WHERE p.id = ?::uuid
-        ),
-        person_orte AS (
-            SELECT po.standort, po.umkreis_km
-            FROM person_ort po WHERE po.person_id = ?::uuid
+    // ────────────────────────────────────────────────────────────────────────────
+    // Query: Personen für Stelle (symmetrisch: Rollen getauscht)
+    // ────────────────────────────────────────────────────────────────────────────
+
+    private static final String PERSONEN_FOR_STELLE_ORDER_SCORE_DESC =
+        "ORDER BY score DESC, p.erstellt_am DESC";
+    private static final String PERSONEN_FOR_STELLE_ORDER_SCORE_ASC =
+        "ORDER BY score ASC,  p.erstellt_am DESC";
+    private static final String PERSONEN_FOR_STELLE_ORDER_DATUM_DESC =
+        "ORDER BY p.erstellt_am DESC, score DESC";
+    private static final String PERSONEN_FOR_STELLE_ORDER_DATUM_ASC =
+        "ORDER BY p.erstellt_am ASC,  score DESC";
+
+    private static final String PERSONEN_FOR_STELLE_BASE = """
+        WITH
+        stelle_data AS (
+          SELECT s.id, s.standort, s.geo_location_id, s.typ
+          FROM stelle s
+          WHERE s.id = :stelle_id
         ),
         geo_kandidaten AS (
-            SELECT DISTINCT s.id AS stelle_id
-            FROM stelle s, person_orte po
-            WHERE ? = FALSE
-               OR ST_DWithin(po.standort, s.standort, po.umkreis_km * 1000)
+          SELECT DISTINCT po.person_id
+          FROM person_ort po
+          CROSS JOIN stelle_data sd
+          WHERE po.bundesweit = TRUE
+             OR ST_DWithin(po.standort::geography, sd.standort::geography, po.umkreis_km * 1000)
+             OR (
+               po.geo_location_id IS NOT NULL
+               AND sd.geo_location_id IS NOT NULL
+               AND EXISTS (
+                 WITH RECURSIVE ancestors AS (
+                   SELECT id, parent_id FROM geo_location WHERE id = sd.geo_location_id
+                   UNION ALL
+                   SELECT gl.id, gl.parent_id FROM geo_location gl
+                   JOIN ancestors a ON gl.id = a.parent_id
+                 )
+                 SELECT 1 FROM ancestors WHERE id = po.geo_location_id
+               )
+             )
         ),
-        beruf_kandidaten AS (
-            SELECT s.id AS stelle_id, s.beruf_id, s.titel, s.unternehmen
-            FROM stelle s
-            JOIN geo_kandidaten gk ON gk.stelle_id = s.id
-            WHERE ? = FALSE
-               OR s.beruf_id = (SELECT beruf_id FROM person_data)
+        muss_ko AS (
+          SELECT DISTINCT gk.person_id
+          FROM geo_kandidaten gk
+          WHERE EXISTS (
+            SELECT 1 FROM stelle_kompetenz sk
+            WHERE sk.pflicht = TRUE
+              AND sk.stelle_id = :stelle_id
+              AND NOT EXISTS (
+                SELECT 1
+                FROM person_kompetenz pk2
+                JOIN kompetenz_closure cc2 ON cc2.vorfahre_id = pk2.kompetenz_id
+                WHERE pk2.person_id = gk.person_id
+                  AND cc2.nachfahre_id = sk.kompetenz_id
+              )
+          )
         ),
-        stelle_kompetenz_counts AS (
+        arbeitszeit_ko AS (
+          SELECT DISTINCT pa.person_id
+          FROM person_arbeitszeit_ausschluss pa
+          JOIN stelle_arbeitszeit sa ON sa.modell = pa.modell AND sa.pflicht = TRUE
+          WHERE sa.stelle_id = :stelle_id
+            AND pa.person_id IN (SELECT person_id FROM geo_kandidaten)
+            AND pa.person_id NOT IN (SELECT person_id FROM muss_ko)
+        ),
+        kandidaten AS (
+          SELECT person_id AS id FROM geo_kandidaten
+          EXCEPT SELECT person_id FROM muss_ko
+          EXCEPT SELECT person_id FROM arbeitszeit_ko
+        ),
+        scores AS (
+          SELECT
+            p.id,
+            p.vorname || ' ' || p.nachname  AS naam,
+            p.erstellt_am,
+            bd.om,
+            bd.sm,
+            bd.fm,
+            bd.qm,
+            CASE (SELECT typ FROM stelle_data)
+              WHEN 'STANDARD'   THEN
+                (:w_beruf     * bd.om + :w_kompetenz * bd.sm)
+                / NULLIF(:w_beruf + :w_kompetenz, 0)
+              WHEN 'LEHRSTELLE' THEN
+                (:w_lehrberuf * bd.om + :w_interessen * bd.fm + :w_voraussetzungen * bd.qm)
+                / NULLIF(:w_lehrberuf + :w_interessen + :w_voraussetzungen, 0)
+              ELSE 0.0
+            END AS score
+          FROM person p
+          CROSS JOIN LATERAL (
             SELECT
-                bk.stelle_id,
-                bk.beruf_id,
-                bk.titel,
-                bk.unternehmen,
-                COUNT(sk.kompetenz_id) FILTER (WHERE sk.pflicht = TRUE)  AS total_pflicht,
-                COUNT(sk.kompetenz_id) FILTER (WHERE sk.pflicht = FALSE) AS total_optional
-            FROM beruf_kandidaten bk
-            LEFT JOIN stelle_kompetenz sk ON sk.stelle_id = bk.stelle_id
-            GROUP BY bk.stelle_id, bk.beruf_id, bk.titel, bk.unternehmen
-        ),
-        kompetenz_scores AS (
-            SELECT
-                skc.stelle_id,
-                skc.beruf_id,
-                skc.titel,
-                skc.unternehmen,
-                COALESCE(
-                    (COUNT(pk.kompetenz_id) FILTER (WHERE sk.pflicht = TRUE)  * 2.0
-                   + COUNT(pk.kompetenz_id) FILTER (WHERE sk.pflicht = FALSE))
-                   / NULLIF(skc.total_pflicht * 2 + skc.total_optional, 0),
-                   0.0
-                ) AS kompetenz_score
-            FROM stelle_kompetenz_counts skc
-            LEFT JOIN stelle_kompetenz sk ON sk.stelle_id = skc.stelle_id
-            LEFT JOIN person_kompetenz pk
-                ON pk.kompetenz_id = sk.kompetenz_id
-               AND pk.person_id = (SELECT id FROM person_data)
-            GROUP BY skc.stelle_id, skc.beruf_id, skc.titel, skc.unternehmen,
-                     skc.total_pflicht, skc.total_optional
+              match_beruf(p.id, :stelle_id)           AS om,
+              match_kompetenz(p.id, :stelle_id)       AS sm,
+              match_interessen(p.id, :stelle_id)      AS fm,
+              match_voraussetzungen(p.id, :stelle_id) AS qm
+          ) bd
+          WHERE p.id IN (SELECT id FROM kandidaten)
         )
         SELECT
-            ks.stelle_id                                                                       AS target_id,
-            ks.titel || CASE WHEN ks.unternehmen IS NOT NULL THEN ' – ' || ks.unternehmen
-                             ELSE '' END                                                        AS target_name,
-            CASE WHEN ks.beruf_id = (SELECT beruf_id FROM person_data) THEN 1.0 ELSE 0.0 END   AS beruf_score,
-            ks.kompetenz_score,
-            (? * CASE WHEN ks.beruf_id = (SELECT beruf_id FROM person_data) THEN 1.0 ELSE 0.0 END
-             + ? * ks.kompetenz_score)
-            / NULLIF(? + ?, 0)                                                                  AS gesamt_score
-        FROM kompetenz_scores ks
-        ORDER BY gesamt_score DESC
-        LIMIT 50
+          p.id                AS target_id,
+          p.naam              AS target_name,
+          (SELECT typ FROM stelle_data) AS typ,
+          p.erstellt_am,
+          p.om, p.sm, p.fm, p.qm, p.score
+        FROM scores p
+        WHERE p.score >= :schwellenwert
         """;
 
-    public List<MatchResult> findTopPersonenForStelle(UUID stelleId, MatchModell modell) {
-        boolean geoAktiv = Boolean.TRUE.equals(modell.getGeoAktiv());
-        double wB = modell.getGewichtBeruf();
-        double wK = modell.getGewichtKompetenz();
+    // ────────────────────────────────────────────────────────────────────────────
+    // Public API
+    // ────────────────────────────────────────────────────────────────────────────
 
-        return jdbc.query(PERSONEN_FOR_STELLE,
-                (rs, i) -> new MatchResult(
-                        UUID.fromString(rs.getString("target_id")),
-                        rs.getString("target_name"),
-                        rs.getDouble("beruf_score"),
-                        rs.getDouble("kompetenz_score"),
-                        rs.getDouble("gesamt_score")),
-                stelleId.toString(), geoAktiv, false,
-                wB, wK, wB, wK);
+    public List<MatchResult> findTopStellenForPerson(UUID personId, MatchModell modell,
+                                                     SortierParameter sort) {
+        String orderBy = stellenOrderBy(sort);
+        String sql = STELLEN_FOR_PERSON_BASE + orderBy + "\nLIMIT 50";
+        MapSqlParameterSource params = baseParams(modell)
+                .addValue("person_id", personId);
+        return jdbc.query(sql, params, (rs, i) -> mapRow(rs));
     }
 
-    public List<MatchResult> findTopStellenForPerson(UUID personId, MatchModell modell) {
-        boolean geoAktiv = Boolean.TRUE.equals(modell.getGeoAktiv());
-        double wB = modell.getGewichtBeruf();
-        double wK = modell.getGewichtKompetenz();
+    public List<MatchResult> findTopPersonenForStelle(UUID stelleId, MatchModell modell,
+                                                      SortierParameter sort) {
+        String orderBy = personenOrderBy(sort);
+        String sql = PERSONEN_FOR_STELLE_BASE + orderBy + "\nLIMIT 50";
+        MapSqlParameterSource params = baseParams(modell)
+                .addValue("stelle_id", stelleId);
+        return jdbc.query(sql, params, (rs, i) -> mapRow(rs));
+    }
 
-        return jdbc.query(STELLEN_FOR_PERSON,
-                (rs, i) -> new MatchResult(
-                        UUID.fromString(rs.getString("target_id")),
-                        rs.getString("target_name"),
-                        rs.getDouble("beruf_score"),
-                        rs.getDouble("kompetenz_score"),
-                        rs.getDouble("gesamt_score")),
-                personId.toString(), personId.toString(), geoAktiv, false,
-                wB, wK, wB, wK);
+    // ────────────────────────────────────────────────────────────────────────────
+    // Helpers
+    // ────────────────────────────────────────────────────────────────────────────
+
+    private MapSqlParameterSource baseParams(MatchModell m) {
+        return new MapSqlParameterSource()
+                .addValue("w_beruf",            m.getGewichtBeruf())
+                .addValue("w_kompetenz",         m.getGewichtKompetenz())
+                .addValue("w_lehrberuf",         m.getGewichtLehrberuf())
+                .addValue("w_interessen",        m.getGewichtInteressen())
+                .addValue("w_voraussetzungen",   m.getGewichtVoraussetzungen())
+                .addValue("schwellenwert",       m.getScoreSchwellenwert());
+    }
+
+    private MatchResult mapRow(java.sql.ResultSet rs) throws java.sql.SQLException {
+        String typStr = rs.getString("typ");
+        MatchResult.StelleTypInfo typ = typStr != null
+                ? MatchResult.StelleTypInfo.valueOf(typStr)
+                : MatchResult.StelleTypInfo.STANDARD;
+
+        Timestamp ts = rs.getTimestamp("erstellt_am");
+        OffsetDateTime erstelltAm = ts != null
+                ? ts.toInstant().atOffset(java.time.ZoneOffset.UTC)
+                : null;
+
+        return new MatchResult(
+                UUID.fromString(rs.getString("target_id")),
+                rs.getString("target_name"),
+                rs.getDouble("score"),
+                typ,
+                erstelltAm,
+                new MatchResult.Breakdown(
+                        rs.getDouble("om"),
+                        rs.getDouble("sm"),
+                        rs.getDouble("fm"),
+                        rs.getDouble("qm")));
+    }
+
+    private static String stellenOrderBy(SortierParameter sort) {
+        if (sort.kriterium() == SortierKriterium.ERSTELLT_AM) {
+            return sort.richtung() == SortierRichtung.ASC
+                    ? STELLEN_FOR_PERSON_ORDER_DATUM_ASC
+                    : STELLEN_FOR_PERSON_ORDER_DATUM_DESC;
+        }
+        return sort.richtung() == SortierRichtung.ASC
+                ? STELLEN_FOR_PERSON_ORDER_SCORE_ASC
+                : STELLEN_FOR_PERSON_ORDER_SCORE_DESC;
+    }
+
+    private static String personenOrderBy(SortierParameter sort) {
+        if (sort.kriterium() == SortierKriterium.ERSTELLT_AM) {
+            return sort.richtung() == SortierRichtung.ASC
+                    ? PERSONEN_FOR_STELLE_ORDER_DATUM_ASC
+                    : PERSONEN_FOR_STELLE_ORDER_DATUM_DESC;
+        }
+        return sort.richtung() == SortierRichtung.ASC
+                ? PERSONEN_FOR_STELLE_ORDER_SCORE_ASC
+                : PERSONEN_FOR_STELLE_ORDER_SCORE_DESC;
     }
 }
+

@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequiredArgsConstructor
 public class BisController {
 
-    private final BerufRepository berufRepository;
+    private final BerufSpezialisierungRepository berufSpezialisierungRepository;
     private final KompetenzRepository kompetenzRepository;
 
     @GetMapping("/berufe")
@@ -23,8 +23,8 @@ public class BisController {
             model.addAttribute("berufe", java.util.List.of());
         } else {
             model.addAttribute("berufe",
-                berufRepository.findTop20ByNameContaining(q).stream()
-                    .map(b -> new BisRestController.BerufDto(b.getId(), b.getName(), b.getBereich()))
+                berufSpezialisierungRepository.findTop20ByNameContaining(q).stream()
+                    .map(b -> new BisRestController.BerufDto(b.getId(), b.getName(), b.getPfadLabel()))
                     .toList());
         }
         return "bis/berufe-vorschlaege :: vorschlaege";

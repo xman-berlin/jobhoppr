@@ -19,18 +19,33 @@ public class MatchController {
     private final MatchModellService matchModellService;
 
     @GetMapping("/personen/{id}/matches")
-    public String personMatches(@PathVariable UUID id, Model model) {
-        model.addAttribute("person", personService.findById(id));
-        model.addAttribute("ergebnisse", matchService.matchenFuerPerson(id));
-        model.addAttribute("modell", matchModellService.getAktives());
+    public String personMatches(
+            @PathVariable UUID id,
+            @RequestParam(defaultValue = "score") String sortBy,
+            @RequestParam(defaultValue = "desc")  String sortDir,
+            Model model) {
+        SortierParameter sort = SortierParameter.of(sortBy, sortDir);
+        model.addAttribute("person",     personService.findById(id));
+        model.addAttribute("ergebnisse", matchService.matchenFuerPerson(id, sort));
+        model.addAttribute("modell",     matchModellService.getAktives());
+        model.addAttribute("sortBy",     sortBy);
+        model.addAttribute("sortDir",    sortDir);
         return "personen/matches";
     }
 
     @GetMapping("/stellen/{id}/matches")
-    public String stelleMatches(@PathVariable UUID id, Model model) {
-        model.addAttribute("stelle", stelleService.findById(id));
-        model.addAttribute("ergebnisse", matchService.matchenFuerStelle(id));
-        model.addAttribute("modell", matchModellService.getAktives());
+    public String stelleMatches(
+            @PathVariable UUID id,
+            @RequestParam(defaultValue = "score") String sortBy,
+            @RequestParam(defaultValue = "desc")  String sortDir,
+            Model model) {
+        SortierParameter sort = SortierParameter.of(sortBy, sortDir);
+        model.addAttribute("stelle",     stelleService.findById(id));
+        model.addAttribute("ergebnisse", matchService.matchenFuerStelle(id, sort));
+        model.addAttribute("modell",     matchModellService.getAktives());
+        model.addAttribute("sortBy",     sortBy);
+        model.addAttribute("sortDir",    sortDir);
         return "stellen/matches";
     }
 }
+

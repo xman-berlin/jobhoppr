@@ -1,22 +1,22 @@
 # ── Build stage ────────────────────────────────────────────────────────────────
-FROM gradle:8.10.2-jdk21-jammy AS build
+FROM maven:3.9-eclipse-temurin-21-jammy AS build
 WORKDIR /workspace
 
-# Copy build files first for dependency caching
-COPY backend/build.gradle backend/settings.gradle ./
+# Copy pom first for dependency caching
+COPY backend/pom.xml ./
 
-# Download dependencies (cached unless build files change)
-RUN gradle dependencies --no-daemon -q || true
+# Download dependencies (cached unless pom changes)
+RUN mvn dependency:go-offline -q
 
 # Copy source and build
 COPY backend/src ./src
-RUN gradle bootJar --no-daemon -q
+RUN mvn package -q -DskipTests
 
 # ── Runtime stage ───────────────────────────────────────────────────────────────
 FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 
-COPY --from=build /workspace/build/libs/*.jar app.jar
+COPY --from=build /workspace/target/*.jar app.jar
 
 EXPOSE 8080
 

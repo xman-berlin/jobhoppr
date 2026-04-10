@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_DB:       ${POSTGRES_DB:-jobhoppr}
       POSTGRES_USER:     ${POSTGRES_USER:-jobhoppr}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-jobhoppr_secret}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-jobhoppr}
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:

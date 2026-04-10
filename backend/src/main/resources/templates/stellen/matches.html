@@ -14,7 +14,7 @@
       <p class="text-xs text-base-content/50 mt-1">
         Modell: <span th:text="${modell.name}" class="font-medium">Standard</span>
         &nbsp;·&nbsp; Geo: <span th:text="${modell.geoAktiv} ? 'aktiv' : 'inaktiv'">aktiv</span>
-        &nbsp;·&nbsp; Beruf-Filter: <span th:text="${modell.berufFilterStrikt} ? 'strikt' : 'weich'">weich</span>
+
       </p>
     </div>
   </div>
@@ -31,10 +31,10 @@
           <a th:href="@{/personen/{id}(id=${r.targetId})}"
              th:text="${r.targetName}"
              class="font-semibold text-sm hover:text-primary leading-tight flex-1">Person</a>
-          <div class="radial-progress text-secondary flex-shrink-0"
-               th:style="'--value:' + ${r.gesamtScoreProzent()} + '; --size: 3rem; --thickness: 4px;'"
+           <div class="radial-progress text-secondary flex-shrink-0"
+               th:style="'--value:' + ${r.scoreProzent()} + '; --size: 3rem; --thickness: 4px;'"
                role="progressbar">
-            <span class="text-xs font-bold" th:text="${r.gesamtScoreProzent()} + '%'">0%</span>
+            <span class="text-xs font-bold" th:text="${r.scoreProzent()} + '%'">0%</span>
           </div>
         </div>
 

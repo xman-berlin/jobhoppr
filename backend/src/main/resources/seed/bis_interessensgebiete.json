@@ -1,0 +1,58 @@
+[
+  {
+    "id": 136,
+    "name": "Auto, Flugzeug, Transport"
+  },
+  {
+    "id": 160,
+    "name": "Bau, Holz, Gebäudetechnik"
+  },
+  {
+    "id": 131,
+    "name": "Büro"
+  },
+  {
+    "id": 132,
+    "name": "Chemie, Physik, Labor"
+  },
+  {
+    "id": 129,
+    "name": "Computer, IT, EDV"
+  },
+  {
+    "id": 137,
+    "name": "Elektro"
+  },
+  {
+    "id": 153,
+    "name": "Gastgewerbe, Küche, Tourismus"
+  },
+  {
+    "id": 149,
+    "name": "Gesundheit, Schönheitspflege"
+  },
+  {
+    "id": 135,
+    "name": "Handel, Verkauf"
+  },
+  {
+    "id": 127,
+    "name": "Kreatives, Gestalten, Mode, Design"
+  },
+  {
+    "id": 154,
+    "name": "Lebensmittel"
+  },
+  {
+    "id": 159,
+    "name": "Maschinen, Werkstatt"
+  },
+  {
+    "id": 134,
+    "name": "Menschen, Kinder, Kommunikation"
+  },
+  {
+    "id": 151,
+    "name": "Natur, Pflanzen, Tiere, Umwelt"
+  }
+]

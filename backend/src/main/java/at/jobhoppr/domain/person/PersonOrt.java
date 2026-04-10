@@ -38,6 +38,12 @@ public class PersonOrt {
     @Column(name = "umkreis_km", nullable = false)
     private Double umkreisKm;
 
+    @Column(name = "geo_location_id")
+    private Integer geoLocationId;
+
+    @Column(name = "bundesweit", nullable = false)
+    private Boolean bundesweit = false;
+
     // Generated column — never written by JPA
     @Column(name = "standort", insertable = false, updatable = false)
     @JdbcTypeCode(SqlTypes.GEOGRAPHY)

@@ -19,30 +19,41 @@ but domain identifiers stay German.
 
 ## Build Commands
 
-### Docker (full stack)
+### Preferred dev workflow (schnell, kein Docker-Build)
 ```bash
-docker compose up --build        # Build and start all services
-docker compose up                # Start without rebuild
-docker compose down              # Stop and remove containers
+# Terminal 1 — nur die DB starten (kein Backend-Container)
+docker compose up db
+
+# Terminal 2 — Backend lokal via Maven starten (port 8080)
+cd backend && mvn spring-boot:run
+```
+> Warum: `docker compose up --build` kompiliert das Backend im Container (langsam).
+> Lokales `mvn spring-boot:run` ist deutlich schneller für Entwicklung und Tests.
+
+### Docker (nur wenn vollständiger Container-Stack benötigt wird)
+```bash
+docker compose up --build        # Build und Start aller Services (langsam)
+docker compose up db             # Nur DB starten (für lokale Entwicklung)
+docker compose down              # Stoppen und Container entfernen
+docker compose down -v           # Auch Volumes löschen (DB-Reset)
 ```
 
-### Backend (Spring Boot / Gradle)
+### Backend (Spring Boot / Maven)
 ```bash
-# Run from repo root or backend/
-./gradlew bootRun                            # Start backend dev server (port 8080)
-./gradlew build                             # Full build (compile + test + jar)
-./gradlew compileJava                       # Compile only
-./gradlew test                              # Run all tests
-./gradlew test --tests "at.jobhoppr.matching.MatchServiceTest"   # Single test class
-./gradlew test --tests "at.jobhoppr.matching.MatchServiceTest.geoFilterBlocksOutOfRange"  # Single method
-./gradlew test --tests "at.jobhoppr.integration.*"               # All integration tests
+# Alle Befehle aus backend/ ausführen
+mvn spring-boot:run                          # Backend starten (port 8080)
+mvn compile                                  # Nur kompilieren
+mvn test                                     # Alle Tests
+mvn test -Dtest="MatchServiceTest"           # Einzelne Testklasse
+mvn test -Dtest="MatchServiceTest#geoFilterBlocksOutOfRange"  # Einzelne Methode
+mvn test -Dtest="*IT"                        # Alle Integrationstests
+mvn package -DskipTests                      # JAR bauen ohne Tests
 ```
-Run Gradle commands from `backend/` (or prefix with `-p backend` from repo root).
 
 ### Linting
 ```bash
-# Backend — no dedicated linter; Checkstyle/SpotBugs may be added later
-./gradlew check                  # Runs tests + any static analysis configured
+# Kein dedizierter Linter; Checkstyle/SpotBugs ggf. später
+mvn verify                       # Tests + statische Analyse
 ```
 
 ---
@@ -51,8 +62,8 @@ Run Gradle commands from `backend/` (or prefix with `-p backend` from repo root)
 
 ```
 jobhoppr/
-├── backend/                     # Spring Boot Gradle project (Java 21)
-│   ├── build.gradle
+├── backend/                     # Spring Boot Maven project (Java 21)
+│   ├── pom.xml
 │   └── src/
 │       ├── main/
 │       │   ├── java/at/jobhoppr/

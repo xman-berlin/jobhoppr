@@ -38,8 +38,7 @@
               <a th:href="@{/personen/{id}(id=${p.id})}"
                  class="btn btn-xs btn-outline">Bearbeiten</a>
               <button class="btn btn-xs btn-outline btn-error"
-                      hx-delete="${'/personen/' + p.id}"
-                      hx-target="${'#person-' + p.id}"
+                      th:attr="hx-delete=@{/personen/{id}(id=${p.id})},hx-target='#person-' + ${p.id}"
                       hx-swap="outerHTML"
                       hx-confirm="Person wirklich löschen?">Löschen</button>
             </div>

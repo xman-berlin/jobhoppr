@@ -1,0 +1,246 @@
+[
+  {
+    "id": 66,
+    "name": "Begeisterung für Autos"
+  },
+  {
+    "id": 67,
+    "name": "Begeisterung für Bau"
+  },
+  {
+    "id": 68,
+    "name": "Begeisterung für Bücher"
+  },
+  {
+    "id": 69,
+    "name": "Begeisterung für Chemie und Physik"
+  },
+  {
+    "id": 70,
+    "name": "Begeisterung für Computer"
+  },
+  {
+    "id": 71,
+    "name": "Begeisterung für Elektrotechnik"
+  },
+  {
+    "id": 72,
+    "name": "Begeisterung für Fotografie"
+  },
+  {
+    "id": 73,
+    "name": "Begeisterung für Gastronomie"
+  },
+  {
+    "id": 74,
+    "name": "Begeisterung für Gesundheit"
+  },
+  {
+    "id": 75,
+    "name": "Begeisterung für Grafik und Design"
+  },
+  {
+    "id": 76,
+    "name": "Begeisterung für Maschinenbau"
+  },
+  {
+    "id": 77,
+    "name": "Begeisterung für Medien"
+  },
+  {
+    "id": 78,
+    "name": "Begeisterung für Pflanzen und Natur"
+  },
+  {
+    "id": 79,
+    "name": "Begeisterung für Schönheitspflege"
+  },
+  {
+    "id": 100,
+    "name": "Begeisterung für Sport"
+  },
+  {
+    "id": 80,
+    "name": "Begeisterung für Technik"
+  },
+  {
+    "id": 81,
+    "name": "Begeisterung für Textilien"
+  },
+  {
+    "id": 82,
+    "name": "Begeisterung für Tourismus"
+  },
+  {
+    "id": 83,
+    "name": "Begeisterung für Umweltschutz"
+  },
+  {
+    "id": 84,
+    "name": "Begeisterung für Verkauf"
+  },
+  {
+    "id": 85,
+    "name": "Begeisterung für wirtschaftliche Themen"
+  },
+  {
+    "id": 41,
+    "name": "Freude am Basteln und Werken"
+  },
+  {
+    "id": 42,
+    "name": "Freude am Beraten"
+  },
+  {
+    "id": 43,
+    "name": "Freude am Kochen"
+  },
+  {
+    "id": 44,
+    "name": "Freude am Kontakt mit Menschen"
+  },
+  {
+    "id": 45,
+    "name": "Freude am Organisieren"
+  },
+  {
+    "id": 46,
+    "name": "Freundliches Auftreten"
+  },
+  {
+    "id": 47,
+    "name": "Gepflegtes Erscheinungsbild"
+  },
+  {
+    "id": 48,
+    "name": "Gerne am Computer arbeiten"
+  },
+  {
+    "id": 49,
+    "name": "Gerne bei jedem Wetter im Freien arbeiten"
+  },
+  {
+    "id": 50,
+    "name": "Gerne im Büro arbeiten"
+  },
+  {
+    "id": 51,
+    "name": "Gerne kreativ arbeiten"
+  },
+  {
+    "id": 52,
+    "name": "Gerne mit Holz arbeiten"
+  },
+  {
+    "id": 53,
+    "name": "Gerne mit Lebensmitteln arbeiten"
+  },
+  {
+    "id": 54,
+    "name": "Gerne mit Leder arbeiten"
+  },
+  {
+    "id": 55,
+    "name": "Gerne mit Maschinen arbeiten"
+  },
+  {
+    "id": 101,
+    "name": "Gerne mit Texten arbeiten"
+  },
+  {
+    "id": 56,
+    "name": "Gerne mit Werkzeug arbeiten"
+  },
+  {
+    "id": 57,
+    "name": "Gerne unterwegs sein"
+  },
+  {
+    "id": 58,
+    "name": "Geschicklichkeit mit den Fingern"
+  },
+  {
+    "id": 59,
+    "name": "Grundkenntnisse in EDV"
+  },
+  {
+    "id": 40,
+    "name": "Grundkenntnisse in Englisch"
+  },
+  {
+    "id": 60,
+    "name": "Gute Kenntnisse in Mathematik"
+  },
+  {
+    "id": 61,
+    "name": "Guter Gehörsinn"
+  },
+  {
+    "id": 62,
+    "name": "Guter Geschmacks- und Geruchssinn"
+  },
+  {
+    "id": 63,
+    "name": "Guter Sehsinn"
+  },
+  {
+    "id": 64,
+    "name": "Gutes räumliches Vorstellungsvermögen"
+  },
+  {
+    "id": 65,
+    "name": "Handwerkliche Geschicklichkeit"
+  },
+  {
+    "id": 86,
+    "name": "Körperlich fit sein"
+  },
+  {
+    "id": 87,
+    "name": "Liebe zu Tieren"
+  },
+  {
+    "id": 88,
+    "name": "Logisches und analytisches Denken"
+  },
+  {
+    "id": 89,
+    "name": "Schwindelfreies Arbeiten"
+  },
+  {
+    "id": 90,
+    "name": "Serviceorientierte Arbeitsweise"
+  },
+  {
+    "id": 91,
+    "name": "Sinn für Farben"
+  },
+  {
+    "id": 92,
+    "name": "Sinn für Formen"
+  },
+  {
+    "id": 94,
+    "name": "Sinn für Mode und Trends"
+  },
+  {
+    "id": 95,
+    "name": "Sinn für Sauberkeit und Hygiene"
+  },
+  {
+    "id": 96,
+    "name": "Sinn für Zahlen"
+  },
+  {
+    "id": 93,
+    "name": "Sinn für genaues Arbeiten"
+  },
+  {
+    "id": 97,
+    "name": "Unempfindlich gegen Gerüche sein"
+  },
+  {
+    "id": 98,
+    "name": "Unempfindlich gegen Lärm sein"
+  }
+]
