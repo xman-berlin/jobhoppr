@@ -172,7 +172,7 @@ The active `MatchModell` (weights + flags) is edited at `/match-modell` and take
 - [x] Phase 4: Matching engine (PostgreSQL CTE, PostGIS)
 - [x] Phase 5: Frontend (Thymeleaf + HTMX + DaisyUI — lists, forms, match views)
 - [x] Phase 6: Docker Compose, DevDataSeeder, full integration
-- [ ] Phase 7: Integration tests (Testcontainers), MatchService unit tests
+- [x] Phase 7–10: Vollständiges Matchmodell (BIS-Hierarchie, Closure Tables, Score-Funktionen, Lehrstellenmatching, Dashboard, Performance-Indizes)
 
 ## License
 

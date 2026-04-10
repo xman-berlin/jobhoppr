@@ -1,0 +1,2715 @@
+{
+  "bereiche": [
+    {
+      "id": 84,
+      "name": "Bau, Baunebengewerbe, Holz, Gebäudetechnik",
+      "berufsfelder": [
+        {
+          "id": 270,
+          "name": "Anlern- und Hilfsberufe Bau, Holz",
+          "stammberufe": [
+            {
+              "id": 1280,
+              "name": "BauhelferIn im Hochbau"
+            },
+            {
+              "id": 1281,
+              "name": "BauhelferIn im Tiefbau"
+            },
+            {
+              "id": 809,
+              "name": "GerüsterIn"
+            },
+            {
+              "id": 876,
+              "name": "Hilfskraft der Holzverarbeitung (m/w)"
+            },
+            {
+              "id": 1279,
+              "name": "Hilfskraft für GWHS-Installationen (m/w)"
+            },
+            {
+              "id": 1128,
+              "name": "Hilfskraft im Baunebengewerbe (m/w)"
+            }
+          ]
+        },
+        {
+          "id": 271,
+          "name": "Gebäudetechnik",
+          "stammberufe": [
+            {
+              "id": 877,
+              "name": "GebäudetechnikingenieurIn"
+            },
+            {
+              "id": 1156,
+              "name": "Installations- und GebäudetechnikerIn"
+            },
+            {
+              "id": 134,
+              "name": "SicherheitstechnikerIn"
+            },
+            {
+              "id": 60,
+              "name": "SonnenschutztechnikerIn"
+            }
+          ]
+        },
+        {
+          "id": 272,
+          "name": "Bautechnik, Hochbau, Tiefbau",
+          "stammberufe": [
+            {
+              "id": 1292,
+              "name": "BIM-TechnikerIn"
+            },
+            {
+              "id": 1127,
+              "name": "BauleiterIn"
+            },
+            {
+              "id": 1184,
+              "name": "BaumonteurIn"
+            },
+            {
+              "id": 857,
+              "name": "BaupolierIn"
+            },
+            {
+              "id": 421,
+              "name": "BauspenglerIn"
+            },
+            {
+              "id": 856,
+              "name": "BautechnikerIn"
+            },
+            {
+              "id": 1261,
+              "name": "BautechnischeR AssistentIn"
+            },
+            {
+              "id": 222,
+              "name": "BautechnischeR ZeichnerIn"
+            },
+            {
+              "id": 221,
+              "name": "BetonbauerIn"
+            },
+            {
+              "id": 1130,
+              "name": "BetonfertigteiltechnikerIn"
+            },
+            {
+              "id": 262,
+              "name": "DachdeckerIn"
+            },
+            {
+              "id": 808,
+              "name": "EisenbiegerIn"
+            },
+            {
+              "id": 1185,
+              "name": "FassaderIn"
+            },
+            {
+              "id": 418,
+              "name": "FertigteilhausbauerIn"
+            },
+            {
+              "id": 394,
+              "name": "HafnerIn"
+            },
+            {
+              "id": 183,
+              "name": "Kran- und BaumaschinenführerIn"
+            },
+            {
+              "id": 478,
+              "name": "MaurerIn"
+            },
+            {
+              "id": 479,
+              "name": "Pflasterer/Pflasterin"
+            },
+            {
+              "id": 815,
+              "name": "StraßenbauarbeiterIn"
+            },
+            {
+              "id": 422,
+              "name": "Straßenerhaltungsfachmann/-frau"
+            },
+            {
+              "id": 165,
+              "name": "TiefbauerIn"
+            },
+            {
+              "id": 279,
+              "name": "VermessungstechnikerIn"
+            }
+          ]
+        },
+        {
+          "id": 273,
+          "name": "Innenausbau, Raumausstattung",
+          "stammberufe": [
+            {
+              "id": 294,
+              "name": "BodenlegerIn"
+            },
+            {
+              "id": 423,
+              "name": "MalerIn und BeschichtungstechnikerIn"
+            },
+            {
+              "id": 476,
+              "name": "Platten- und FliesenlegerIn"
+            },
+            {
+              "id": 175,
+              "name": "StuckateurIn und TrockenausbauerIn"
+            },
+            {
+              "id": 177,
+              "name": "TapeziererIn und DekorateurIn"
+            },
+            {
+              "id": 408,
+              "name": "Wärme-, Kälte-, Schall- und BrandschutztechnikerIn"
+            }
+          ]
+        },
+        {
+          "id": 274,
+          "name": "Planungswesen, Architektur",
+          "stammberufe": [
+            {
+              "id": 701,
+              "name": "ArchitektIn"
+            },
+            {
+              "id": 401,
+              "name": "GeoinformationstechnikerIn"
+            },
+            {
+              "id": 360,
+              "name": "KulturtechnikerIn"
+            },
+            {
+              "id": 297,
+              "name": "RaumplanerIn"
+            },
+            {
+              "id": 258,
+              "name": "VerkehrsplanerIn"
+            }
+          ]
+        },
+        {
+          "id": 276,
+          "name": "Tischlerei, Holz- und Sägetechnik",
+          "stammberufe": [
+            {
+              "id": 190,
+              "name": "Boot- und SchiffbauerIn"
+            },
+            {
+              "id": 182,
+              "name": "DrechslerIn"
+            },
+            {
+              "id": 187,
+              "name": "FassbinderIn"
+            },
+            {
+              "id": 879,
+              "name": "HolztechnikerIn"
+            },
+            {
+              "id": 97,
+              "name": "ModellbauerIn"
+            },
+            {
+              "id": 812,
+              "name": "PlatzmeisterIn"
+            },
+            {
+              "id": 178,
+              "name": "TischlerIn"
+            },
+            {
+              "id": 293,
+              "name": "Zimmerer/Zimmerin"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 85,
+      "name": "Bergbau, Rohstoffe, Glas, Keramik, Stein",
+      "berufsfelder": [
+        {
+          "id": 277,
+          "name": "Anlern- und Hilfsberufe Bergbau, Rohstoffe",
+          "stammberufe": []
+        },
+        {
+          "id": 278,
+          "name": "Bergbau, Rohstoffe",
+          "stammberufe": [
+            {
+              "id": 411,
+              "name": "Hilfskraft im Bergbau (m/w)"
+            },
+            {
+              "id": 98,
+              "name": "MetallurgIn und UmformtechnikerIn"
+            },
+            {
+              "id": 814,
+              "name": "SprengbefugteR"
+            },
+            {
+              "id": 915,
+              "name": "TechnikerIn im Bergwesen"
+            }
+          ]
+        },
+        {
+          "id": 279,
+          "name": "Glas",
+          "stammberufe": [
+            {
+              "id": 366,
+              "name": "FeinoptikerIn"
+            },
+            {
+              "id": 415,
+              "name": "GlasbautechnikerIn"
+            },
+            {
+              "id": 993,
+              "name": "GlasbläserIn und GlasveredlerIn"
+            },
+            {
+              "id": 967,
+              "name": "Glasproduktionsfachkraft (m/w)"
+            },
+            {
+              "id": 1115,
+              "name": "KristallschleiftechnikerIn"
+            }
+          ]
+        },
+        {
+          "id": 280,
+          "name": "Keramik, Stein",
+          "stammberufe": [
+            {
+              "id": 1161,
+              "name": "BildhauerIn"
+            },
+            {
+              "id": 1120,
+              "name": "KeramikerIn"
+            },
+            {
+              "id": 491,
+              "name": "SteinmetzIn"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 86,
+      "name": "Büro, Marketing, Finanz, Recht, Sicherheit",
+      "berufsfelder": [
+        {
+          "id": 281,
+          "name": "Anlern- und Hilfsberufe Büro",
+          "stammberufe": [
+            {
+              "id": 867,
+              "name": "Bürohilfskraft (m/w)"
+            }
+          ]
+        },
+        {
+          "id": 282,
+          "name": "Bank-, Finanz- und Versicherungswesen",
+          "stammberufe": [
+            {
+              "id": 1188,
+              "name": "BankangestellteR im bankinternen Bereich"
+            },
+            {
+              "id": 245,
+              "name": "Bankkaufmann/-frau"
+            },
+            {
+              "id": 1241,
+              "name": "BörsenhändlerIn"
+            },
+            {
+              "id": 1189,
+              "name": "Finanz- und AnlageberaterIn"
+            },
+            {
+              "id": 1249,
+              "name": "RisikomanagerIn im Finanz- und Bankwesen"
+            },
+            {
+              "id": 1190,
+              "name": "VersicherungsberaterIn"
+            },
+            {
+              "id": 545,
+              "name": "Versicherungskaufmann/-frau"
+            }
+          ]
+        },
+        {
+          "id": 283,
+          "name": "Bundesheer, Öffentliche Sicherheit",
+          "stammberufe": [
+            {
+              "id": 100,
+              "name": "Berufsfeuerwehrmann/-frau"
+            },
+            {
+              "id": 1179,
+              "name": "BerufssoldatIn"
+            },
+            {
+              "id": 99,
+              "name": "ExekutivbediensteteR im Justizwachdienst"
+            },
+            {
+              "id": 83,
+              "name": "ExekutivbediensteteR im Polizeidienst"
+            },
+            {
+              "id": 1163,
+              "name": "Straßenaufsichtsorgan (m/w)"
+            }
+          ]
+        },
+        {
+          "id": 284,
+          "name": "Industrie- und Gewerbekaufleute",
+          "stammberufe": [
+            {
+              "id": 533,
+              "name": "Fachkraft in der Buchhaltung (m/w)"
+            },
+            {
+              "id": 538,
+              "name": "Großhandelskaufmann/-frau"
+            },
+            {
+              "id": 539,
+              "name": "ImmobilienberaterIn"
+            },
+            {
+              "id": 540,
+              "name": "Industriekaufmann/-frau"
+            }
+          ]
+        },
+        {
+          "id": 285,
+          "name": "Management, Organisation",
+          "stammberufe": [
+            {
+              "id": 269,
+              "name": "Betriebs- und UnternehmensleiterIn"
+            },
+            {
+              "id": 872,
+              "name": "BetriebswirtIn"
+            },
+            {
+              "id": 1278,
+              "name": "Business Development-ManagerIn"
+            },
+            {
+              "id": 1250,
+              "name": "Compliance-ManagerIn"
+            },
+            {
+              "id": 1239,
+              "name": "FinanzmanagerIn"
+            },
+            {
+              "id": 1191,
+              "name": "Human-Resources-ManagerIn"
+            },
+            {
+              "id": 1192,
+              "name": "Kultur- und EventmanagerIn"
+            },
+            {
+              "id": 1296,
+              "name": "Operations ManagerIn"
+            },
+            {
+              "id": 1242,
+              "name": "ProjektassistentIn"
+            },
+            {
+              "id": 1194,
+              "name": "ProjektmanagerIn"
+            },
+            {
+              "id": 873,
+              "name": "SalesmanagerIn"
+            },
+            {
+              "id": 1245,
+              "name": "VerwaltungsmanagerIn"
+            }
+          ]
+        },
+        {
+          "id": 286,
+          "name": "Marketing, Werbung, Public Relations",
+          "stammberufe": [
+            {
+              "id": 637,
+              "name": "Customer-Relationship-ManagerIn"
+            },
+            {
+              "id": 862,
+              "name": "Marketing-AssistentIn"
+            },
+            {
+              "id": 1240,
+              "name": "MarketingmanagerIn"
+            },
+            {
+              "id": 863,
+              "name": "PR-BeraterIn"
+            },
+            {
+              "id": 1195,
+              "name": "ProduktmanagerIn"
+            },
+            {
+              "id": 1260,
+              "name": "Social Media-ManagerIn"
+            },
+            {
+              "id": 705,
+              "name": "Visual Merchandiser (m/w)"
+            }
+          ]
+        },
+        {
+          "id": 287,
+          "name": "Private Sicherheits- und Wachdienste",
+          "stammberufe": [
+            {
+              "id": 113,
+              "name": "DetektivIn"
+            },
+            {
+              "id": 1283,
+              "name": "PortierIn"
+            },
+            {
+              "id": 106,
+              "name": "Sicherheits- und Bewachungspersonal (m/w)"
+            }
+          ]
+        },
+        {
+          "id": 288,
+          "name": "Recht",
+          "stammberufe": [
+            {
+              "id": 871,
+              "name": "GerichtsbediensteteR"
+            },
+            {
+              "id": 1145,
+              "name": "RechtskanzleiassistentIn"
+            }
+          ]
+        },
+        {
+          "id": 289,
+          "name": "Sekretariat, Kaufmännische Assistenz",
+          "stammberufe": [
+            {
+              "id": 1196,
+              "name": "AssistentIn der Geschäftsleitung"
+            },
+            {
+              "id": 534,
+              "name": "Bürokaufmann/-frau"
+            },
+            {
+              "id": 1010,
+              "name": "Callcenter-MitarbeiterIn"
+            },
+            {
+              "id": 266,
+              "name": "PersonalverrechnerIn"
+            },
+            {
+              "id": 999,
+              "name": "SekretärIn"
+            },
+            {
+              "id": 546,
+              "name": "VerwaltungsassistentIn"
+            }
+          ]
+        },
+        {
+          "id": 290,
+          "name": "Wirtschaft und Technik",
+          "stammberufe": [
+            {
+              "id": 874,
+              "name": "BetriebstechnikerIn"
+            },
+            {
+              "id": 710,
+              "name": "QualitätssicherungstechnikerIn"
+            },
+            {
+              "id": 1198,
+              "name": "TechnischeR SachbearbeiterIn"
+            },
+            {
+              "id": 855,
+              "name": "VertriebstechnikerIn"
+            },
+            {
+              "id": 923,
+              "name": "WirtschaftsingenieurIn"
+            }
+          ]
+        },
+        {
+          "id": 291,
+          "name": "Wirtschaftsberatung, Unternehmensdienstleistungen",
+          "stammberufe": [
+            {
+              "id": 400,
+              "name": "ControllerIn"
+            },
+            {
+              "id": 1011,
+              "name": "KalkulantIn"
+            },
+            {
+              "id": 1113,
+              "name": "PersonalberaterIn"
+            },
+            {
+              "id": 1244,
+              "name": "SteuerassistentIn"
+            },
+            {
+              "id": 992,
+              "name": "TranslatorIn"
+            },
+            {
+              "id": 548,
+              "name": "UnternehmensberaterIn"
+            },
+            {
+              "id": 798,
+              "name": "WirtschaftstreuhänderIn"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 87,
+      "name": "Chemie, Biotechnologie, Lebensmittel, Kunststoffe",
+      "berufsfelder": [
+        {
+          "id": 292,
+          "name": "Anlern- und Hilfsberufe Lebensmittel, Biotechnologie, Chemie",
+          "stammberufe": [
+            {
+              "id": 242,
+              "name": "Bäckereihilfskraft (m/w)"
+            },
+            {
+              "id": 971,
+              "name": "Chemiehilfskraft (m/w)"
+            },
+            {
+              "id": 240,
+              "name": "Fleischverarbeitungshilfskraft (m/w)"
+            }
+          ]
+        },
+        {
+          "id": 293,
+          "name": "Biotechnologie, Chemie, Kunststoffproduktion",
+          "stammberufe": [
+            {
+              "id": 943,
+              "name": "Biotechnologe/-technologin"
+            },
+            {
+              "id": 552,
+              "name": "ChemieverfahrenstechnikerIn"
+            },
+            {
+              "id": 368,
+              "name": "ChemikerIn"
+            },
+            {
+              "id": 1199,
+              "name": "ChemotechnikerIn"
+            },
+            {
+              "id": 340,
+              "name": "Fachkraft für Chemielabortechnik (m/w)"
+            },
+            {
+              "id": 553,
+              "name": "KunststofftechnikerIn"
+            }
+          ]
+        },
+        {
+          "id": 294,
+          "name": "Lebensmittelherstellung",
+          "stammberufe": [
+            {
+              "id": 78,
+              "name": "BäckerIn"
+            },
+            {
+              "id": 3,
+              "name": "FleischverarbeiterIn"
+            },
+            {
+              "id": 80,
+              "name": "GetränketechnikerIn"
+            },
+            {
+              "id": 233,
+              "name": "KonditorIn"
+            },
+            {
+              "id": 1122,
+              "name": "Lebensmittelproduktionshilfskraft (m/w)"
+            },
+            {
+              "id": 250,
+              "name": "LebensmitteltechnikerIn"
+            },
+            {
+              "id": 1180,
+              "name": "Molkerei- und Käsereifachkraft (m/w)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 88,
+      "name": "Elektrotechnik, Elektronik, Telekommunikation, IT",
+      "berufsfelder": [
+        {
+          "id": 295,
+          "name": "Datenbanken",
+          "stammberufe": [
+            {
+              "id": 1268,
+              "name": "Data Scientist (m/w)"
+            },
+            {
+              "id": 602,
+              "name": "Data-Warehouse-ManagerIn"
+            },
+            {
+              "id": 589,
+              "name": "DatenbankadministratorIn"
+            },
+            {
+              "id": 590,
+              "name": "DatenbankentwicklerIn"
+            }
+          ]
+        },
+        {
+          "id": 296,
+          "name": "EDV- und Netzwerktechnik",
+          "stammberufe": [
+            {
+              "id": 614,
+              "name": "NetzwerkadministratorIn"
+            },
+            {
+              "id": 625,
+              "name": "SystemadministratorIn"
+            }
+          ]
+        },
+        {
+          "id": 297,
+          "name": "Elektroinstallation, Betriebselektrik",
+          "stammberufe": [
+            {
+              "id": 1263,
+              "name": "ElektrotechnikerIn für Anlagen- und Betriebstechnik"
+            },
+            {
+              "id": 435,
+              "name": "ElektrotechnikerIn für Installations- und Gebäudetechnik"
+            },
+            {
+              "id": 1131,
+              "name": "Hilfskraft im Elektrobereich (m/w)"
+            },
+            {
+              "id": 1201,
+              "name": "ServicetechnikerIn"
+            }
+          ]
+        },
+        {
+          "id": 298,
+          "name": "Elektromechanik, Elektromaschinen",
+          "stammberufe": [
+            {
+              "id": 833,
+              "name": "ElektroantriebstechnikerIn"
+            },
+            {
+              "id": 437,
+              "name": "ElektromaschinentechnikerIn"
+            },
+            {
+              "id": 1126,
+              "name": "ElektromechanikerIn"
+            },
+            {
+              "id": 843,
+              "name": "ElektrotechnikingenieurIn"
+            },
+            {
+              "id": 451,
+              "name": "MechatronikerIn"
+            }
+          ]
+        },
+        {
+          "id": 299,
+          "name": "Automatisierungs- und Anlagentechnik",
+          "stammberufe": [
+            {
+              "id": 765,
+              "name": "AutomatisierungstechnikerIn"
+            }
+          ]
+        },
+        {
+          "id": 300,
+          "name": "Industrielle Elektronik, Mikroelektronik, Messtechnik",
+          "stammberufe": [
+            {
+              "id": 442,
+              "name": "ElektronikerIn"
+            },
+            {
+              "id": 599,
+              "name": "Hardware-EntwicklerIn"
+            },
+            {
+              "id": 1227,
+              "name": "IC-DesignerIn"
+            },
+            {
+              "id": 888,
+              "name": "Mess- und RegeltechnikerIn"
+            }
+          ]
+        },
+        {
+          "id": 301,
+          "name": "IT-Analyse und -Organisation",
+          "stammberufe": [
+            {
+              "id": 593,
+              "name": "Datensicherheitsexperte/-expertin"
+            },
+            {
+              "id": 635,
+              "name": "IT-ProjektmanagerIn"
+            },
+            {
+              "id": 619,
+              "name": "IT-QualitätsmanagerIn"
+            },
+            {
+              "id": 1289,
+              "name": "Requirements Engineer (m/w)"
+            },
+            {
+              "id": 388,
+              "name": "SystemanalytikerIn"
+            },
+            {
+              "id": 760,
+              "name": "WirtschaftsinformatikerIn"
+            }
+          ]
+        },
+        {
+          "id": 302,
+          "name": "IT-Support, -Schulung, -Beratung und -Vertrieb",
+          "stammberufe": [
+            {
+              "id": 581,
+              "name": "AnwendungsbetreuerIn"
+            },
+            {
+              "id": 597,
+              "name": "EDV-TrainerIn"
+            },
+            {
+              "id": 603,
+              "name": "IT-Consultant (m/w)"
+            },
+            {
+              "id": 1016,
+              "name": "IT-SalesmanagerIn"
+            },
+            {
+              "id": 600,
+              "name": "IT-Support-MitarbeiterIn"
+            },
+            {
+              "id": 620,
+              "name": "SAP-BeraterIn"
+            }
+          ]
+        },
+        {
+          "id": 303,
+          "name": "Softwaretechnik, Programmierung",
+          "stammberufe": [
+            {
+              "id": 425,
+              "name": "InformatikerIn"
+            },
+            {
+              "id": 636,
+              "name": "MedieninformatikerIn"
+            },
+            {
+              "id": 622,
+              "name": "Software-EntwicklerIn"
+            },
+            {
+              "id": 686,
+              "name": "Web-MasterIn"
+            }
+          ]
+        },
+        {
+          "id": 304,
+          "name": "Telekommunikation, Nachrichtentechnik",
+          "stammberufe": [
+            {
+              "id": 1262,
+              "name": "Informations- und KommunikationstechnikerIn"
+            },
+            {
+              "id": 789,
+              "name": "TelekommunikationsberaterIn"
+            }
+          ]
+        },
+        {
+          "id": 364,
+          "name": "Anlern- und Hilfsberufe Elektrotechnik",
+          "stammberufe": []
+        }
+      ]
+    },
+    {
+      "id": 89,
+      "name": "Handel, Logistik, Verkehr",
+      "berufsfelder": [
+        {
+          "id": 305,
+          "name": "Anlern- und Hilfsberufe Handel, Kassa",
+          "stammberufe": [
+            {
+              "id": 1008,
+              "name": "Hilfskraft im Handel (m/w)"
+            },
+            {
+              "id": 267,
+              "name": "KassierIn"
+            },
+            {
+              "id": 832,
+              "name": "KioskverkäuferIn"
+            },
+            {
+              "id": 831,
+              "name": "TankwartIn"
+            }
+          ]
+        },
+        {
+          "id": 306,
+          "name": "Anlern- und Hilfsberufe Logistik, Verkehr",
+          "stammberufe": [
+            {
+              "id": 176,
+              "name": "Bote/Botin"
+            },
+            {
+              "id": 997,
+              "name": "ExpeditarbeiterIn"
+            },
+            {
+              "id": 171,
+              "name": "FlughafenarbeiterIn"
+            },
+            {
+              "id": 1158,
+              "name": "LagerarbeiterIn"
+            }
+          ]
+        },
+        {
+          "id": 307,
+          "name": "Verkehr",
+          "stammberufe": [
+            {
+              "id": 160,
+              "name": "Bahn- und GleisarbeiterIn"
+            },
+            {
+              "id": 1253,
+              "name": "BerufskraftfahrerIn in der Personenbeförderung"
+            },
+            {
+              "id": 189,
+              "name": "FahrdienstleiterIn"
+            },
+            {
+              "id": 386,
+              "name": "FahrlehrerIn"
+            },
+            {
+              "id": 138,
+              "name": "FlugbegleiterIn"
+            },
+            {
+              "id": 1149,
+              "name": "Flughafenbodenpersonal (m/w)"
+            },
+            {
+              "id": 1183,
+              "name": "FlugverkehrstechnikerIn"
+            },
+            {
+              "id": 988,
+              "name": "LuftfahrzeugtechnikerIn"
+            },
+            {
+              "id": 132,
+              "name": "PilotIn"
+            },
+            {
+              "id": 117,
+              "name": "Schiffspersonal (m/w)"
+            },
+            {
+              "id": 1167,
+              "name": "Seilbahn- und LiftbediensteteR"
+            },
+            {
+              "id": 193,
+              "name": "TaxichauffeurIn"
+            },
+            {
+              "id": 156,
+              "name": "TriebfahrzeugführerIn"
+            },
+            {
+              "id": 157,
+              "name": "ZugbegleiterIn"
+            }
+          ]
+        },
+        {
+          "id": 308,
+          "name": "Einzel-, Groß- und Online-Handel",
+          "stammberufe": [
+            {
+              "id": 853,
+              "name": "BaumarktverkäuferIn"
+            },
+            {
+              "id": 531,
+              "name": "Buch- und MedienverkäuferIn"
+            },
+            {
+              "id": 55,
+              "name": "DrogistIn"
+            },
+            {
+              "id": 1282,
+              "name": "E-Commerce-ManagerIn"
+            },
+            {
+              "id": 535,
+              "name": "EDV-Kaufmann/-frau"
+            },
+            {
+              "id": 536,
+              "name": "Einzelhandelskaufmann/-frau"
+            },
+            {
+              "id": 1142,
+              "name": "Elektro- und ElektronikverkäuferIn"
+            },
+            {
+              "id": 851,
+              "name": "FahrzeugverkäuferIn"
+            },
+            {
+              "id": 532,
+              "name": "FotoartikelverkäuferIn"
+            },
+            {
+              "id": 271,
+              "name": "Gartencenterkaufmann/-frau"
+            },
+            {
+              "id": 827,
+              "name": "Lebensmittel- und FeinkostverkäuferIn"
+            },
+            {
+              "id": 547,
+              "name": "Papier- und SchreibwarenverkäuferIn"
+            },
+            {
+              "id": 1207,
+              "name": "SportartikelverkäuferIn"
+            },
+            {
+              "id": 824,
+              "name": "Textil-, Bekleidungs- und SchuhverkäuferIn"
+            }
+          ]
+        },
+        {
+          "id": 309,
+          "name": "Lager, Logistik",
+          "stammberufe": [
+            {
+              "id": 116,
+              "name": "BerufskraftfahrerIn in der Güterbeförderung"
+            },
+            {
+              "id": 1147,
+              "name": "Betriebslogistikkaufmann/-frau"
+            },
+            {
+              "id": 119,
+              "name": "LogistikerIn"
+            },
+            {
+              "id": 199,
+              "name": "LogistikmanagerIn"
+            },
+            {
+              "id": 141,
+              "name": "PostdienstleisterIn"
+            }
+          ]
+        },
+        {
+          "id": 311,
+          "name": "Verkaufsaußendienst, Verkaufsvermittlung",
+          "stammberufe": [
+            {
+              "id": 828,
+              "name": "AuktionatorIn"
+            },
+            {
+              "id": 1225,
+              "name": "Fundraising-AgentIn"
+            },
+            {
+              "id": 864,
+              "name": "HandelsvertreterIn"
+            }
+          ]
+        },
+        {
+          "id": 312,
+          "name": "Vertrieb, Beratung, Einkauf",
+          "stammberufe": [
+            {
+              "id": 1206,
+              "name": "AuftragssachbearbeiterIn"
+            },
+            {
+              "id": 1285,
+              "name": "Bid-ManagerIn"
+            },
+            {
+              "id": 1247,
+              "name": "Category-ManagerIn"
+            },
+            {
+              "id": 1155,
+              "name": "EinkäuferIn"
+            },
+            {
+              "id": 826,
+              "name": "EinrichtungsberaterIn"
+            },
+            {
+              "id": 1193,
+              "name": "Key-Account-ManagerIn"
+            },
+            {
+              "id": 1012,
+              "name": "VerkaufssachbearbeiterIn"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 90,
+      "name": "Landwirtschaft, Gartenbau, Forstwirtschaft",
+      "berufsfelder": [
+        {
+          "id": 313,
+          "name": "Anlern- und Hilfsberufe Landwirtschaft",
+          "stammberufe": []
+        },
+        {
+          "id": 314,
+          "name": "Forstwirtschaft, Jagd, Fischerei",
+          "stammberufe": [
+            {
+              "id": 52,
+              "name": "BerufsjägerIn"
+            },
+            {
+              "id": 29,
+              "name": "FischereifacharbeiterIn"
+            },
+            {
+              "id": 30,
+              "name": "ForstarbeiterIn"
+            },
+            {
+              "id": 75,
+              "name": "ForstfacharbeiterIn"
+            },
+            {
+              "id": 1203,
+              "name": "Forstorgan (m/w)"
+            }
+          ]
+        },
+        {
+          "id": 315,
+          "name": "Landbau, Viehwirtschaft, Tierbetreuung",
+          "stammberufe": [
+            {
+              "id": 21,
+              "name": "FacharbeiterIn in der Landwirtschaft"
+            },
+            {
+              "id": 38,
+              "name": "GeflügelwirtschaftsfacharbeiterIn"
+            },
+            {
+              "id": 230,
+              "name": "GetreidemüllerIn"
+            },
+            {
+              "id": 26,
+              "name": "Land- und ForstwirtschaftstechnikerIn"
+            },
+            {
+              "id": 344,
+              "name": "Landwirtschaftliche Hilfskraft (m/w)"
+            },
+            {
+              "id": 20,
+              "name": "PferdewirtschaftsfacharbeiterIn"
+            },
+            {
+              "id": 1204,
+              "name": "StallarbeiterIn"
+            },
+            {
+              "id": 1275,
+              "name": "TierbetreuerIn"
+            },
+            {
+              "id": 36,
+              "name": "TierpflegerIn"
+            },
+            {
+              "id": 1276,
+              "name": "TierärztlicheR OrdinationsassistentIn"
+            }
+          ]
+        },
+        {
+          "id": 316,
+          "name": "Obst-, Wein- und Gartenbau",
+          "stammberufe": [
+            {
+              "id": 265,
+              "name": "FloristIn"
+            },
+            {
+              "id": 28,
+              "name": "Friedhofs- und ZiergärtnerIn"
+            },
+            {
+              "id": 1266,
+              "name": "Gartenhilfskraft (m/w)"
+            },
+            {
+              "id": 994,
+              "name": "GärtnerfacharbeiterIn"
+            },
+            {
+              "id": 228,
+              "name": "WeinbautechnikerIn"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 91,
+      "name": "Maschinenbau, Kfz, Metall",
+      "berufsfelder": [
+        {
+          "id": 317,
+          "name": "Anlern- und Hilfsberufe Kfz, Metall",
+          "stammberufe": [
+            {
+              "id": 1277,
+              "name": "Hilfskraft im Kfz-Bereich (m/w)"
+            },
+            {
+              "id": 1133,
+              "name": "Hilfskraft im Metallgewerbe (m/w)"
+            },
+            {
+              "id": 1140,
+              "name": "Hilfskraft in der Schweißtechnik (m/w)"
+            },
+            {
+              "id": 1208,
+              "name": "ReifenmonteurIn"
+            },
+            {
+              "id": 1139,
+              "name": "Schlossereihilfskraft (m/w)"
+            }
+          ]
+        },
+        {
+          "id": 318,
+          "name": "Kfz-Bau und Fahrzeugservice",
+          "stammberufe": [
+            {
+              "id": 1269,
+              "name": "AutomechanikerIn"
+            },
+            {
+              "id": 1273,
+              "name": "FahrradmechanikerIn"
+            },
+            {
+              "id": 92,
+              "name": "KarosseriebautechnikerIn"
+            },
+            {
+              "id": 409,
+              "name": "LackiertechnikerIn"
+            },
+            {
+              "id": 1270,
+              "name": "MotorradmechanikerIn"
+            },
+            {
+              "id": 1271,
+              "name": "NutzfahrzeugmechanikerIn"
+            },
+            {
+              "id": 558,
+              "name": "Reifen- und VulkanisationstechnikerIn"
+            }
+          ]
+        },
+        {
+          "id": 319,
+          "name": "Maschinen- und Anlagenbau",
+          "stammberufe": [
+            {
+              "id": 1209,
+              "name": "AnlagentechnikerIn"
+            },
+            {
+              "id": 133,
+              "name": "FlugzeugbautechnikerIn"
+            },
+            {
+              "id": 446,
+              "name": "KälteanlagentechnikerIn"
+            },
+            {
+              "id": 1210,
+              "name": "MaschinenbauingenieurIn"
+            },
+            {
+              "id": 89,
+              "name": "MaschinenbautechnikerIn"
+            },
+            {
+              "id": 1297,
+              "name": "Produktions- und ProzessingenieurIn"
+            },
+            {
+              "id": 90,
+              "name": "TechnikerIn für Land- und Baumaschinen"
+            },
+            {
+              "id": 892,
+              "name": "TechnischeR ZeichnerIn"
+            },
+            {
+              "id": 709,
+              "name": "WaffenmechanikerIn"
+            },
+            {
+              "id": 1152,
+              "name": "WerkzeugbautechnikerIn"
+            }
+          ]
+        },
+        {
+          "id": 320,
+          "name": "Metallbe- und -verarbeitung",
+          "stammberufe": [
+            {
+              "id": 1234,
+              "name": "GießereitechnikerIn"
+            },
+            {
+              "id": 1274,
+              "name": "MetallbearbeiterIn"
+            },
+            {
+              "id": 1157,
+              "name": "MetalldesignerIn"
+            },
+            {
+              "id": 732,
+              "name": "MetalltechnikerIn für Schweißtechnik"
+            },
+            {
+              "id": 4,
+              "name": "OberflächentechnikerIn"
+            },
+            {
+              "id": 1137,
+              "name": "SchlosserIn im Baubereich"
+            },
+            {
+              "id": 1138,
+              "name": "SchlosserIn im Metallbereich"
+            },
+            {
+              "id": 724,
+              "name": "SchmiedetechnikerIn"
+            },
+            {
+              "id": 782,
+              "name": "WerkstofftechnikerIn"
+            }
+          ]
+        },
+        {
+          "id": 367,
+          "name": "Maschineneinrichtung, -bedienung und -optimierung",
+          "stammberufe": [
+            {
+              "id": 1295,
+              "name": "MaschinenbedienerIn"
+            },
+            {
+              "id": 1211,
+              "name": "MaschineneinrichterIn"
+            },
+            {
+              "id": 722,
+              "name": "Produktions- und ProzesstechnikerIn"
+            },
+            {
+              "id": 781,
+              "name": "VerfahrenstechnikerIn"
+            },
+            {
+              "id": 86,
+              "name": "ZerspanungstechnikerIn"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 92,
+      "name": "Medien, Grafik, Design, Druck, Kunst, Kunsthandwerk",
+      "berufsfelder": [
+        {
+          "id": 322,
+          "name": "Anlern- und Hilfsberufe Kunst, Druck, Papier",
+          "stammberufe": [
+            {
+              "id": 195,
+              "name": "BühnenarbeiterIn"
+            },
+            {
+              "id": 714,
+              "name": "Druckereihilfskraft (m/w)"
+            },
+            {
+              "id": 707,
+              "name": "Hilfskraft im Kultur- und Eventbereich (m/w)"
+            },
+            {
+              "id": 713,
+              "name": "Hilfskraft in der Papierindustrie (m/w)"
+            }
+          ]
+        },
+        {
+          "id": 323,
+          "name": "Bildende Kunst, Fotografie",
+          "stammberufe": [
+            {
+              "id": 630,
+              "name": "BerufsfotografIn"
+            },
+            {
+              "id": 639,
+              "name": "BühnenbildnerIn"
+            },
+            {
+              "id": 668,
+              "name": "GaleristIn"
+            },
+            {
+              "id": 703,
+              "name": "KunstmalerIn"
+            },
+            {
+              "id": 1228,
+              "name": "KuratorIn"
+            },
+            {
+              "id": 704,
+              "name": "RestauratorIn und KonservatorIn"
+            }
+          ]
+        },
+        {
+          "id": 324,
+          "name": "Darstellende Kunst, Musik",
+          "stammberufe": [
+            {
+              "id": 712,
+              "name": "ArtistIn"
+            },
+            {
+              "id": 762,
+              "name": "Disc Jockey (m/w)"
+            },
+            {
+              "id": 764,
+              "name": "Model (m/w)"
+            },
+            {
+              "id": 640,
+              "name": "MusikerIn"
+            },
+            {
+              "id": 642,
+              "name": "SchauspielerIn"
+            },
+            {
+              "id": 643,
+              "name": "TänzerIn"
+            }
+          ]
+        },
+        {
+          "id": 325,
+          "name": "Druck, Druckvorstufe, Papier",
+          "stammberufe": [
+            {
+              "id": 466,
+              "name": "BeschriftungsdesignerIn und WerbetechnikerIn"
+            },
+            {
+              "id": 395,
+              "name": "BuchbinderIn"
+            },
+            {
+              "id": 396,
+              "name": "DrucktechnikerIn"
+            },
+            {
+              "id": 397,
+              "name": "DruckvorstufentechnikerIn"
+            },
+            {
+              "id": 390,
+              "name": "PapiertechnikerIn"
+            },
+            {
+              "id": 405,
+              "name": "ReprografIn"
+            },
+            {
+              "id": 1125,
+              "name": "VerpackungstechnikerIn"
+            }
+          ]
+        },
+        {
+          "id": 326,
+          "name": "Grafik, Design",
+          "stammberufe": [
+            {
+              "id": 658,
+              "name": "Art Director (m/w)"
+            },
+            {
+              "id": 631,
+              "name": "GrafikerIn"
+            },
+            {
+              "id": 1217,
+              "name": "IllustratorIn"
+            },
+            {
+              "id": 702,
+              "name": "Industrial DesignerIn"
+            },
+            {
+              "id": 578,
+              "name": "ModedesignerIn"
+            }
+          ]
+        },
+        {
+          "id": 327,
+          "name": "Kunsthandwerk, Uhren, Schmuck",
+          "stammberufe": [
+            {
+              "id": 304,
+              "name": "Gold- und SilberschmiedIn und JuwelierIn"
+            },
+            {
+              "id": 1129,
+              "name": "MusikinstrumentenerzeugerIn"
+            },
+            {
+              "id": 1187,
+              "name": "NaturmaterialienverarbeiterIn"
+            },
+            {
+              "id": 123,
+              "name": "UhrmacherIn und ZeitmesstechnikerIn"
+            }
+          ]
+        },
+        {
+          "id": 328,
+          "name": "Printmedien, Neue Medien",
+          "stammberufe": [
+            {
+              "id": 1212,
+              "name": "ArchivarIn und DokumentarIn"
+            },
+            {
+              "id": 659,
+              "name": "AutorIn"
+            },
+            {
+              "id": 995,
+              "name": "BibliothekarIn"
+            },
+            {
+              "id": 711,
+              "name": "Content-ManagerIn"
+            },
+            {
+              "id": 660,
+              "name": "JournalistIn"
+            },
+            {
+              "id": 661,
+              "name": "LektorIn"
+            },
+            {
+              "id": 404,
+              "name": "MedientechnikerIn"
+            },
+            {
+              "id": 690,
+              "name": "RedakteurIn"
+            },
+            {
+              "id": 685,
+              "name": "TechnischeR RedakteurIn"
+            },
+            {
+              "id": 1214,
+              "name": "Verlagskaufmann/-frau"
+            },
+            {
+              "id": 1213,
+              "name": "Web-DesignerIn"
+            },
+            {
+              "id": 675,
+              "name": "Web-EntwicklerIn"
+            }
+          ]
+        },
+        {
+          "id": 329,
+          "name": "Rundfunk, Film und Fernsehen",
+          "stammberufe": [
+            {
+              "id": 650,
+              "name": "CutterIn"
+            },
+            {
+              "id": 1264,
+              "name": "Film-, Bühnen- und MedienschaffendeR"
+            },
+            {
+              "id": 651,
+              "name": "Kameramann/-frau"
+            },
+            {
+              "id": 656,
+              "name": "ModeratorIn"
+            },
+            {
+              "id": 657,
+              "name": "StudiotechnikerIn"
+            },
+            {
+              "id": 456,
+              "name": "VeranstaltungstechnikerIn"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 93,
+      "name": "Reinigung, Hausbetreuung, Anlern- und Hilfsberufe",
+      "berufsfelder": [
+        {
+          "id": 330,
+          "name": "Allgemeine und sonstige Anlern- und Hilfsberufe",
+          "stammberufe": [
+            {
+              "id": 1004,
+              "name": "AllgemeineR HilfsarbeiterIn"
+            },
+            {
+              "id": 1148,
+              "name": "Aushilfskraft (m/w)"
+            },
+            {
+              "id": 1248,
+              "name": "GemeindearbeiterIn"
+            },
+            {
+              "id": 1267,
+              "name": "Hilfskraft im Dienstleistungsbereich (m/w)"
+            },
+            {
+              "id": 1291,
+              "name": "Hilfskraft in der Abwasser- und Abfallwirtschaft (m/w)"
+            },
+            {
+              "id": 1153,
+              "name": "Produktionshilfskraft (m/w)"
+            }
+          ]
+        },
+        {
+          "id": 331,
+          "name": "Hausbetreuung, Liegenschaftsverwaltung",
+          "stammberufe": [
+            {
+              "id": 419,
+              "name": "HausbesorgerIn"
+            },
+            {
+              "id": 517,
+              "name": "HaushälterIn"
+            },
+            {
+              "id": 1197,
+              "name": "ImmobilienverwalterIn"
+            }
+          ]
+        },
+        {
+          "id": 332,
+          "name": "Reinigung",
+          "stammberufe": [
+            {
+              "id": 516,
+              "name": "FensterputzerIn"
+            },
+            {
+              "id": 518,
+              "name": "Industriereinigungskraft (m/w)"
+            },
+            {
+              "id": 519,
+              "name": "MüllauflegerIn"
+            },
+            {
+              "id": 413,
+              "name": "RauchfangkehrerIn"
+            },
+            {
+              "id": 520,
+              "name": "RaumpflegerIn"
+            },
+            {
+              "id": 412,
+              "name": "ReinigungstechnikerIn"
+            },
+            {
+              "id": 420,
+              "name": "StraßenreinigerIn"
+            },
+            {
+              "id": 330,
+              "name": "TextilreinigerIn"
+            }
+          ]
+        },
+        {
+          "id": 371,
+          "name": "Ausbildungsberufe",
+          "stammberufe": [
+            {
+              "id": 1293,
+              "name": "Betriebsinterne oder arbeitsplatznahe Berufsausbildung"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 94,
+      "name": "Soziales, Gesundheit, Schönheitspflege",
+      "berufsfelder": [
+        {
+          "id": 333,
+          "name": "Ärztliche Berufe",
+          "stammberufe": [
+            {
+              "id": 217,
+              "name": "Arzt/Ärztin für Allgemeinmedizin"
+            },
+            {
+              "id": 1246,
+              "name": "Facharzt/Fachärztin"
+            },
+            {
+              "id": 342,
+              "name": "Tierarzt/-ärztin"
+            },
+            {
+              "id": 1265,
+              "name": "Turnusarzt/-ärztin"
+            },
+            {
+              "id": 341,
+              "name": "Zahnarzt/-ärztin"
+            }
+          ]
+        },
+        {
+          "id": 334,
+          "name": "Gehobene medizinisch-technische Dienste",
+          "stammberufe": [
+            {
+              "id": 226,
+              "name": "BiomedizinischeR AnalytikerIn"
+            },
+            {
+              "id": 220,
+              "name": "Diätologe/Diätologin"
+            },
+            {
+              "id": 352,
+              "name": "ErgotherapeutIn"
+            },
+            {
+              "id": 225,
+              "name": "Logopäde/Logopädin"
+            },
+            {
+              "id": 353,
+              "name": "OrthoptistIn"
+            },
+            {
+              "id": 218,
+              "name": "PhysiotherapeutIn"
+            },
+            {
+              "id": 351,
+              "name": "Radiologietechnologe/-technologin"
+            }
+          ]
+        },
+        {
+          "id": 335,
+          "name": "Gesundheits- und Krankenpflege, Hebammen",
+          "stammberufe": [
+            {
+              "id": 348,
+              "name": "Dipl. Gesundheits- und KrankenpflegerIn"
+            },
+            {
+              "id": 345,
+              "name": "Hebamme (m/w)"
+            },
+            {
+              "id": 674,
+              "name": "PflegeassistentIn"
+            },
+            {
+              "id": 1256,
+              "name": "PflegefachassistentIn"
+            }
+          ]
+        },
+        {
+          "id": 336,
+          "name": "Gewerbliche und technische Gesundheitsberufe",
+          "stammberufe": [
+            {
+              "id": 356,
+              "name": "AugenoptikerIn"
+            },
+            {
+              "id": 349,
+              "name": "Dipl. KardiotechnikerIn"
+            },
+            {
+              "id": 367,
+              "name": "HörgeräteakustikerIn"
+            },
+            {
+              "id": 1258,
+              "name": "MedizinphysikerIn"
+            },
+            {
+              "id": 884,
+              "name": "MedizintechnikerIn"
+            },
+            {
+              "id": 66,
+              "name": "OrthopädietechnikerIn"
+            },
+            {
+              "id": 70,
+              "name": "ZahntechnikerIn"
+            }
+          ]
+        },
+        {
+          "id": 337,
+          "name": "Handel mit Gesundheitsprodukten",
+          "stammberufe": [
+            {
+              "id": 343,
+              "name": "ApothekerIn"
+            },
+            {
+              "id": 1009,
+              "name": "PharmareferentIn"
+            },
+            {
+              "id": 358,
+              "name": "Pharmazeutisch-kaufmännischeR AssistentIn"
+            }
+          ]
+        },
+        {
+          "id": 338,
+          "name": "Kinderpädagogik und -betreuung",
+          "stammberufe": [
+            {
+              "id": 375,
+              "name": "Elementarpädagoge/-pädagogin"
+            },
+            {
+              "id": 678,
+              "name": "KinderbetreuerIn"
+            },
+            {
+              "id": 371,
+              "name": "Sozialpädagoge/-pädagogin"
+            }
+          ]
+        },
+        {
+          "id": 339,
+          "name": "Medizinische Assistenzberufe, Sanitätsberufe, Massage",
+          "stammberufe": [
+            {
+              "id": 484,
+              "name": "DesinfektionsassistentIn"
+            },
+            {
+              "id": 354,
+              "name": "Dipl. medizinischeR FachassistentIn"
+            },
+            {
+              "id": 64,
+              "name": "GewerblicheR MasseurIn"
+            },
+            {
+              "id": 440,
+              "name": "GipsassistentIn"
+            },
+            {
+              "id": 850,
+              "name": "LaborassistentIn in der Medizin"
+            },
+            {
+              "id": 224,
+              "name": "MedizinischeR MasseurIn"
+            },
+            {
+              "id": 633,
+              "name": "ObduktionsassistentIn"
+            },
+            {
+              "id": 849,
+              "name": "OperationsassistentIn"
+            },
+            {
+              "id": 481,
+              "name": "OrdinationsassistentIn"
+            },
+            {
+              "id": 844,
+              "name": "RöntgenassistentIn"
+            },
+            {
+              "id": 477,
+              "name": "SanitäterIn"
+            },
+            {
+              "id": 1259,
+              "name": "TrainingstherapeutIn"
+            },
+            {
+              "id": 485,
+              "name": "ZahnarztassistentIn"
+            }
+          ]
+        },
+        {
+          "id": 340,
+          "name": "Religiöse Dienste, Seelsorge, Bestattung",
+          "stammberufe": [
+            {
+              "id": 1165,
+              "name": "BestatterIn"
+            },
+            {
+              "id": 981,
+              "name": "GeistlicheR"
+            }
+          ]
+        },
+        {
+          "id": 341,
+          "name": "Schönheitspflege, Kosmetik",
+          "stammberufe": [
+            {
+              "id": 1176,
+              "name": "FingernageldesignerIn"
+            },
+            {
+              "id": 58,
+              "name": "FriseurIn und StylistIn"
+            },
+            {
+              "id": 59,
+              "name": "FußpflegerIn"
+            },
+            {
+              "id": 63,
+              "name": "KosmetikerIn"
+            },
+            {
+              "id": 652,
+              "name": "MaskenbildnerIn"
+            }
+          ]
+        },
+        {
+          "id": 342,
+          "name": "Soziale Betreuung, Beratung, Therapie",
+          "stammberufe": [
+            {
+              "id": 1290,
+              "name": "AlltagsbegleiterIn"
+            },
+            {
+              "id": 504,
+              "name": "Berufs- und BildungsberaterIn"
+            },
+            {
+              "id": 372,
+              "name": "DiplomsozialbetreuerIn für Familienarbeit"
+            },
+            {
+              "id": 383,
+              "name": "EntwicklungshelferIn"
+            },
+            {
+              "id": 1168,
+              "name": "HeimhelferIn"
+            },
+            {
+              "id": 1237,
+              "name": "Klinischer Psychologe und Gesundheitspsychologe, Klinische Psychologin und Gesundheitspsychologin"
+            },
+            {
+              "id": 355,
+              "name": "MusiktherapeutIn"
+            },
+            {
+              "id": 357,
+              "name": "Psychologe/Psychologin"
+            },
+            {
+              "id": 632,
+              "name": "PsychotherapeutIn"
+            },
+            {
+              "id": 377,
+              "name": "SozialarbeiterIn"
+            },
+            {
+              "id": 376,
+              "name": "SozialberaterIn"
+            },
+            {
+              "id": 486,
+              "name": "SozialbetreuerIn für Menschen mit Behinderung"
+            },
+            {
+              "id": 370,
+              "name": "SozialbetreuerIn in der Altenarbeit"
+            }
+          ]
+        },
+        {
+          "id": 363,
+          "name": "Sozial- und Gesundheitsmanagement",
+          "stammberufe": [
+            {
+              "id": 1226,
+              "name": "GesundheitsmanagerIn"
+            },
+            {
+              "id": 489,
+              "name": "MedizinischeR DokumentationsassistentIn"
+            },
+            {
+              "id": 503,
+              "name": "SozialmanagerIn"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 95,
+      "name": "Textil, Bekleidung, Mode, Leder",
+      "berufsfelder": [
+        {
+          "id": 343,
+          "name": "Anlern- und Hilfsberufe Textil",
+          "stammberufe": [
+            {
+              "id": 574,
+              "name": "Hilfskraft in der Textil- und Lederwarenerzeugung (m/w)"
+            },
+            {
+              "id": 571,
+              "name": "NäherIn"
+            },
+            {
+              "id": 337,
+              "name": "Weberei-, Strick- und Wirkwarenhilfskraft (m/w)"
+            },
+            {
+              "id": 416,
+              "name": "Wäschereihilfskraft (m/w)"
+            },
+            {
+              "id": 576,
+              "name": "ZuschneiderIn und StanzerIn"
+            }
+          ]
+        },
+        {
+          "id": 344,
+          "name": "Bekleidung, Textil",
+          "stammberufe": [
+            {
+              "id": 1146,
+              "name": "BekleidungsgestalterIn"
+            },
+            {
+              "id": 480,
+              "name": "Polsterer/Polsterin"
+            },
+            {
+              "id": 327,
+              "name": "TextilchemikerIn"
+            },
+            {
+              "id": 1181,
+              "name": "TextilgestalterIn"
+            },
+            {
+              "id": 1124,
+              "name": "TextiltechnikerIn"
+            }
+          ]
+        },
+        {
+          "id": 345,
+          "name": "Ledererzeugung und -verarbeitung",
+          "stammberufe": [
+            {
+              "id": 303,
+              "name": "GerbereitechnikerIn und PräparatorIn"
+            },
+            {
+              "id": 1160,
+              "name": "LederverarbeiterIn"
+            },
+            {
+              "id": 323,
+              "name": "SchuhmacherIn"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 96,
+      "name": "Tourismus, Gastgewerbe, Freizeit",
+      "berufsfelder": [
+        {
+          "id": 347,
+          "name": "Anlern- und Hilfsberufe Tourismus, Gastgewerbe, Freizeit",
+          "stammberufe": [
+            {
+              "id": 1178,
+              "name": "AbwäscherIn"
+            },
+            {
+              "id": 502,
+              "name": "BeschließerIn"
+            },
+            {
+              "id": 1118,
+              "name": "Buffet- und Schankkraft (m/w)"
+            },
+            {
+              "id": 1298,
+              "name": "Hilfskraft im Sport- und Outdoorbereich (m/w)"
+            },
+            {
+              "id": 515,
+              "name": "HoteldienerIn"
+            },
+            {
+              "id": 1136,
+              "name": "Küchenhilfskraft (m/w)"
+            },
+            {
+              "id": 153,
+              "name": "Servierkraft (m/w)"
+            },
+            {
+              "id": 528,
+              "name": "SportartikelmonteurIn"
+            },
+            {
+              "id": 276,
+              "name": "Stubenbursch/-mädchen"
+            }
+          ]
+        },
+        {
+          "id": 348,
+          "name": "Hotelempfang, Etage",
+          "stammberufe": [
+            {
+              "id": 1171,
+              "name": "GästebetreuerIn"
+            },
+            {
+              "id": 285,
+              "name": "Housekeeping Supervisor (m/w)"
+            },
+            {
+              "id": 280,
+              "name": "RezeptionistIn"
+            }
+          ]
+        },
+        {
+          "id": 349,
+          "name": "Hotelverwaltung, Gaststättenleitung",
+          "stammberufe": [
+            {
+              "id": 583,
+              "name": "Food-and-Beverage-ManagerIn"
+            },
+            {
+              "id": 549,
+              "name": "Hotel- und Gastgewerbekaufmann/-frau"
+            },
+            {
+              "id": 524,
+              "name": "HoteldirektorIn"
+            },
+            {
+              "id": 282,
+              "name": "RestaurantleiterIn"
+            },
+            {
+              "id": 1272,
+              "name": "Spa-ManagerIn"
+            }
+          ]
+        },
+        {
+          "id": 350,
+          "name": "Küchen- und Servicefachkräfte",
+          "stammberufe": [
+            {
+              "id": 287,
+              "name": "BarkeeperIn"
+            },
+            {
+              "id": 1243,
+              "name": "Caterer (m/w)"
+            },
+            {
+              "id": 521,
+              "name": "GastgewerblicheR KassierIn"
+            },
+            {
+              "id": 1288,
+              "name": "Gastronomiefachmann/-frau"
+            },
+            {
+              "id": 62,
+              "name": "Koch/Köchin"
+            },
+            {
+              "id": 1230,
+              "name": "KüchenchefIn"
+            },
+            {
+              "id": 68,
+              "name": "Restaurantfachmann/-frau"
+            },
+            {
+              "id": 69,
+              "name": "Systemgastronomiefachmann/-frau"
+            }
+          ]
+        },
+        {
+          "id": 351,
+          "name": "Reise- und Freizeitgestaltung",
+          "stammberufe": [
+            {
+              "id": 278,
+              "name": "AnimateurIn"
+            },
+            {
+              "id": 288,
+              "name": "BadewärterIn"
+            },
+            {
+              "id": 290,
+              "name": "Croupier/Croupière"
+            },
+            {
+              "id": 179,
+              "name": "KutscherIn"
+            },
+            {
+              "id": 281,
+              "name": "ReisebüroassistentIn"
+            },
+            {
+              "id": 150,
+              "name": "ReiseleiterIn"
+            },
+            {
+              "id": 1257,
+              "name": "SchaustellerIn"
+            },
+            {
+              "id": 152,
+              "name": "TourismusmanagerIn"
+            }
+          ]
+        },
+        {
+          "id": 352,
+          "name": "Sport, Sportunterricht",
+          "stammberufe": [
+            {
+              "id": 511,
+              "name": "Berg- und SkiführerIn"
+            },
+            {
+              "id": 57,
+              "name": "FitnessbetreuerIn"
+            },
+            {
+              "id": 984,
+              "name": "ProfisportlerIn"
+            },
+            {
+              "id": 821,
+              "name": "SchneesportlehrerIn"
+            },
+            {
+              "id": 105,
+              "name": "SportplatzwartIn"
+            },
+            {
+              "id": 823,
+              "name": "SporttrainerIn"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 97,
+      "name": "Umwelt",
+      "berufsfelder": [
+        {
+          "id": 353,
+          "name": "Energietechnik, Erneuerbare Energie",
+          "stammberufe": [
+            {
+              "id": 434,
+              "name": "ElektroenergietechnikerIn"
+            },
+            {
+              "id": 1224,
+              "name": "EnergieberaterIn"
+            },
+            {
+              "id": 839,
+              "name": "SolartechnikerIn"
+            },
+            {
+              "id": 1252,
+              "name": "WindenergietechnikerIn"
+            }
+          ]
+        },
+        {
+          "id": 355,
+          "name": "Umwelt-, Natur- und Landschaftsgestaltung",
+          "stammberufe": [
+            {
+              "id": 40,
+              "name": "Garten- und GrünflächengestalterIn"
+            },
+            {
+              "id": 1005,
+              "name": "GartenbautechnikerIn"
+            }
+          ]
+        },
+        {
+          "id": 356,
+          "name": "Umweltconsulting, -forschung und -pädagogik",
+          "stammberufe": [
+            {
+              "id": 216,
+              "name": "AgrarberaterIn"
+            },
+            {
+              "id": 957,
+              "name": "Umwelt- und NachhaltigkeitsmanagerIn"
+            },
+            {
+              "id": 952,
+              "name": "UmweltberaterIn"
+            },
+            {
+              "id": 1254,
+              "name": "Umweltpädagoge/-pädagogin"
+            },
+            {
+              "id": 962,
+              "name": "Ökologe/Ökologin"
+            }
+          ]
+        },
+        {
+          "id": 357,
+          "name": "Umwelttechnologie, Nachhaltigkeit",
+          "stammberufe": [
+            {
+              "id": 1255,
+              "name": "Abwasser- und AbfallwirtschaftstechnikerIn"
+            },
+            {
+              "id": 1143,
+              "name": "Entsorgungs- und RecyclingtechnikerIn"
+            },
+            {
+              "id": 1182,
+              "name": "UmweltanalytikerIn"
+            },
+            {
+              "id": 969,
+              "name": "UmwelttechnikerIn"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 98,
+      "name": "Wissenschaft, Bildung, Forschung und Entwicklung",
+      "berufsfelder": [
+        {
+          "id": 358,
+          "name": "Geistes-, Kultur- und Humanwissenschaften",
+          "stammberufe": [
+            {
+              "id": 980,
+              "name": "BildungswissenschafterIn"
+            },
+            {
+              "id": 670,
+              "name": "KommunikationswissenschafterIn"
+            },
+            {
+              "id": 975,
+              "name": "KulturwissenschafterIn"
+            },
+            {
+              "id": 671,
+              "name": "LiteraturwissenschafterIn"
+            },
+            {
+              "id": 672,
+              "name": "MusikwissenschafterIn"
+            },
+            {
+              "id": 557,
+              "name": "Philologe/Philologin"
+            },
+            {
+              "id": 977,
+              "name": "PhilosophIn"
+            },
+            {
+              "id": 1238,
+              "name": "ProjektassistentIn in der Forschung"
+            },
+            {
+              "id": 673,
+              "name": "Theater-, Film- und MedienwissenschafterIn"
+            },
+            {
+              "id": 1001,
+              "name": "Theologe/Theologin"
+            }
+          ]
+        },
+        {
+          "id": 359,
+          "name": "Naturwissenschaften, Lebenswissenschaften",
+          "stammberufe": [
+            {
+              "id": 1215,
+              "name": "AgrarwissenschafterIn"
+            },
+            {
+              "id": 1223,
+              "name": "BioinformatikerIn"
+            },
+            {
+              "id": 973,
+              "name": "BiowissenschafterIn"
+            },
+            {
+              "id": 253,
+              "name": "ErnährungswissenschafterIn"
+            },
+            {
+              "id": 974,
+              "name": "GeowissenschafterIn"
+            },
+            {
+              "id": 976,
+              "name": "MathematikerIn"
+            },
+            {
+              "id": 911,
+              "name": "MedizinerIn"
+            },
+            {
+              "id": 1229,
+              "name": "Molekularbiologe/-biologin"
+            },
+            {
+              "id": 483,
+              "name": "PharmazeutIn"
+            },
+            {
+              "id": 905,
+              "name": "PhysikerIn"
+            },
+            {
+              "id": 212,
+              "name": "PhysiklaborantIn"
+            },
+            {
+              "id": 1000,
+              "name": "SportwissenschafterIn"
+            },
+            {
+              "id": 909,
+              "name": "TechnischeR PhysikerIn"
+            }
+          ]
+        },
+        {
+          "id": 360,
+          "name": "Schule, Weiterbildung, Hochschule",
+          "stammberufe": [
+            {
+              "id": 506,
+              "name": "ErwachsenenbildnerIn"
+            },
+            {
+              "id": 513,
+              "name": "HochschullehrerIn"
+            },
+            {
+              "id": 676,
+              "name": "LehrerIn für die Primarstufe"
+            },
+            {
+              "id": 508,
+              "name": "LehrerIn für die Sekundarstufe Allgemeinbildung"
+            },
+            {
+              "id": 692,
+              "name": "LehrerIn für die Sekundarstufe Berufsbildung"
+            },
+            {
+              "id": 365,
+              "name": "SprachlehrerIn"
+            }
+          ]
+        },
+        {
+          "id": 361,
+          "name": "Forschung und Entwicklung",
+          "stammberufe": [
+            {
+              "id": 924,
+              "name": "Forschungs- und EntwicklungstechnikerIn"
+            },
+            {
+              "id": 1216,
+              "name": "ProjekttechnikerIn"
+            }
+          ]
+        },
+        {
+          "id": 362,
+          "name": "Sozial-, Wirtschafts- und Rechtswissenschaften",
+          "stammberufe": [
+            {
+              "id": 797,
+              "name": "JuristIn"
+            },
+            {
+              "id": 796,
+              "name": "Rechtsanwalt/-anwältin"
+            },
+            {
+              "id": 979,
+              "name": "SozialwissenschafterIn"
+            },
+            {
+              "id": 972,
+              "name": "WirtschaftswissenschafterIn"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

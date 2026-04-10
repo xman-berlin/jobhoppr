@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head><title th:text="${isNeu} ? 'Neue Stelle' : 'Stelle bearbeiten'">Stelle</title></head>
+<body>
+<div layout:fragment="content">
+
+  <div class="flex items-center gap-4 mb-6">
+    <a href="/stellen" class="btn btn-ghost btn-sm">← Zurück</a>
+    <h1 class="text-2xl font-bold"
+        th:text="${isNeu} ? 'Neue Stelle anlegen' : 'Stelle bearbeiten'">Stelle</h1>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <div class="lg:col-span-2 card bg-base-100 shadow">
+      <div class="card-body">
+        <h2 class="card-title text-lg mb-4">Stammdaten</h2>
+        <form th:action="${isNeu} ? '/stellen' : '/stellen/' + ${stelle.id}"
+              method="post">
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+            <!-- Stellen-Typ -->
+            <div class="form-control sm:col-span-2">
+              <label class="label"><span class="label-text font-medium">Stellen-Typ *</span></label>
+              <div class="join">
+                <input type="radio" name="typ" value="STANDARD" class="join-item btn btn-sm"
+                       aria-label="Standard"
+                       th:checked="${stelle.typ == null or stelle.typ.name() == 'STANDARD'}"
+                       onchange="onTypChange(this.value)"/>
+                <input type="radio" name="typ" value="LEHRSTELLE" class="join-item btn btn-sm"
+                       aria-label="Lehrstelle"
+                       th:checked="${stelle.typ != null and stelle.typ.name() == 'LEHRSTELLE'}"
+                       onchange="onTypChange(this.value)"/>
+              </div>
+            </div>
+
+            <div class="form-control sm:col-span-2">
+              <label class="label"><span class="label-text font-medium">Titel *</span></label>
+              <input type="text" name="titel" class="input input-bordered"
+                     th:value="${stelle.titel}" required/>
+            </div>
+            <div class="form-control">
+              <label class="label"><span class="label-text font-medium">Unternehmen</span></label>
+              <input type="text" name="unternehmen" class="input input-bordered"
+                     th:value="${stelle.unternehmen}" placeholder="GmbH / AG"/>
+            </div>
+            <div class="form-control">
+              <label class="label"><span class="label-text font-medium">Ort *</span></label>
+              <input type="text" name="ortBezeichnung" class="input input-bordered"
+                     th:value="${stelle.ortBezeichnung}" required placeholder="Wien, 1010"/>
+            </div>
+            <div class="form-control">
+              <label class="label"><span class="label-text font-medium">Breitengrad (lat) *</span></label>
+              <input type="number" step="0.0001" name="ortLat" class="input input-bordered"
+                     th:value="${stelle.ortLat != null} ? ${stelle.ortLat} : 48.2082" required/>
+            </div>
+            <div class="form-control">
+              <label class="label"><span class="label-text font-medium">Längengrad (lon) *</span></label>
+              <input type="number" step="0.0001" name="ortLon" class="input input-bordered"
+                     th:value="${stelle.ortLon != null} ? ${stelle.ortLon} : 16.3738" required/>
+            </div>
+            <div class="form-control sm:col-span-2">
+              <label class="label"><span class="label-text font-medium">Beruf (BIS)</span></label>
+              <input type="hidden" id="beruf-id" name="berufSpezialisierungId" th:value="${stelle.berufSpezialisierungId}"/>
+              <input type="text" id="beruf-input" class="input input-bordered"
+                     placeholder="Beruf suchen..."
+                     hx-get="/bis/berufe"
+                     hx-trigger="keyup changed delay:300ms"
+                     hx-target="#beruf-vorschlaege"
+                     name="q"
+                     th:value="${berufName}"
+                     autocomplete="off"/>
+              <div id="beruf-vorschlaege" class="relative z-10"></div>
+            </div>
+            <div class="form-control sm:col-span-2">
+              <label class="label"><span class="label-text font-medium">Beschreibung</span></label>
+              <textarea name="beschreibung" class="textarea textarea-bordered" rows="3"
+                        th:text="${stelle.beschreibung}" placeholder="Stellenbeschreibung..."></textarea>
+            </div>
+          </div>
+
+          <!-- Interessen + Voraussetzungen (Lehrstelle) -->
+          <div id="lehrstelle-bereich"
+               th:style="${stelle.typ != null and stelle.typ.name() == 'LEHRSTELLE'} ? '' : 'display:none'">
+
+            <div class="divider text-xs text-base-content/40 mt-4">Lehrstellenmatching</div>
+
+            <div class="form-control mb-4">
+              <label class="label"><span class="label-text font-medium">Interessensgebiete</span></label>
+              <div class="flex flex-wrap gap-2 p-3 border border-base-300 rounded-lg bg-base-50">
+                <th:block th:each="ig : ${alleInteressen}">
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" name="interessenIds" class="checkbox checkbox-sm checkbox-primary"
+                           th:value="${ig.id}"
+                           th:checked="${stelle.interessenIds != null and stelle.interessenIds.contains(ig.id)}"/>
+                    <span class="text-sm" th:text="${ig.name}">Interesse</span>
+                  </label>
+                </th:block>
+                <span th:if="${alleInteressen == null or alleInteressen.empty}"
+                      class="text-sm text-base-content/50">Keine Interessensgebiete vorhanden.</span>
+              </div>
+            </div>
+
+            <div class="form-control mb-4">
+              <label class="label"><span class="label-text font-medium">Voraussetzungen</span></label>
+              <div class="flex flex-wrap gap-2 p-3 border border-base-300 rounded-lg bg-base-50">
+                <th:block th:each="vr : ${alleVoraussetzungen}">
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" name="voraussetzungIds" class="checkbox checkbox-sm checkbox-secondary"
+                           th:value="${vr.id}"
+                           th:checked="${stelle.voraussetzungIds != null and stelle.voraussetzungIds.contains(vr.id)}"/>
+                    <span class="text-sm" th:text="${vr.name}">Voraussetzung</span>
+                  </label>
+                </th:block>
+                <span th:if="${alleVoraussetzungen == null or alleVoraussetzungen.empty}"
+                      class="text-sm text-base-content/50">Keine Voraussetzungen vorhanden.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-actions justify-end mt-6">
+            <a href="/stellen" class="btn btn-ghost">Abbrechen</a>
+            <button type="submit" class="btn btn-secondary">
+              <span th:text="${isNeu} ? 'Anlegen' : 'Speichern'">Speichern</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="flex flex-col gap-4" th:if="${!isNeu}">
+      <div class="card bg-base-100 shadow">
+        <div class="card-body">
+          <h2 class="card-title text-base">Matching</h2>
+          <a th:href="@{/stellen/{id}/matches(id=${stelle.id})}"
+             class="btn btn-accent btn-sm w-full">Matches anzeigen</a>
+        </div>
+      </div>
+
+      <!-- Kompetenzen (nur Standard) -->
+      <div class="card bg-base-100 shadow" id="kompetenz-sidebar"
+           th:style="${stelle.typ != null and stelle.typ.name() == 'LEHRSTELLE'} ? 'display:none' : ''">
+        <div class="card-body">
+          <h2 class="card-title text-base">Kompetenzen</h2>
+
+          <div id="kompetenzen-liste">
+            <div th:if="${stelleKompetenzen == null or stelleKompetenzen.empty}"
+                 class="text-sm text-base-content/50 mb-2">Keine Kompetenzen.</div>
+            <div th:each="sk : ${stelleKompetenzen}"
+                 th:id="'sk-' + ${sk.kompetenzId}"
+                 class="flex items-center gap-2 text-sm py-1 border-b border-base-200 last:border-0">
+              <span class="badge badge-sm"
+                    th:classappend="${sk.pflicht} ? 'badge-error' : 'badge-ghost'"
+                    th:text="${sk.pflicht} ? 'Pflicht' : 'Optional'">Pflicht</span>
+              <span class="flex-1 font-medium"
+                    th:text="${kompetenzNamen != null and kompetenzNamen[sk.kompetenzId] != null}
+                              ? ${kompetenzNamen[sk.kompetenzId]}
+                              : 'ID ' + ${sk.kompetenzId}">Kompetenz</span>
+              <button class="btn btn-xs btn-ghost btn-circle text-error"
+                      th:hx-delete="@{/stellen/{sid}/kompetenzen/{kid}(sid=${stelle.id},kid=${sk.kompetenzId})}"
+                      th:attr="hx-target='#sk-' + ${sk.kompetenzId}"
+                      hx-swap="outerHTML">✕</button>
+            </div>
+          </div>
+
+          <!-- Add Kompetenz form -->
+          <div class="collapse collapse-arrow bg-base-200 mt-2">
+            <input type="checkbox"/>
+            <div class="collapse-title text-sm font-medium">+ Kompetenz hinzufügen</div>
+            <div class="collapse-content">
+              <div class="flex flex-col gap-2 pt-2">
+                <div class="form-control relative">
+                  <label class="label"><span class="label-text text-xs">Kompetenz suchen</span></label>
+                  <input type="text" id="kompetenz-input" class="input input-bordered input-sm"
+                         placeholder="Kompetenz suchen..."
+                         hx-get="/bis/kompetenzen"
+                         hx-trigger="keyup changed delay:300ms"
+                         hx-target="#kompetenz-vorschlaege"
+                         name="q"
+                         autocomplete="off"/>
+                  <div id="kompetenz-vorschlaege" class="relative z-10"></div>
+                </div>
+                <div class="form-control">
+                  <label class="label"><span class="label-text text-xs">Typ</span></label>
+                  <select id="kompetenz-pflicht" class="select select-bordered select-sm">
+                    <option value="true">Pflicht</option>
+                    <option value="false">Optional</option>
+                  </select>
+                </div>
+                <input type="hidden" id="kompetenz-id"/>
+                <button type="button" class="btn btn-secondary btn-sm"
+                        th:data-stelle-id="${stelle.id}"
+                        onclick="addKompetenz(this)">Hinzufügen</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card bg-base-100 shadow border border-error/20">
+        <div class="card-body">
+          <h2 class="card-title text-base text-error">Gefahrenzone</h2>
+          <button class="btn btn-error btn-outline btn-sm w-full"
+                  th:hx-delete="@{/stellen/{id}(id=${stelle.id})}"
+                  hx-confirm="Stelle wirklich löschen?"
+                  hx-push-url="/stellen">Löschen</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function onTypChange(val) {
+      var lehrBereich = document.getElementById('lehrstelle-bereich');
+      var kompSidebar = document.getElementById('kompetenz-sidebar');
+      if (val === 'LEHRSTELLE') {
+        lehrBereich.style.display = '';
+        if (kompSidebar) kompSidebar.style.display = 'none';
+      } else {
+        lehrBereich.style.display = 'none';
+        if (kompSidebar) kompSidebar.style.display = '';
+      }
+    }
+
+    function addKompetenz(btn) {
+      var stelleId = btn.dataset.stelleId;
+      var kompetenzId = document.getElementById('kompetenz-id').value;
+      var pflicht = document.getElementById('kompetenz-pflicht').value;
+      if (!kompetenzId) { alert('Bitte zuerst eine Kompetenz auswählen.'); return; }
+      htmx.ajax('POST', '/stellen/' + stelleId + '/kompetenzen',
+        { target: '#kompetenzen-liste', swap: 'beforeend',
+          values: { kompetenzId: kompetenzId, pflicht: pflicht } });
+      document.getElementById('kompetenz-id').value = '';
+      document.getElementById('kompetenz-input').value = '';
+    }
+  </script>
+
+</div>
+</body>
+</html>

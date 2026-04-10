@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head><title th:text="${isNeu} ? 'Neue Person' : 'Person bearbeiten'">Person</title></head>
+<body>
+<div layout:fragment="content">
+
+  <div class="flex items-center gap-4 mb-6">
+    <a href="/personen" class="btn btn-ghost btn-sm">← Zurück</a>
+    <h1 class="text-2xl font-bold"
+        th:text="${isNeu} ? 'Neue Person anlegen' : 'Person bearbeiten'">Person</h1>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Person form -->
+    <div class="lg:col-span-2 card bg-base-100 shadow">
+      <div class="card-body">
+        <h2 class="card-title text-lg mb-4">Stammdaten</h2>
+        <form th:action="${isNeu} ? '/personen' : '/personen/' + ${person.id}"
+              method="post">
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="form-control">
+              <label class="label"><span class="label-text font-medium">Vorname *</span></label>
+              <input type="text" name="vorname" class="input input-bordered"
+                     th:value="${person.vorname}" required/>
+            </div>
+            <div class="form-control">
+              <label class="label"><span class="label-text font-medium">Nachname *</span></label>
+              <input type="text" name="nachname" class="input input-bordered"
+                     th:value="${person.nachname}" required/>
+            </div>
+            <div class="form-control sm:col-span-2">
+              <label class="label"><span class="label-text font-medium">E-Mail</span></label>
+              <input type="email" name="email" class="input input-bordered"
+                     th:value="${person.email}" placeholder="max@example.at"/>
+            </div>
+            <div class="form-control sm:col-span-2">
+              <label class="label"><span class="label-text font-medium">Beruf (BIS)</span></label>
+              <input type="text" id="beruf-input" class="input input-bordered"
+                     placeholder="Beruf suchen..."
+                     hx-get="/bis/berufe"
+                     hx-trigger="keyup changed delay:300ms"
+                     hx-target="#beruf-vorschlaege"
+                     name="q"
+                     th:value="${berufName}"
+                     autocomplete="off"/>
+              <input type="hidden" id="beruf-id" name="berufSpezialisierungId"
+                     th:value="${person.berufSpezialisierungId}"/>
+              <div id="beruf-vorschlaege" class="relative z-10"></div>
+            </div>
+
+            <!-- Sucht Lehrstelle -->
+            <div class="form-control sm:col-span-2">
+              <label class="label cursor-pointer justify-start gap-3">
+                <input type="checkbox" name="suchtLehrstelle" value="true" class="checkbox checkbox-primary"
+                       th:checked="${person.suchtLehrstelle}"
+                       onchange="onSuchtLehrstelleChange(this.checked)"/>
+                <span class="label-text font-medium">Sucht Lehrstelle</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Interessen + Voraussetzungen (Lehrstelle) -->
+          <div id="lehrstelle-bereich"
+               th:style="${person.suchtLehrstelle} ? '' : 'display:none'">
+
+            <div class="divider text-xs text-base-content/40 mt-4">Lehrstellenmatching</div>
+
+            <div class="form-control mb-4">
+              <label class="label"><span class="label-text font-medium">Interessensgebiete</span></label>
+              <div class="flex flex-wrap gap-2 p-3 border border-base-300 rounded-lg">
+                <th:block th:each="ig : ${alleInteressen}">
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" name="interessenIds" class="checkbox checkbox-sm checkbox-primary"
+                           th:value="${ig.id}"
+                           th:checked="${person.interessenIds != null and person.interessenIds.contains(ig.id)}"/>
+                    <span class="text-sm" th:text="${ig.name}">Interesse</span>
+                  </label>
+                </th:block>
+                <span th:if="${alleInteressen == null or alleInteressen.empty}"
+                      class="text-sm text-base-content/50">Keine Interessensgebiete vorhanden.</span>
+              </div>
+            </div>
+
+            <div class="form-control mb-4">
+              <label class="label"><span class="label-text font-medium">Voraussetzungen</span></label>
+              <div class="flex flex-wrap gap-2 p-3 border border-base-300 rounded-lg">
+                <th:block th:each="vr : ${alleVoraussetzungen}">
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" name="voraussetzungIds" class="checkbox checkbox-sm checkbox-secondary"
+                           th:value="${vr.id}"
+                           th:checked="${person.voraussetzungIds != null and person.voraussetzungIds.contains(vr.id)}"/>
+                    <span class="text-sm" th:text="${vr.name}">Voraussetzung</span>
+                  </label>
+                </th:block>
+                <span th:if="${alleVoraussetzungen == null or alleVoraussetzungen.empty}"
+                      class="text-sm text-base-content/50">Keine Voraussetzungen vorhanden.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-actions justify-end mt-6">
+            <a th:if="${!isNeu}" href="/personen" class="btn btn-ghost">Abbrechen</a>
+            <button type="submit" class="btn btn-primary">
+              <span th:text="${isNeu} ? 'Anlegen' : 'Speichern'">Speichern</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Sidebar: Matches + Kompetenzen + Delete -->
+    <div class="flex flex-col gap-4" th:if="${!isNeu}">
+      <div class="card bg-base-100 shadow">
+        <div class="card-body">
+          <h2 class="card-title text-base">Matching</h2>
+          <a th:href="@{/personen/{id}/matches(id=${person.id})}"
+             class="btn btn-accent btn-sm w-full">Matches anzeigen</a>
+        </div>
+      </div>
+
+      <!-- Kompetenzen -->
+      <div class="card bg-base-100 shadow">
+        <div class="card-body">
+          <h2 class="card-title text-base">Kompetenzen</h2>
+
+          <div id="kompetenzen-liste">
+            <div th:if="${personKompetenzen == null or personKompetenzen.empty}"
+                 class="text-sm text-base-content/50 mb-2">Keine Kompetenzen.</div>
+            <div th:each="pk : ${personKompetenzen}"
+                 th:id="'pk-' + ${pk.kompetenzId}"
+                 class="flex items-center gap-2 text-sm py-1 border-b border-base-200 last:border-0">
+              <span class="flex-1">
+                <span class="font-medium"
+                      th:text="${kompetenzNamen != null and kompetenzNamen[pk.kompetenzId] != null}
+                                ? ${kompetenzNamen[pk.kompetenzId]}
+                                : 'ID ' + ${pk.kompetenzId}">Kompetenz</span>
+                <span class="text-xs text-base-content/50 ml-1" th:text="${pk.niveau}">GRUNDKENNTNISSE</span>
+              </span>
+              <button class="btn btn-xs btn-ghost btn-circle text-error"
+                      th:hx-delete="@{/personen/{pid}/kompetenzen/{kid}(pid=${person.id},kid=${pk.kompetenzId})}"
+                      th:attr="hx-target='#pk-' + ${pk.kompetenzId}"
+                      hx-swap="outerHTML">✕</button>
+            </div>
+          </div>
+
+          <!-- Add Kompetenz form -->
+          <div class="collapse collapse-arrow bg-base-200 mt-2">
+            <input type="checkbox"/>
+            <div class="collapse-title text-sm font-medium">+ Kompetenz hinzufügen</div>
+            <div class="collapse-content">
+              <div class="flex flex-col gap-2 pt-2">
+                <div class="form-control relative">
+                  <label class="label"><span class="label-text text-xs">Kompetenz suchen</span></label>
+                  <input type="text" id="kompetenz-input" class="input input-bordered input-sm"
+                         placeholder="Kompetenz suchen..."
+                         hx-get="/bis/kompetenzen"
+                         hx-trigger="keyup changed delay:300ms"
+                         hx-target="#kompetenz-vorschlaege"
+                         name="q"
+                         autocomplete="off"/>
+                  <div id="kompetenz-vorschlaege" class="relative z-10"></div>
+                </div>
+                <div class="form-control">
+                  <label class="label"><span class="label-text text-xs">Niveau</span></label>
+                  <select id="kompetenz-niveau" class="select select-bordered select-sm">
+                    <option value="GRUNDKENNTNISSE">Grundkenntnisse</option>
+                    <option value="FORTGESCHRITTEN">Fortgeschritten</option>
+                    <option value="EXPERTE">Experte</option>
+                  </select>
+                </div>
+                <input type="hidden" id="kompetenz-id"/>
+                <button type="button" class="btn btn-primary btn-sm"
+                        th:data-person-id="${person.id}"
+                        onclick="addKompetenz(this)">Hinzufügen</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card bg-base-100 shadow border border-error/20">
+        <div class="card-body">
+          <h2 class="card-title text-base text-error">Gefahrenzone</h2>
+          <button class="btn btn-error btn-outline btn-sm w-full"
+                  th:hx-delete="@{/personen/{id}(id=${person.id})}"
+                  hx-confirm="Person wirklich löschen?"
+                  hx-push-url="/personen">Löschen</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Orte (Locations) — only for existing persons -->
+  <div class="card bg-base-100 shadow mt-6" th:if="${!isNeu}">
+    <div class="card-body">
+      <h2 class="card-title text-lg mb-4">Standorte</h2>
+
+      <div id="orte-liste">
+        <div th:each="ort : ${person.orte}"
+             th:id="'ort-' + ${ort.id}" class="flex items-center gap-3 p-3 rounded-lg bg-base-200 mb-2">
+          <div class="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
+            <div>
+              <span class="badge badge-sm" th:classappend="${ort.ortRolle == 'WOHNORT'} ? 'badge-primary' : 'badge-secondary'"
+                    th:text="${ort.ortRolle}">WOHNORT</span>
+            </div>
+            <div class="font-medium" th:text="${ort.bezeichnung}">Wien</div>
+            <div class="text-base-content/60" th:text="${ort.umkreisKm} + ' km Umkreis'">30 km</div>
+            <div class="text-base-content/60 text-xs"
+                 th:text="${#numbers.formatDecimal(ort.lat,1,4)} + ', ' + ${#numbers.formatDecimal(ort.lon,1,4)}">–</div>
+          </div>
+          <button class="btn btn-xs btn-ghost btn-circle text-error"
+                   th:hx-delete="@{/personen/{pid}/orte/{oid}(pid=${person.id},oid=${ort.id})}"
+                   th:attr="hx-target='#ort-' + ${ort.id}"
+                   hx-swap="outerHTML">✕</button>
+        </div>
+      </div>
+
+      <!-- Add Ort form -->
+      <div class="collapse collapse-arrow bg-base-200 mt-2">
+        <input type="checkbox"/>
+        <div class="collapse-title text-sm font-medium">+ Standort hinzufügen</div>
+        <div class="collapse-content">
+          <form class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2"
+                th:attr="hx-post='/personen/' + ${person.id} + '/orte'"
+                hx-target="#orte-liste"
+                hx-swap="beforeend">
+
+            <div class="form-control">
+              <label class="label"><span class="label-text text-xs">Rolle</span></label>
+              <select name="ortRolle" class="select select-bordered select-sm">
+                <option value="WOHNORT">Wohnort</option>
+                <option value="ARBEITSORT">Arbeitsort</option>
+              </select>
+            </div>
+            <div class="form-control sm:col-span-2">
+              <label class="label"><span class="label-text text-xs">Bezeichnung / Adresse</span></label>
+              <input type="text" name="bezeichnung" class="input input-bordered input-sm"
+                     placeholder="Wien, 1010"/>
+            </div>
+            <div class="form-control">
+              <label class="label"><span class="label-text text-xs">Breitengrad (lat)</span></label>
+              <input type="number" step="0.0001" name="lat" class="input input-bordered input-sm"
+                     value="48.2082"/>
+            </div>
+            <div class="form-control">
+              <label class="label"><span class="label-text text-xs">Längengrad (lon)</span></label>
+              <input type="number" step="0.0001" name="lon" class="input input-bordered input-sm"
+                     value="16.3738"/>
+            </div>
+            <div class="form-control">
+              <label class="label"><span class="label-text text-xs">Umkreis (km)</span></label>
+              <input type="number" name="umkreisKm" class="input input-bordered input-sm"
+                     value="30" min="1" max="500"/>
+            </div>
+            <div class="sm:col-span-3">
+              <button type="submit" class="btn btn-primary btn-sm">Hinzufügen</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function onSuchtLehrstelleChange(checked) {
+      var bereich = document.getElementById('lehrstelle-bereich');
+      bereich.style.display = checked ? '' : 'none';
+    }
+
+    function addKompetenz(btn) {
+      var personId = btn.dataset.personId;
+      var kompetenzId = document.getElementById('kompetenz-id').value;
+      var niveau = document.getElementById('kompetenz-niveau').value;
+      if (!kompetenzId) { alert('Bitte zuerst eine Kompetenz auswählen.'); return; }
+      htmx.ajax('POST', '/personen/' + personId + '/kompetenzen',
+        { target: '#kompetenzen-liste', swap: 'beforeend',
+          values: { kompetenzId: kompetenzId, niveau: niveau } });
+      document.getElementById('kompetenz-id').value = '';
+      document.getElementById('kompetenz-input').value = '';
+    }
+  </script>
+
+</div>
+</body>
+</html>

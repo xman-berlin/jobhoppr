@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head><title>Personen</title></head>
+<body>
+<div layout:fragment="content">
+
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold">Personen</h1>
+    <a href="/personen/neu" class="btn btn-primary btn-sm">+ Neue Person</a>
+  </div>
+
+  <div class="card bg-base-100 shadow overflow-x-auto">
+    <table class="table table-zebra">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>E-Mail</th>
+          <th class="hidden sm:table-cell">Erstellt am</th>
+          <th class="text-right">Aktionen</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="p : ${seite.content}" th:id="'person-' + ${p.id}">
+          <td>
+            <a th:href="@{/personen/{id}(id=${p.id})}"
+               class="font-medium hover:text-primary"
+               th:text="${p.vollerName}">Max Müller</a>
+          </td>
+          <td class="text-sm text-base-content/60" th:text="${p.email}">–</td>
+          <td class="hidden sm:table-cell text-sm text-base-content/60"
+              th:text="${#temporals.format(p.erstelltAm, 'dd.MM.yyyy')}">–</td>
+          <td class="text-right">
+            <div class="flex gap-2 justify-end">
+              <a th:href="@{/personen/{id}/matches(id=${p.id})}"
+                 class="btn btn-xs btn-outline btn-accent">Matches</a>
+              <a th:href="@{/personen/{id}(id=${p.id})}"
+                 class="btn btn-xs btn-outline">Bearbeiten</a>
+              <button class="btn btn-xs btn-outline btn-error"
+                      th:attr="hx-delete=@{/personen/{id}(id=${p.id})},hx-target='#person-' + ${p.id}"
+                      hx-swap="outerHTML"
+                      hx-confirm="Person wirklich löschen?">Löschen</button>
+            </div>
+          </td>
+        </tr>
+        <tr th:if="${seite.empty}">
+          <td colspan="4" class="text-center text-base-content/50 py-8">Keine Personen vorhanden.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="flex justify-center mt-6" th:if="${seite.totalPages > 1}">
+    <div class="join">
+      <a th:href="@{/personen(page=${currentPage - 1})}"
+         class="join-item btn btn-sm"
+         th:classappend="${currentPage == 0} ? 'btn-disabled' : ''">«</a>
+      <th:block th:each="i : ${#numbers.sequence(0, seite.totalPages - 1)}">
+        <a th:href="@{/personen(page=${i})}"
+           class="join-item btn btn-sm"
+           th:classappend="${i == currentPage} ? 'btn-active' : ''"
+           th:text="${i + 1}">1</a>
+      </th:block>
+      <a th:href="@{/personen(page=${currentPage + 1})}"
+         class="join-item btn btn-sm"
+         th:classappend="${currentPage >= seite.totalPages - 1} ? 'btn-disabled' : ''">»</a>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
