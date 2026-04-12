@@ -95,6 +95,7 @@ public class StelleService {
         s.setOrtLat(req.ortLat());
         s.setOrtLon(req.ortLon());
         s.setBerufSpezialisierungId(req.berufSpezialisierungId());
+        s.setGeoLocationId(req.geoLocationId());
         s.setTyp(req.typ() != null ? req.typ() : StelleTyp.STANDARD);
         // Interessen + Voraussetzungen ersetzen
         s.getInteressenIds().clear();
@@ -108,6 +109,13 @@ public class StelleService {
                 sk.setStelle(s);
                 sk.setPflicht(ke.pflicht());
                 s.getKompetenzen().add(sk);
+            }
+        }
+        // Arbeitszeiten ersetzen
+        s.getArbeitszeiten().clear();
+        if (req.arbeitszeiten() != null) {
+            for (ArbeitszeitEintrag ae : req.arbeitszeiten()) {
+                s.getArbeitszeiten().add(new StelleArbeitszeit(s, ae.modell(), ae.pflicht()));
             }
         }
         return stelleRepository.save(s);
@@ -142,7 +150,10 @@ public class StelleService {
             String ortBezeichnung, double ortLat, double ortLon,
             Integer berufSpezialisierungId, StelleTyp typ,
             Set<Integer> interessenIds, Set<Integer> voraussetzungIds,
-            List<KompetenzEintrag> kompetenzEintraege) {}
+            List<KompetenzEintrag> kompetenzEintraege,
+            Integer geoLocationId,
+            List<ArbeitszeitEintrag> arbeitszeiten) {}
 
     public record KompetenzEintrag(Integer kompetenzId, boolean pflicht) {}
+    public record ArbeitszeitEintrag(String modell, boolean pflicht) {}
 }

@@ -4,6 +4,8 @@ import at.jobhoppr.domain.bis.BerufSpezialisierungRepository;
 import at.jobhoppr.domain.bis.InteressensgebietRepository;
 import at.jobhoppr.domain.bis.KompetenzRepository;
 import at.jobhoppr.domain.bis.VoraussetzungRepository;
+import at.jobhoppr.domain.geo.GeoLocation;
+import at.jobhoppr.domain.geo.GeoLocationRepository;
 import io.github.wimdeblauwe.htmx.spring.boot.mvc.HxRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -29,6 +31,7 @@ public class PersonController {
     private final KompetenzRepository kompetenzRepository;
     private final InteressensgebietRepository interessensgebietRepository;
     private final VoraussetzungRepository voraussetzungRepository;
+    private final GeoLocationRepository geoLocationRepository;
 
     @GetMapping
     public String liste(@RequestParam(defaultValue = "0") int page, Model model) {
@@ -44,6 +47,7 @@ public class PersonController {
         model.addAttribute("isNeu", true);
         model.addAttribute("alleInteressen", interessensgebietRepository.findAll());
         model.addAttribute("alleVoraussetzungen", voraussetzungRepository.findAll());
+        model.addAttribute("bundeslaender", geoLocationRepository.findByEbeneOrderByName("BUNDESLAND"));
         return "personen/formular";
     }
 
@@ -68,6 +72,7 @@ public class PersonController {
         }
         model.addAttribute("alleInteressen", interessensgebietRepository.findAll());
         model.addAttribute("alleVoraussetzungen", voraussetzungRepository.findAll());
+        model.addAttribute("bundeslaender", geoLocationRepository.findByEbeneOrderByName("BUNDESLAND"));
         return "personen/formular";
     }
 
@@ -112,6 +117,7 @@ public class PersonController {
         personService.loeschen(id);
         return ResponseEntity.ok()
                 .header("HX-Trigger", "{\"showToast\":\"Person gelöscht\"}")
+                .header("HX-Redirect", "/personen")
                 .body("");
     }
 
@@ -127,10 +133,13 @@ public class PersonController {
             @RequestParam(defaultValue = "48.2082") double lat,
             @RequestParam(defaultValue = "16.3738") double lon,
             @RequestParam(defaultValue = "30") double umkreisKm,
+            @RequestParam(required = false) Integer geoLocationId,
+            @RequestParam(required = false) Boolean bundesweit,
             Model model) {
 
         PersonOrt ort = personService.ortHinzufuegen(id,
-                new PersonService.OrtRequest(ortRolle, ortTyp, bezeichnung, lat, lon, umkreisKm));
+                new PersonService.OrtRequest(ortRolle, ortTyp, bezeichnung, lat, lon, umkreisKm,
+                        geoLocationId, bundesweit));
         model.addAttribute("ort", ort);
         model.addAttribute("personId", id);
         return "personen/ort-fragment :: ort-eintrag";
@@ -142,6 +151,14 @@ public class PersonController {
             @PathVariable UUID personId, @PathVariable UUID ortId) {
         personService.ortEntfernen(personId, ortId);
         return ResponseEntity.ok().body("");
+    }
+
+    /** HTMX: returns Bezirk <select> for the given Bundesland parent. */
+    @GetMapping("/orte/bezirke")
+    @HxRequest
+    public String bezirkeDropdown(@RequestParam Integer parentId, Model model) {
+        model.addAttribute("bezirke", geoLocationRepository.findByParentIdOrderByName(parentId));
+        return "personen/bezirk-fragment :: bezirk-select";
     }
 
     // ── HTMX fragments for PersonKompetenz ───────────────────────────────────

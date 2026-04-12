@@ -103,7 +103,7 @@
           </div>
 
           <div class="card-actions justify-end mt-6">
-            <a th:if="${!isNeu}" href="/personen" class="btn btn-ghost">Abbrechen</a>
+            <a href="/personen" class="btn btn-ghost">Abbrechen</a>
             <button type="submit" class="btn btn-primary">
               <span th:text="${isNeu} ? 'Anlegen' : 'Speichern'">Speichern</span>
             </button>
@@ -187,8 +187,7 @@
           <h2 class="card-title text-base text-error">Gefahrenzone</h2>
           <button class="btn btn-error btn-outline btn-sm w-full"
                   th:hx-delete="@{/personen/{id}(id=${person.id})}"
-                  hx-confirm="Person wirklich löschen?"
-                  hx-push-url="/personen">Löschen</button>
+                  hx-confirm="Person wirklich löschen?">Löschen</button>
         </div>
       </div>
     </div>
@@ -224,11 +223,13 @@
         <input type="checkbox"/>
         <div class="collapse-title text-sm font-medium">+ Standort hinzufügen</div>
         <div class="collapse-content">
-          <form class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2"
+          <form id="ort-form"
+                class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2"
                 th:attr="hx-post='/personen/' + ${person.id} + '/orte'"
                 hx-target="#orte-liste"
                 hx-swap="beforeend">
 
+            <!-- Rolle + Typ -->
             <div class="form-control">
               <label class="label"><span class="label-text text-xs">Rolle</span></label>
               <select name="ortRolle" class="select select-bordered select-sm">
@@ -236,26 +237,77 @@
                 <option value="ARBEITSORT">Arbeitsort</option>
               </select>
             </div>
-            <div class="form-control sm:col-span-2">
-              <label class="label"><span class="label-text text-xs">Bezeichnung / Adresse</span></label>
+            <div class="form-control">
+              <label class="label"><span class="label-text text-xs">Typ</span></label>
+              <select name="ortTyp" id="ort-typ" class="select select-bordered select-sm"
+                      onchange="ortTypChanged(this.value)">
+                <option value="GENAU">Genauer Ort (GPS)</option>
+                <option value="REGION">Region (Bundesland/Bezirk)</option>
+              </select>
+            </div>
+
+            <!-- Bundesweit checkbox -->
+            <div class="form-control justify-end pb-1">
+              <label class="label cursor-pointer justify-start gap-2">
+                <input type="checkbox" name="bundesweit" value="true" id="ort-bundesweit"
+                       class="checkbox checkbox-sm checkbox-accent"
+                       onchange="ortBundesweitChanged(this.checked)"/>
+                <span class="label-text text-xs">Österreichweit</span>
+              </label>
+            </div>
+
+            <!-- Bezeichnung -->
+            <div class="form-control sm:col-span-3" id="ort-bezeichnung-wrap">
+              <label class="label"><span class="label-text text-xs">Bezeichnung</span></label>
               <input type="text" name="bezeichnung" class="input input-bordered input-sm"
-                     placeholder="Wien, 1010"/>
+                     placeholder="z. B. Wien, Innsbruck"/>
             </div>
-            <div class="form-control">
-              <label class="label"><span class="label-text text-xs">Breitengrad (lat)</span></label>
-              <input type="number" step="0.0001" name="lat" class="input input-bordered input-sm"
-                     value="48.2082"/>
+
+            <!-- GPS fields (only for GENAU) -->
+            <div id="ort-gps-felder" class="contents">
+              <div class="form-control">
+                <label class="label"><span class="label-text text-xs">Breitengrad (lat)</span></label>
+                <input type="number" step="0.0001" name="lat" class="input input-bordered input-sm"
+                       value="48.2082"/>
+              </div>
+              <div class="form-control">
+                <label class="label"><span class="label-text text-xs">Längengrad (lon)</span></label>
+                <input type="number" step="0.0001" name="lon" class="input input-bordered input-sm"
+                       value="16.3738"/>
+              </div>
             </div>
-            <div class="form-control">
-              <label class="label"><span class="label-text text-xs">Längengrad (lon)</span></label>
-              <input type="number" step="0.0001" name="lon" class="input input-bordered input-sm"
-                     value="16.3738"/>
+
+            <!-- Region fields (only for REGION) — hidden by default -->
+            <div id="ort-region-felder" class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3" style="display:none">
+              <div class="form-control">
+                <label class="label"><span class="label-text text-xs">Bundesland</span></label>
+                <select id="ort-bundesland" class="select select-bordered select-sm"
+                        hx-get="/personen/orte/bezirke"
+                        hx-trigger="change"
+                        hx-target="#ort-bezirk-wrap"
+                        hx-swap="innerHTML"
+                        name="parentId">
+                  <option value="">Bundesland wählen...</option>
+                  <th:block th:each="bl : ${bundeslaender}">
+                    <option th:value="${bl.id}" th:text="${bl.name}">Bundesland</option>
+                  </th:block>
+                </select>
+              </div>
+              <div id="ort-bezirk-wrap" class="form-control">
+                <!-- Bezirk dropdown loaded via HTMX -->
+              </div>
+              <input type="hidden" name="geoLocationId" id="ort-geo-id"/>
+              <input type="hidden" name="lat" value="0"/>
+              <input type="hidden" name="lon" value="0"/>
             </div>
-            <div class="form-control">
+
+            <!-- Umkreis (always shown unless bundesweit) -->
+            <div class="form-control" id="ort-umkreis-wrap">
               <label class="label"><span class="label-text text-xs">Umkreis (km)</span></label>
               <input type="number" name="umkreisKm" class="input input-bordered input-sm"
                      value="30" min="1" max="500"/>
             </div>
+
             <div class="sm:col-span-3">
               <button type="submit" class="btn btn-primary btn-sm">Hinzufügen</button>
             </div>
@@ -269,6 +321,53 @@
     function onSuchtLehrstelleChange(checked) {
       var bereich = document.getElementById('lehrstelle-bereich');
       bereich.style.display = checked ? '' : 'none';
+    }
+
+    function ortTypChanged(typ) {
+      var gps = document.getElementById('ort-gps-felder');
+      var region = document.getElementById('ort-region-felder');
+      if (typ === 'REGION') {
+        gps.style.display = 'none';
+        region.style.display = '';
+      } else {
+        gps.style.display = '';
+        region.style.display = 'none';
+      }
+    }
+
+    function ortBundesweitChanged(checked) {
+      var gps = document.getElementById('ort-gps-felder');
+      var region = document.getElementById('ort-region-felder');
+      var umkreis = document.getElementById('ort-umkreis-wrap');
+      var bezeichnung = document.getElementById('ort-bezeichnung-wrap');
+      var typ = document.getElementById('ort-typ').value;
+      if (checked) {
+        gps.style.display = 'none';
+        region.style.display = 'none';
+        umkreis.style.display = 'none';
+        bezeichnung.style.display = 'none';
+      } else {
+        ortTypChanged(typ);
+        umkreis.style.display = '';
+        bezeichnung.style.display = '';
+      }
+    }
+
+    function ortBundeslandChanged(parentId) {
+      if (!parentId) return;
+      // HTMX fires automatically via hx-get on the select change
+      // Clear geo id when bundesland changes
+      document.getElementById('ort-geo-id').value = '';
+    }
+
+    function ortBezirkChanged(id, lat, lon) {
+      document.getElementById('ort-geo-id').value = id;
+      // Update hidden lat/lon fields in region mode
+      var regionFelder = document.getElementById('ort-region-felder');
+      var hiddenLat = regionFelder.querySelector('input[name="lat"]');
+      var hiddenLon = regionFelder.querySelector('input[name="lon"]');
+      if (hiddenLat) hiddenLat.value = lat || 0;
+      if (hiddenLon) hiddenLon.value = lon || 0;
     }
 
     function addKompetenz(btn) {

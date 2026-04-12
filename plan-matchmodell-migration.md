@@ -25,8 +25,8 @@ Das System muss bei 1+ Mio. Personen und Stellen unter 1 Sekunde Antwortzeit ble
 - [x] Phase 4: Closure-Table-Pflege (KompetenzClosureService)
 - [x] Phase 5: PostgreSQL Score-Funktionen (Flyway)
 - [x] Phase 6: MatchRepository + MatchService + Sortierung
-- [ ] Phase 7: Lehrstellenmatching
-- [ ] Phase 8: Frontend anpassen
+- [x] Phase 7: Lehrstellenmatching
+- [x] Phase 8: Frontend anpassen
 - [ ] Phase 9: Tests
 - [ ] Phase 10: Performance-Indizes + Load-Test
 
@@ -852,19 +852,19 @@ Kein Eingriff in bestehende Funktionen, KO-Filter oder andere Services.
 
 ### Phase 7: Lehrstellenmatching
 
-- [ ] `stellen/formular.html` — Typ-Toggle (STANDARD / LEHRSTELLE); bei LEHRSTELLE: Kompetenz-Bereich per HTMX `hx-swap` ausblenden, Interessen- + Voraussetzungs-Auswahl einblenden
-- [ ] `personen/formular.html` — `suchtLehrstelle`-Checkbox; bei TRUE: Interessen- + Voraussetzungs-Auswahl einblenden
-- [ ] `personen/matches.html` + `stellen/matches.html` — Breakdown-Anzeige je nach `stelleTyp`: STANDARD zeigt OM/SM, LEHRSTELLE zeigt OM/FM/QM
-- [ ] `match-modell/editor.html` — Lehrstellen-Gewichte (`gewichtLehrberuf`, `gewichtInteressen`, `gewichtVoraussetzungen`) als eigene Slider-Gruppe
+- [x] `stellen/formular.html` — Typ-Toggle (STANDARD / LEHRSTELLE); bei LEHRSTELLE: Kompetenz-Bereich per HTMX `hx-swap` ausblenden, Interessen- + Voraussetzungs-Auswahl einblenden
+- [x] `personen/formular.html` — `suchtLehrstelle`-Checkbox; bei TRUE: Interessen- + Voraussetzungs-Auswahl einblenden
+- [x] `personen/matches.html` + `stellen/matches.html` — Breakdown-Anzeige je nach `stelleTyp`: STANDARD zeigt OM/SM, LEHRSTELLE zeigt OM/FM/QM
+- [x] `match-modell/editor.html` — Lehrstellen-Gewichte (`gewichtLehrberuf`, `gewichtInteressen`, `gewichtVoraussetzungen`) als eigene Slider-Gruppe
 
 ### Phase 8: Frontend anpassen
 
-- [ ] `personen/formular.html` — Beruf-Autocomplete auf Spezialisierungen umstellen (Pfad-Label)
-- [ ] `personen/formular.html` — `person_ort`-Formular: neues Dropdown für `geo_location` (Bundesland/Bezirk aus `/api/geo/bundeslaender` + neuer Endpoint `/api/geo/locations`); Bundesweit-Checkbox (versteckt Koordinaten-Felder per HTMX)
-- [ ] `stellen/formular.html` — analog: Beruf-Autocomplete, `geo_location`-Dropdown, Arbeitszeitmodelle
-- [ ] `personen/matches.html` + `stellen/matches.html` — Sortier-Buttons (Score ↑↓, Datum ↑↓) als HTMX-Links mit `hx-get` + Query-Parametern; aktive Sortierung visuell hervorheben (DaisyUI `btn-active`)
-- [ ] `match-modell/editor.html` — `berufFilterStrikt`-Checkbox entfernen; `scoreSchwellenwert`-Slider (0–100%) hinzufügen
-- [ ] `index.html` — Dashboard: Lehrstellenanzahl als eigene Stat-Kachel
+- [x] `personen/formular.html` — Beruf-Autocomplete auf Spezialisierungen umstellen (Pfad-Label)
+- [x] `personen/formular.html` — `person_ort`-Formular: neues Dropdown für `geo_location` (Bundesland/Bezirk aus `/api/geo/bundeslaender` + neuer Endpoint `/api/geo/locations`); Bundesweit-Checkbox (versteckt Koordinaten-Felder per HTMX)
+- [x] `stellen/formular.html` — analog: Beruf-Autocomplete, `geo_location`-Dropdown, Arbeitszeitmodelle
+- [x] `personen/matches.html` + `stellen/matches.html` — Sortier-Buttons (Score ↑↓, Datum ↑↓) als HTMX-Links mit `hx-get` + Query-Parametern; aktive Sortierung visuell hervorheben (DaisyUI `btn-active`)
+- [x] `match-modell/editor.html` — `berufFilterStrikt`-Checkbox entfernen; `scoreSchwellenwert`-Slider (0–100%) hinzufügen
+- [x] `index.html` — Dashboard: Lehrstellenanzahl als eigene Stat-Kachel
 
 ### Phase 9: Tests
 

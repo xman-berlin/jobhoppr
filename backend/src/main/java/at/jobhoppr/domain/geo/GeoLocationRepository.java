@@ -7,4 +7,8 @@ import java.util.List;
 public interface GeoLocationRepository extends JpaRepository<GeoLocation, Integer> {
 
     List<GeoLocation> findByEbeneOrderByName(String ebene);
+
+    List<GeoLocation> findByParentIdOrderByName(Integer parentId);
+
+    List<GeoLocation> findByEbeneAndParentIsNullOrderByName(String ebene);
 }

@@ -9,6 +9,7 @@
       <span class="badge badge-sm"
             th:classappend="${ort.ortRolle == 'WOHNORT'} ? 'badge-primary' : 'badge-secondary'"
             th:text="${ort.ortRolle}">WOHNORT</span>
+      <span th:if="${ort.bundesweit}" class="badge badge-sm badge-accent ml-1">bundesweit</span>
     </div>
     <div class="font-medium" th:text="${ort.bezeichnung}">Wien</div>
     <div class="text-base-content/60" th:text="${ort.umkreisKm} + ' km Umkreis'">30 km</div>

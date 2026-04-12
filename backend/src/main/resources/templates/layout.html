@@ -19,9 +19,12 @@
   </div>
   <div class="navbar-center hidden lg:flex">
     <ul class="menu menu-horizontal px-1">
-      <li><a href="/personen" class="font-medium">Personen</a></li>
-      <li><a href="/stellen" class="font-medium">Stellen</a></li>
-      <li><a href="/match-modell" class="font-medium">Match-Modell</a></li>
+      <li><a href="/personen" class="font-medium"
+             th:classappend="${#strings.startsWith(currentUri, '/personen')} ? 'active' : ''">Personen</a></li>
+      <li><a href="/stellen" class="font-medium"
+             th:classappend="${#strings.startsWith(currentUri, '/stellen')} ? 'active' : ''">Stellen</a></li>
+      <li><a href="/match-modell" class="font-medium"
+             th:classappend="${#strings.startsWith(currentUri, '/match-modell')} ? 'active' : ''">Match-Modell</a></li>
     </ul>
   </div>
   <div class="navbar-end">
@@ -34,9 +37,12 @@
         </svg>
       </div>
       <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
-        <li><a href="/personen">Personen</a></li>
-        <li><a href="/stellen">Stellen</a></li>
-        <li><a href="/match-modell">Match-Modell</a></li>
+        <li><a href="/personen"
+               th:classappend="${#strings.startsWith(currentUri, '/personen')} ? 'active' : ''">Personen</a></li>
+        <li><a href="/stellen"
+               th:classappend="${#strings.startsWith(currentUri, '/stellen')} ? 'active' : ''">Stellen</a></li>
+        <li><a href="/match-modell"
+               th:classappend="${#strings.startsWith(currentUri, '/match-modell')} ? 'active' : ''">Match-Modell</a></li>
       </ul>
     </div>
   </div>

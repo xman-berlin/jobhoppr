@@ -7,6 +7,7 @@
 <div layout:fragment="content">
 
   <div class="flex items-center gap-4 mb-6">
+    <a href="/personen" class="btn btn-ghost btn-sm">← Liste</a>
     <a th:href="@{/personen/{id}(id=${person.id})}" class="btn btn-ghost btn-sm">← Zurück</a>
     <div class="flex-1">
       <h1 class="text-2xl font-bold" th:text="'Matches für ' + ${person.vollerName}">Matches</h1>
@@ -137,7 +138,7 @@
 
         <div class="card-actions mt-3">
           <a th:href="@{/stellen/{id}(id=${r.targetId})}"
-             class="btn btn-xs btn-outline w-full">Stelle ansehen</a>
+             class="btn btn-xs btn-outline w-full">Stelle bearbeiten</a>
         </div>
       </div>
     </div>

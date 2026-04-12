@@ -61,6 +61,9 @@ public class Stelle {
     @OneToMany(mappedBy = "stelle", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<StelleKompetenz> kompetenzen = new ArrayList<>();
 
+    @OneToMany(mappedBy = "stelle", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private List<StelleArbeitszeit> arbeitszeiten = new ArrayList<>();
+
     /** IDs der Interessensgebiete (stelle_interesse join table) */
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "stelle_interesse", joinColumns = @JoinColumn(name = "stelle_id"))

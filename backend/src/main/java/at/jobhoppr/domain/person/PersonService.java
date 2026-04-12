@@ -74,6 +74,8 @@ public class PersonService {
         ort.setLat(req.lat());
         ort.setLon(req.lon());
         ort.setUmkreisKm(req.umkreisKm());
+        ort.setGeoLocationId(req.geoLocationId());
+        ort.setBundesweit(req.bundesweit() != null && req.bundesweit());
         p.getOrte().add(ort);
         personRepository.save(p);
         return ort;
@@ -150,5 +152,6 @@ public class PersonService {
 
     public record OrtRequest(
             String ortRolle, String ortTyp, String bezeichnung,
-            double lat, double lon, double umkreisKm) {}
+            double lat, double lon, double umkreisKm,
+            Integer geoLocationId, Boolean bundesweit) {}
 }

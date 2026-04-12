@@ -17,8 +17,10 @@
     <div class="lg:col-span-2 card bg-base-100 shadow">
       <div class="card-body">
         <h2 class="card-title text-lg mb-4">Stammdaten</h2>
-        <form th:action="${isNeu} ? '/stellen' : '/stellen/' + ${stelle.id}"
-              method="post">
+        <form id="stelle-form"
+              th:action="${isNeu} ? '/stellen' : '/stellen/' + ${stelle.id}"
+              method="post"
+              onsubmit="serializeArbeitszeiten(this)">
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
@@ -52,15 +54,53 @@
               <input type="text" name="ortBezeichnung" class="input input-bordered"
                      th:value="${stelle.ortBezeichnung}" required placeholder="Wien, 1010"/>
             </div>
+
+            <!-- Ort-Typ + Bundesweit -->
             <div class="form-control">
-              <label class="label"><span class="label-text font-medium">Breitengrad (lat) *</span></label>
-              <input type="number" step="0.0001" name="ortLat" class="input input-bordered"
-                     th:value="${stelle.ortLat != null} ? ${stelle.ortLat} : 48.2082" required/>
+              <label class="label"><span class="label-text font-medium">Standort-Typ</span></label>
+              <select name="ortTypStelle" id="stelle-ort-typ" class="select select-bordered"
+                      onchange="stelleOrtTypChanged(this.value)">
+                <option value="GENAU">Genauer Ort (GPS)</option>
+                <option value="REGION">Region (Bundesland/Bezirk)</option>
+              </select>
             </div>
-            <div class="form-control">
-              <label class="label"><span class="label-text font-medium">Längengrad (lon) *</span></label>
-              <input type="number" step="0.0001" name="ortLon" class="input input-bordered"
-                     th:value="${stelle.ortLon != null} ? ${stelle.ortLon} : 16.3738" required/>
+
+            <!-- GPS fields -->
+            <div id="stelle-gps-felder" class="contents">
+              <div class="form-control">
+                <label class="label"><span class="label-text font-medium">Breitengrad (lat) *</span></label>
+                <input type="number" step="0.0001" name="ortLat" id="stelle-lat" class="input input-bordered"
+                       th:value="${stelle.ortLat != null} ? ${stelle.ortLat} : 48.2082" required/>
+              </div>
+              <div class="form-control">
+                <label class="label"><span class="label-text font-medium">Längengrad (lon) *</span></label>
+                <input type="number" step="0.0001" name="ortLon" id="stelle-lon" class="input input-bordered"
+                       th:value="${stelle.ortLon != null} ? ${stelle.ortLon} : 16.3738" required/>
+              </div>
+            </div>
+
+            <!-- Region fields -->
+            <div id="stelle-region-felder" class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4" style="display:none">
+              <div class="form-control">
+                <label class="label"><span class="label-text font-medium">Bundesland</span></label>
+                <select id="stelle-bundesland" class="select select-bordered"
+                        hx-get="/stellen/orte/bezirke"
+                        hx-trigger="change"
+                        hx-target="#stelle-bezirk-wrap"
+                        hx-swap="innerHTML"
+                        name="parentId">
+                  <option value="">Bundesland wählen...</option>
+                  <th:block th:each="bl : ${bundeslaender}">
+                    <option th:value="${bl.id}" th:text="${bl.name}">Bundesland</option>
+                  </th:block>
+                </select>
+              </div>
+              <div id="stelle-bezirk-wrap" class="form-control">
+                <!-- Bezirk dropdown loaded via HTMX -->
+              </div>
+              <input type="hidden" name="geoLocationId" id="stelle-geo-id"/>
+              <input type="hidden" name="ortLat" id="stelle-lat-hidden" value="0"/>
+              <input type="hidden" name="ortLon" id="stelle-lon-hidden" value="0"/>
             </div>
             <div class="form-control sm:col-span-2">
               <label class="label"><span class="label-text font-medium">Beruf (BIS)</span></label>
@@ -79,6 +119,27 @@
               <label class="label"><span class="label-text font-medium">Beschreibung</span></label>
               <textarea name="beschreibung" class="textarea textarea-bordered" rows="3"
                         th:text="${stelle.beschreibung}" placeholder="Stellenbeschreibung..."></textarea>
+            </div>
+
+            <!-- Arbeitszeitmodelle -->
+            <div class="form-control sm:col-span-2">
+              <label class="label"><span class="label-text font-medium">Arbeitszeitmodelle</span></label>
+              <div id="arbeitszeit-rows" class="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 border border-base-300 rounded-lg">
+                <th:block th:each="modell : ${ {'VOLLZEIT','TEILZEIT','GERINGFUEGIG','NACHT','WOCHENENDE'} }">
+                  <div class="flex items-center gap-3" th:data-modell="${modell}">
+                    <input type="checkbox" class="az-modell checkbox checkbox-sm"
+                           th:data-value="${modell}"
+                           th:checked="${aktiveAzModelle.contains(modell)}"/>
+                    <span class="text-sm flex-1" th:text="${modell}">VOLLZEIT</span>
+                    <label class="flex items-center gap-1 text-xs">
+                      <input type="checkbox" class="az-pflicht checkbox checkbox-xs checkbox-error"
+                             th:checked="${pflichtAzModelle.contains(modell)}"/>
+                      <span>Pflicht</span>
+                    </label>
+                  </div>
+                </th:block>
+              </div>
+              <div class="label"><span class="label-text-alt text-base-content/60">Pflicht-Modelle schließen Personen aus, die dieses Modell explizit ausschließen.</span></div>
             </div>
           </div>
 
@@ -206,14 +267,34 @@
           <h2 class="card-title text-base text-error">Gefahrenzone</h2>
           <button class="btn btn-error btn-outline btn-sm w-full"
                   th:hx-delete="@{/stellen/{id}(id=${stelle.id})}"
-                  hx-confirm="Stelle wirklich löschen?"
-                  hx-push-url="/stellen">Löschen</button>
+                  hx-confirm="Stelle wirklich löschen?">Löschen</button>
         </div>
       </div>
     </div>
   </div>
 
   <script>
+    function serializeArbeitszeiten(form) {
+      // Remove any previously injected hidden inputs
+      form.querySelectorAll('input[data-az-injected]').forEach(el => el.remove());
+      // Walk each arbeitszeit row; only emit entries for checked modell checkboxes
+      document.querySelectorAll('#arbeitszeit-rows [data-modell]').forEach(function(row) {
+        var modellCb = row.querySelector('.az-modell');
+        if (!modellCb || !modellCb.checked) return;
+        var pflichtCb = row.querySelector('.az-pflicht');
+        var modellVal = modellCb.dataset.value;
+        var pflichtVal = (pflichtCb && pflichtCb.checked) ? 'true' : 'false';
+        var m = document.createElement('input');
+        m.type = 'hidden'; m.name = 'arbeitszeitModelle'; m.value = modellVal;
+        m.dataset.azInjected = '1';
+        var p = document.createElement('input');
+        p.type = 'hidden'; p.name = 'arbeitszeitPflicht'; p.value = pflichtVal;
+        p.dataset.azInjected = '1';
+        form.appendChild(m);
+        form.appendChild(p);
+      });
+    }
+
     function onTypChange(val) {
       var lehrBereich = document.getElementById('lehrstelle-bereich');
       var kompSidebar = document.getElementById('kompetenz-sidebar');
@@ -224,6 +305,24 @@
         lehrBereich.style.display = 'none';
         if (kompSidebar) kompSidebar.style.display = '';
       }
+    }
+
+    function stelleOrtTypChanged(typ) {
+      var gps = document.getElementById('stelle-gps-felder');
+      var region = document.getElementById('stelle-region-felder');
+      if (typ === 'REGION') {
+        gps.style.display = 'none';
+        region.style.display = '';
+      } else {
+        gps.style.display = '';
+        region.style.display = 'none';
+      }
+    }
+
+    function stelleBezirkChanged(id, lat, lon) {
+      document.getElementById('stelle-geo-id').value = id;
+      document.getElementById('stelle-lat-hidden').value = lat || 0;
+      document.getElementById('stelle-lon-hidden').value = lon || 0;
     }
 
     function addKompetenz(btn) {

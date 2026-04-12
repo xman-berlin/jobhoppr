@@ -18,6 +18,7 @@ public class GeoRestController {
 
     private final PlzOrtRepository plzOrtRepository;
     private final BundeslandRepository bundeslandRepository;
+    private final GeoLocationRepository geoLocationRepository;
     private final RestTemplate restTemplate;
 
     @Value("${jobhoppr.nominatim.user-agent:JobHoppr/1.0}")
@@ -47,6 +48,18 @@ public class GeoRestController {
         return bundeslandRepository.findAll().stream()
                 .map(b -> new BundeslandResult(b.getKuerzel(), b.getName(),
                         b.getCentroidLat(), b.getCentroidLon(), b.getUmkreisKm()))
+                .toList();
+    }
+
+    /** Returns top-level geo_location entries (Bundesländer) or children of a given parent. */
+    @GetMapping("/locations")
+    public List<GeoLocationResult> locations(@RequestParam(required = false) Integer parentId) {
+        List<GeoLocation> result = parentId == null
+                ? geoLocationRepository.findByEbeneAndParentIsNullOrderByName("BUNDESLAND")
+                : geoLocationRepository.findByParentIdOrderByName(parentId);
+        return result.stream()
+                .map(g -> new GeoLocationResult(g.getId(), g.getName(), g.getEbene(),
+                        g.getParentId(), g.getLat(), g.getLon()))
                 .toList();
     }
 
@@ -92,4 +105,6 @@ public class GeoRestController {
                             double lat, double lon) {}
     public record BundeslandResult(String kuerzel, String name, double lat, double lon,
                                    double umkreisKm) {}
+    public record GeoLocationResult(Integer id, String name, String ebene,
+                                    Integer parentId, Double lat, Double lon) {}
 }

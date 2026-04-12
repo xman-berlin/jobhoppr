@@ -4,6 +4,7 @@ import at.jobhoppr.domain.bis.BerufSpezialisierungRepository;
 import at.jobhoppr.domain.bis.InteressensgebietRepository;
 import at.jobhoppr.domain.bis.KompetenzRepository;
 import at.jobhoppr.domain.bis.VoraussetzungRepository;
+import at.jobhoppr.domain.geo.GeoLocationRepository;
 import io.github.wimdeblauwe.htmx.spring.boot.mvc.HxRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,6 +31,7 @@ public class StelleController {
     private final KompetenzRepository kompetenzRepository;
     private final InteressensgebietRepository interessensgebietRepository;
     private final VoraussetzungRepository voraussetzungRepository;
+    private final GeoLocationRepository geoLocationRepository;
 
     @GetMapping
     public String liste(@RequestParam(defaultValue = "0") int page,
@@ -52,6 +55,9 @@ public class StelleController {
         model.addAttribute("isNeu", true);
         model.addAttribute("alleInteressen", interessensgebietRepository.findAll());
         model.addAttribute("alleVoraussetzungen", voraussetzungRepository.findAll());
+        model.addAttribute("bundeslaender", geoLocationRepository.findByEbeneOrderByName("BUNDESLAND"));
+        model.addAttribute("aktiveAzModelle", Set.of());
+        model.addAttribute("pflichtAzModelle", Set.of());
         return "stellen/formular";
     }
 
@@ -75,6 +81,8 @@ public class StelleController {
         }
         model.addAttribute("alleInteressen", interessensgebietRepository.findAll());
         model.addAttribute("alleVoraussetzungen", voraussetzungRepository.findAll());
+        model.addAttribute("bundeslaender", geoLocationRepository.findByEbeneOrderByName("BUNDESLAND"));
+        addArbeitszeitModelle(model, stelle);
         return "stellen/formular";
     }
 
@@ -91,11 +99,15 @@ public class StelleController {
             @RequestParam(required = false) Set<Integer> interessenIds,
             @RequestParam(required = false) Set<Integer> voraussetzungIds,
             @RequestParam(required = false) List<Integer> kompetenzIds,
-            @RequestParam(required = false) List<Boolean> pflichtFlags) {
+            @RequestParam(required = false) List<Boolean> pflichtFlags,
+            @RequestParam(required = false) Integer geoLocationId,
+            @RequestParam(required = false) List<String> arbeitszeitModelle,
+            @RequestParam(required = false) List<Boolean> arbeitszeitPflicht) {
 
         Stelle s = stelleService.erstellen(buildRequest(titel, unternehmen, beschreibung,
                 ortBezeichnung, ortLat, ortLon, berufSpezialisierungId, typ,
-                interessenIds, voraussetzungIds, kompetenzIds, pflichtFlags));
+                interessenIds, voraussetzungIds, kompetenzIds, pflichtFlags,
+                geoLocationId, arbeitszeitModelle, arbeitszeitPflicht));
         return "redirect:/stellen/" + s.getId();
     }
 
@@ -113,11 +125,15 @@ public class StelleController {
             @RequestParam(required = false) Set<Integer> interessenIds,
             @RequestParam(required = false) Set<Integer> voraussetzungIds,
             @RequestParam(required = false) List<Integer> kompetenzIds,
-            @RequestParam(required = false) List<Boolean> pflichtFlags) {
+            @RequestParam(required = false) List<Boolean> pflichtFlags,
+            @RequestParam(required = false) Integer geoLocationId,
+            @RequestParam(required = false) List<String> arbeitszeitModelle,
+            @RequestParam(required = false) List<Boolean> arbeitszeitPflicht) {
 
         stelleService.aktualisieren(id, buildRequest(titel, unternehmen, beschreibung,
                 ortBezeichnung, ortLat, ortLon, berufSpezialisierungId, typ,
-                interessenIds, voraussetzungIds, kompetenzIds, pflichtFlags));
+                interessenIds, voraussetzungIds, kompetenzIds, pflichtFlags,
+                geoLocationId, arbeitszeitModelle, arbeitszeitPflicht));
         return "redirect:/stellen/" + id;
     }
 
@@ -127,6 +143,7 @@ public class StelleController {
         stelleService.loeschen(id);
         return ResponseEntity.ok()
                 .header("HX-Trigger", "{\"showToast\":\"Stelle gelöscht\"}")
+                .header("HX-Redirect", "/stellen")
                 .body("");
     }
 
@@ -161,7 +178,9 @@ public class StelleController {
             String ortBezeichnung, double ortLat, double ortLon,
             Integer berufSpezialisierungId, String typStr,
             Set<Integer> interessenIds, Set<Integer> voraussetzungIds,
-            List<Integer> kompetenzIds, List<Boolean> pflichtFlags) {
+            List<Integer> kompetenzIds, List<Boolean> pflichtFlags,
+            Integer geoLocationId,
+            List<String> arbeitszeitModelle, List<Boolean> arbeitszeitPflicht) {
 
         StelleTyp typ = (typStr != null && !typStr.isBlank())
                 ? StelleTyp.valueOf(typStr.toUpperCase()) : StelleTyp.STANDARD;
@@ -175,8 +194,42 @@ public class StelleController {
                 kompetenzen.add(new StelleService.KompetenzEintrag(kompetenzIds.get(i), pflicht));
             }
         }
+
+        List<StelleService.ArbeitszeitEintrag> arbeitszeiten = null;
+        if (arbeitszeitModelle != null && !arbeitszeitModelle.isEmpty()) {
+            arbeitszeiten = new java.util.ArrayList<>();
+            for (int i = 0; i < arbeitszeitModelle.size(); i++) {
+                boolean pflicht = arbeitszeitPflicht != null && i < arbeitszeitPflicht.size()
+                        ? arbeitszeitPflicht.get(i) : false;
+                arbeitszeiten.add(new StelleService.ArbeitszeitEintrag(arbeitszeitModelle.get(i), pflicht));
+            }
+        }
+
         return new StelleService.StelleRequest(titel, unternehmen, beschreibung,
                 ortBezeichnung, ortLat, ortLon, berufSpezialisierungId, typ,
-                interessenIds, voraussetzungIds, kompetenzen);
+                interessenIds, voraussetzungIds, kompetenzen, geoLocationId, arbeitszeiten);
+    }
+
+    /** HTMX: returns Bezirk <select> for the given Bundesland parent. */
+    @GetMapping("/orte/bezirke")
+    @HxRequest
+    public String bezirkeDropdown(@RequestParam Integer parentId, Model model) {
+        model.addAttribute("bezirke", geoLocationRepository.findByParentIdOrderByName(parentId));
+        return "stellen/bezirk-fragment :: bezirk-select";
+    }
+
+    private void addArbeitszeitModelle(Model model, Stelle stelle) {
+        Set<String> aktive = new HashSet<>();
+        Set<String> pflicht = new HashSet<>();
+        if (stelle.getArbeitszeiten() != null) {
+            for (StelleArbeitszeit az : stelle.getArbeitszeiten()) {
+                aktive.add(az.getId().getModell());
+                if (Boolean.TRUE.equals(az.getPflicht())) {
+                    pflicht.add(az.getId().getModell());
+                }
+            }
+        }
+        model.addAttribute("aktiveAzModelle", aktive);
+        model.addAttribute("pflichtAzModelle", pflicht);
     }
 }
