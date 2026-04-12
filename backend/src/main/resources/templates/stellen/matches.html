@@ -77,6 +77,42 @@
           </div>
         </div>
 
+        <!-- Kompetenz-Details (STANDARD) -->
+        <div th:if="${r.stelleTyp == null or r.stelleTyp.name() == 'STANDARD'}"
+             class="mt-3">
+          <details class="collapse collapse-arrow bg-base-200 rounded-box">
+            <summary class="collapse-title text-xs px-3 py-2">
+              Kompetenzen
+              <span class="badge badge-success badge-xs ml-1" th:if="${!r.matchingKompetenzen.empty}"
+                    th:text="${r.matchingKompetenzen.size()}">0</span>
+              <span class="badge badge-error badge-xs ml-1" th:if="${!r.missingKompetenzen.empty}"
+                    th:text="${r.missingKompetenzen.size()}">0</span>
+            </summary>
+            <div class="collapse-content px-3 pb-2">
+              <div th:if="${!r.matchingKompetenzen.empty}" class="mb-2">
+                <div class="text-xs font-medium text-success mb-1">✓ Vorhanden</div>
+                <div class="flex flex-wrap gap-1">
+                  <span th:each="k : ${r.matchingKompetenzen}"
+                        class="badge badge-outline badge-sm text-success"
+                        th:text="${k.name}">Kompetenz</span>
+                </div>
+              </div>
+              <div th:if="${!r.missingKompetenzen.empty}">
+                <div class="text-xs font-medium text-error mb-1">✗ Fehlend</div>
+                <div class="flex flex-wrap gap-1">
+                  <span th:each="k : ${r.missingKompetenzen}"
+                        class="badge badge-outline badge-sm text-error"
+                        th:text="${k.name}">Kompetenz</span>
+                </div>
+              </div>
+              <div th:if="${r.matchingKompetenzen.empty and r.missingKompetenzen.empty}"
+                   class="text-xs text-base-content/50">
+                Keine Kompetenzen definiert
+              </div>
+            </div>
+          </details>
+        </div>
+
         <!-- Breakdown: LEHRSTELLE -->
         <div th:if="${r.stelleTyp != null and r.stelleTyp.name() == 'LEHRSTELLE'}"
              class="mt-3 space-y-1">

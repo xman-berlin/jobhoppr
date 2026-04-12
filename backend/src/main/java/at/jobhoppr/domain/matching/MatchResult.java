@@ -1,6 +1,7 @@
 package at.jobhoppr.domain.matching;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -13,13 +14,18 @@ public record MatchResult(
         double score,
         StelleTypInfo stelleTyp,
         OffsetDateTime erstelltAm,
-        Breakdown breakdown
+        Breakdown breakdown,
+        List<KompetenzMatch> matchingKompetenzen,
+        List<KompetenzMatch> missingKompetenzen
 ) {
     /** Score-Breakdown aus dem CROSS JOIN LATERAL (ein DB-Aufruf pro Kandidat). */
     public record Breakdown(double om, double sm, double fm, double qm) {}
 
     /** Minimale Typ-Info die vom Query zurückgegeben wird. */
     public enum StelleTypInfo { STANDARD, LEHRSTELLE }
+
+    /** Kompetenz-Match-Info für Detail-Ansicht. */
+    public record KompetenzMatch(String name, double score, boolean pflicht) {}
 
     // ── Convenience-Methoden für Thymeleaf ──────────────────────────────────
 

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -110,6 +111,8 @@ public class MatchRepository {
             bd.sm,
             bd.fm,
             bd.qm,
+            bd.matching_ko,
+            bd.missing_ko,
             CASE s.typ
               WHEN 'STANDARD'   THEN
                 (:w_beruf     * bd.om + :w_kompetenz * bd.sm)
@@ -125,7 +128,9 @@ public class MatchRepository {
               match_beruf(:person_id, s.id)           AS om,
               match_kompetenz(:person_id, s.id)       AS sm,
               match_interessen(:person_id, s.id)      AS fm,
-              match_voraussetzungen(:person_id, s.id) AS qm
+              match_voraussetzungen(:person_id, s.id) AS qm,
+              ARRAY(SELECT match_kompetenz_details(:person_id, s.id)) AS matching_ko,
+              ARRAY(SELECT missing_kompetenz_details(:person_id, s.id)) AS missing_ko
           ) bd
           WHERE s.id IN (SELECT id FROM kandidaten)
         )
@@ -134,7 +139,8 @@ public class MatchRepository {
           s.titel || COALESCE(' – ' || s.unternehmen, '')              AS target_name,
           s.typ,
           s.erstellt_am,
-          s.om, s.sm, s.fm, s.qm, s.score
+          s.om, s.sm, s.fm, s.qm, s.score,
+          s.matching_ko, s.missing_ko
         FROM scores s
         WHERE s.score >= :schwellenwert
         """;
@@ -217,6 +223,8 @@ public class MatchRepository {
             bd.sm,
             bd.fm,
             bd.qm,
+            bd.matching_ko,
+            bd.missing_ko,
             CASE (SELECT typ FROM stelle_data)
               WHEN 'STANDARD'   THEN
                 (:w_beruf     * bd.om + :w_kompetenz * bd.sm)
@@ -232,7 +240,9 @@ public class MatchRepository {
               match_beruf(p.id, :stelle_id)           AS om,
               match_kompetenz(p.id, :stelle_id)       AS sm,
               match_interessen(p.id, :stelle_id)      AS fm,
-              match_voraussetzungen(p.id, :stelle_id) AS qm
+              match_voraussetzungen(p.id, :stelle_id) AS qm,
+              ARRAY(SELECT match_kompetenz_details(p.id, :stelle_id)) AS matching_ko,
+              ARRAY(SELECT missing_kompetenz_details(p.id, :stelle_id)) AS missing_ko
           ) bd
           WHERE p.id IN (SELECT id FROM kandidaten)
         )
@@ -241,7 +251,8 @@ public class MatchRepository {
           p.naam              AS target_name,
           (SELECT typ FROM stelle_data) AS typ,
           p.erstellt_am,
-          p.om, p.sm, p.fm, p.qm, p.score
+          p.om, p.sm, p.fm, p.qm, p.score,
+          p.matching_ko, p.missing_ko
         FROM scores p
         WHERE p.score >= :schwellenwert
         """;
@@ -256,7 +267,7 @@ public class MatchRepository {
         String sql = STELLEN_FOR_PERSON_BASE + orderBy + "\nLIMIT 50";
         MapSqlParameterSource params = baseParams(modell)
                 .addValue("person_id", personId);
-        return jdbc.query(sql, params, (rs, i) -> mapRow(rs));
+        return jdbc.query(sql, params, (rs, i) -> mapRowStatic(rs));
     }
 
     public List<MatchResult> findTopPersonenForStelle(UUID stelleId, MatchModell modell,
@@ -265,7 +276,7 @@ public class MatchRepository {
         String sql = PERSONEN_FOR_STELLE_BASE + orderBy + "\nLIMIT 50";
         MapSqlParameterSource params = baseParams(modell)
                 .addValue("stelle_id", stelleId);
-        return jdbc.query(sql, params, (rs, i) -> mapRow(rs));
+        return jdbc.query(sql, params, (rs, i) -> mapRowStatic(rs));
     }
 
     // ────────────────────────────────────────────────────────────────────────────
@@ -282,7 +293,11 @@ public class MatchRepository {
                 .addValue("schwellenwert",       m.getScoreSchwellenwert());
     }
 
-    private MatchResult mapRow(java.sql.ResultSet rs) throws java.sql.SQLException {
+    private static MatchResult mapRowStatic(java.sql.ResultSet rs) throws java.sql.SQLException {
+        UUID targetId = UUID.fromString(rs.getString("target_id"));
+        String targetName = rs.getString("target_name");
+        double score = rs.getDouble("score");
+
         String typStr = rs.getString("typ");
         MatchResult.StelleTypInfo typ = typStr != null
                 ? MatchResult.StelleTypInfo.valueOf(typStr)
@@ -293,17 +308,92 @@ public class MatchRepository {
                 ? ts.toInstant().atOffset(java.time.ZoneOffset.UTC)
                 : null;
 
-        return new MatchResult(
-                UUID.fromString(rs.getString("target_id")),
-                rs.getString("target_name"),
-                rs.getDouble("score"),
-                typ,
-                erstelltAm,
-                new MatchResult.Breakdown(
-                        rs.getDouble("om"),
-                        rs.getDouble("sm"),
-                        rs.getDouble("fm"),
-                        rs.getDouble("qm")));
+        MatchResult.Breakdown breakdown = new MatchResult.Breakdown(
+                rs.getDouble("om"),
+                rs.getDouble("sm"),
+                rs.getDouble("fm"),
+                rs.getDouble("qm"));
+
+        List<MatchResult.KompetenzMatch> matching = new ArrayList<>();
+        List<MatchResult.KompetenzMatch> missing = new ArrayList<>();
+
+        try {
+            java.sql.Array matchingArr = rs.getArray("matching_ko");
+            if (matchingArr != null) {
+                Object obj = matchingArr.getArray();
+                if (obj instanceof Object[] rows) {
+                    for (Object row : rows) {
+                        MatchResult.KompetenzMatch km = parsePgComposite(row, true);
+                        if (km != null) matching.add(km);
+                    }
+                }
+            }
+
+            java.sql.Array missingArr = rs.getArray("missing_ko");
+            if (missingArr != null) {
+                Object obj = missingArr.getArray();
+                if (obj instanceof Object[] rows) {
+                    for (Object row : rows) {
+                        MatchResult.KompetenzMatch km = parsePgComposite(row, false);
+                        if (km != null) missing.add(km);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // ignore – columns absent or empty
+        }
+
+        return new MatchResult(targetId, targetName, score, typ, erstelltAm, breakdown, matching, missing);
+    }
+
+    /**
+     * Parst einen PostgreSQL-Composite-Wert der Form {@code (name,score,pflicht)}
+     * aus einem {@code PGobject} (oder beliebigem Objekt mit passendem toString).
+     * <p>
+     * Beispiel-Strings:
+     * <ul>
+     *   <li>{@code (Didaktikkenntnisse,0.5,t)} – matching, mit Score</li>
+     *   <li>{@code (Pädagogikkenntnisse,,f)}   – missing, kein Score</li>
+     * </ul>
+     * Wir vermeiden den direkten Compile-Zeit-Import von {@code org.postgresql.util.PGobject}
+     * (scope=runtime), indem wir den Wert per Reflection lesen oder per toString() extrahieren.
+     *
+     * @param row        Objekt aus dem JDBC-Array (PGobject zur Laufzeit)
+     * @param hasScore   {@code true} für matching_ko (3 Felder), {@code false} für missing_ko (2 Felder)
+     */
+    private static MatchResult.KompetenzMatch parsePgComposite(Object row, boolean hasScore) {
+        if (row == null) return null;
+
+        // PGobject.getValue() liefert den Rohstring, z.B. "(Java,0.8,t)"
+        // Wir rufen getValue() per Reflection auf, um den compile-time import zu vermeiden.
+        String value;
+        try {
+            value = (String) row.getClass().getMethod("getValue").invoke(row);
+        } catch (Exception e) {
+            // Fallback: toString() liefert bei PGobject denselben String
+            value = row.toString();
+        }
+
+        if (value == null || value.length() < 3) return null;
+
+        // Strip outer parentheses
+        String inner = value.startsWith("(") && value.endsWith(")")
+                ? value.substring(1, value.length() - 1)
+                : value;
+
+        // Split on first two commas only – name may contain no commas (BIS names don't)
+        String[] parts = inner.split(",", hasScore ? 3 : 2);
+        if (parts.length < (hasScore ? 3 : 2)) return null;
+
+        String name = parts[0];
+        boolean pflicht = "t".equalsIgnoreCase(parts[hasScore ? 2 : 1].trim())
+                       || "true".equalsIgnoreCase(parts[hasScore ? 2 : 1].trim());
+        double score = 0.0;
+        if (hasScore && !parts[1].isBlank()) {
+            try { score = Double.parseDouble(parts[1]); } catch (NumberFormatException ignored) {}
+        }
+
+        return new MatchResult.KompetenzMatch(name, score, pflicht);
     }
 
     private static String stellenOrderBy(SortierParameter sort) {

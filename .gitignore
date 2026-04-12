@@ -14,8 +14,9 @@ Thumbs.db
 .env.local
 .env.*.local
 
-# Java / Gradle
+# Java / Maven / Gradle
 backend/build/
+backend/target/
 backend/.gradle/
 backend/out/
 *.class
