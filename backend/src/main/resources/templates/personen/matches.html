@@ -60,24 +60,42 @@
           </div>
         </div>
 
-        <!-- Breakdown: STANDARD -->
-        <div th:if="${r.stelleTyp == null or r.stelleTyp.name() == 'STANDARD'}"
-             class="mt-3 space-y-1">
+        <!-- Breakdown: immer sichtbar, Zeilen je nach Typ -->
+        <div class="mt-3 space-y-1">
+          <!-- Beruf (STANDARD) / Lehrberuf (LEHRSTELLE) — immer -->
           <div class="flex items-center gap-2 text-xs">
-            <span class="w-20 text-base-content/60">Beruf</span>
+            <span class="w-20 text-base-content/60"
+                  th:text="${r.stelleTyp != null and r.stelleTyp.name() == 'LEHRSTELLE'} ? 'Lehrberuf' : 'Beruf'">Beruf</span>
             <progress class="progress progress-primary flex-1 h-2"
                       th:value="${r.berufScoreProzent()}" max="100"></progress>
             <span class="w-8 text-right" th:text="${r.berufScoreProzent()} + '%'">0%</span>
           </div>
-          <div class="flex items-center gap-2 text-xs">
+          <!-- Kompetenzen (nur STANDARD) -->
+          <div th:if="${r.stelleTyp == null or r.stelleTyp.name() == 'STANDARD'}"
+               class="flex items-center gap-2 text-xs">
             <span class="w-20 text-base-content/60">Kompetenzen</span>
             <progress class="progress progress-secondary flex-1 h-2"
                       th:value="${r.kompetenzScoreProzent()}" max="100"></progress>
             <span class="w-8 text-right" th:text="${r.kompetenzScoreProzent()} + '%'">0%</span>
           </div>
+          <!-- Interessen + Voraussetzungen (nur LEHRSTELLE) -->
+          <div th:if="${r.stelleTyp != null and r.stelleTyp.name() == 'LEHRSTELLE'}"
+               class="flex items-center gap-2 text-xs">
+            <span class="w-20 text-base-content/60">Interessen</span>
+            <progress class="progress progress-warning flex-1 h-2"
+                      th:value="${r.interessenScoreProzent()}" max="100"></progress>
+            <span class="w-8 text-right" th:text="${r.interessenScoreProzent()} + '%'">0%</span>
+          </div>
+          <div th:if="${r.stelleTyp != null and r.stelleTyp.name() == 'LEHRSTELLE'}"
+               class="flex items-center gap-2 text-xs">
+            <span class="w-20 text-base-content/60">Voraussetg.</span>
+            <progress class="progress progress-accent flex-1 h-2"
+                      th:value="${r.voraussetzungScoreProzent()}" max="100"></progress>
+            <span class="w-8 text-right" th:text="${r.voraussetzungScoreProzent()} + '%'">0%</span>
+          </div>
         </div>
 
-        <!-- Kompetenz-Details (STANDARD) -->
+        <!-- Kompetenz-Details (nur STANDARD) -->
         <div th:if="${r.stelleTyp == null or r.stelleTyp.name() == 'STANDARD'}"
              class="mt-3">
           <details class="collapse collapse-arrow bg-base-200 rounded-box">
@@ -87,6 +105,8 @@
                     th:text="${r.matchingKompetenzen.size()}">0</span>
               <span class="badge badge-error badge-xs ml-1" th:if="${!r.missingKompetenzen.empty}"
                     th:text="${r.missingKompetenzen.size()}">0</span>
+              <span class="badge badge-ghost badge-xs ml-1" th:if="${!r.extraKompetenzen.empty}"
+                    th:text="'+' + ${r.extraKompetenzen.size()}">0</span>
             </summary>
             <div class="collapse-content px-3 pb-2">
               <div th:if="${!r.matchingKompetenzen.empty}" class="mb-2">
@@ -97,7 +117,7 @@
                         th:text="${k.name}">Kompetenz</span>
                 </div>
               </div>
-              <div th:if="${!r.missingKompetenzen.empty}">
+              <div th:if="${!r.missingKompetenzen.empty}" class="mb-2">
                 <div class="text-xs font-medium text-error mb-1">✗ Fehlend</div>
                 <div class="flex flex-wrap gap-1">
                   <span th:each="k : ${r.missingKompetenzen}"
@@ -105,7 +125,15 @@
                         th:text="${k.name}">Kompetenz</span>
                 </div>
               </div>
-              <div th:if="${r.matchingKompetenzen.empty and r.missingKompetenzen.empty}"
+              <div th:if="${!r.extraKompetenzen.empty}" class="mb-2">
+                <div class="text-xs font-medium text-base-content/50 mb-1">+ Zusätzlich</div>
+                <div class="flex flex-wrap gap-1">
+                  <span th:each="k : ${r.extraKompetenzen}"
+                        class="badge badge-ghost badge-sm"
+                        th:text="${k.name}">Kompetenz</span>
+                </div>
+              </div>
+              <div th:if="${r.matchingKompetenzen.empty and r.missingKompetenzen.empty and r.extraKompetenzen.empty}"
                    class="text-xs text-base-content/50">
                 Keine Kompetenzen definiert
               </div>
@@ -113,27 +141,96 @@
           </details>
         </div>
 
-        <!-- Breakdown: LEHRSTELLE -->
+        <!-- Interessen-Details (nur LEHRSTELLE) -->
         <div th:if="${r.stelleTyp != null and r.stelleTyp.name() == 'LEHRSTELLE'}"
-             class="mt-3 space-y-1">
-          <div class="flex items-center gap-2 text-xs">
-            <span class="w-20 text-base-content/60">Lehrberuf</span>
-            <progress class="progress progress-primary flex-1 h-2"
-                      th:value="${r.berufScoreProzent()}" max="100"></progress>
-            <span class="w-8 text-right" th:text="${r.berufScoreProzent()} + '%'">0%</span>
-          </div>
-          <div class="flex items-center gap-2 text-xs">
-            <span class="w-20 text-base-content/60">Interessen</span>
-            <progress class="progress progress-warning flex-1 h-2"
-                      th:value="${r.interessenScoreProzent()}" max="100"></progress>
-            <span class="w-8 text-right" th:text="${r.interessenScoreProzent()} + '%'">0%</span>
-          </div>
-          <div class="flex items-center gap-2 text-xs">
-            <span class="w-20 text-base-content/60">Voraussetg.</span>
-            <progress class="progress progress-accent flex-1 h-2"
-                      th:value="${r.voraussetzungScoreProzent()}" max="100"></progress>
-            <span class="w-8 text-right" th:text="${r.voraussetzungScoreProzent()} + '%'">0%</span>
-          </div>
+             class="mt-3">
+          <details class="collapse collapse-arrow bg-base-200 rounded-box">
+            <summary class="collapse-title text-xs px-3 py-2">
+              Interessen
+              <span class="badge badge-success badge-xs ml-1" th:if="${!r.matchingInteressen.empty}"
+                    th:text="${r.matchingInteressen.size()}">0</span>
+              <span class="badge badge-error badge-xs ml-1" th:if="${!r.missingInteressen.empty}"
+                    th:text="${r.missingInteressen.size()}">0</span>
+              <span class="badge badge-ghost badge-xs ml-1" th:if="${!r.extraInteressen.empty}"
+                    th:text="'+' + ${r.extraInteressen.size()}">0</span>
+            </summary>
+            <div class="collapse-content px-3 pb-2">
+              <div th:if="${!r.matchingInteressen.empty}" class="mb-2">
+                <div class="text-xs font-medium text-success mb-1">✓ Passend</div>
+                <div class="flex flex-wrap gap-1">
+                  <span th:each="ig : ${r.matchingInteressen}"
+                        class="badge badge-outline badge-sm text-success"
+                        th:text="${ig}">Interesse</span>
+                </div>
+              </div>
+              <div th:if="${!r.missingInteressen.empty}" class="mb-2">
+                <div class="text-xs font-medium text-error mb-1">✗ Fehlt</div>
+                <div class="flex flex-wrap gap-1">
+                  <span th:each="ig : ${r.missingInteressen}"
+                        class="badge badge-outline badge-sm text-error"
+                        th:text="${ig}">Interesse</span>
+                </div>
+              </div>
+              <div th:if="${!r.extraInteressen.empty}" class="mb-2">
+                <div class="text-xs font-medium text-base-content/50 mb-1">+ Zusätzlich</div>
+                <div class="flex flex-wrap gap-1">
+                  <span th:each="ig : ${r.extraInteressen}"
+                        class="badge badge-ghost badge-sm"
+                        th:text="${ig}">Interesse</span>
+                </div>
+              </div>
+              <div th:if="${r.matchingInteressen.empty and r.missingInteressen.empty and r.extraInteressen.empty}"
+                   class="text-xs text-base-content/50">
+                Keine Interessen definiert
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <!-- Voraussetzungs-Details (nur LEHRSTELLE) -->
+        <div th:if="${r.stelleTyp != null and r.stelleTyp.name() == 'LEHRSTELLE'}"
+             class="mt-2">
+          <details class="collapse collapse-arrow bg-base-200 rounded-box">
+            <summary class="collapse-title text-xs px-3 py-2">
+              Voraussetzungen
+              <span class="badge badge-success badge-xs ml-1" th:if="${!r.matchingVoraussetzungen.empty}"
+                    th:text="${r.matchingVoraussetzungen.size()}">0</span>
+              <span class="badge badge-error badge-xs ml-1" th:if="${!r.missingVoraussetzungen.empty}"
+                    th:text="${r.missingVoraussetzungen.size()}">0</span>
+              <span class="badge badge-ghost badge-xs ml-1" th:if="${!r.extraVoraussetzungen.empty}"
+                    th:text="'+' + ${r.extraVoraussetzungen.size()}">0</span>
+            </summary>
+            <div class="collapse-content px-3 pb-2">
+              <div th:if="${!r.matchingVoraussetzungen.empty}" class="mb-2">
+                <div class="text-xs font-medium text-success mb-1">✓ Erfüllt</div>
+                <div class="flex flex-wrap gap-1">
+                  <span th:each="vr : ${r.matchingVoraussetzungen}"
+                        class="badge badge-outline badge-sm text-success"
+                        th:text="${vr}">Voraussetzung</span>
+                </div>
+              </div>
+              <div th:if="${!r.missingVoraussetzungen.empty}" class="mb-2">
+                <div class="text-xs font-medium text-error mb-1">✗ Fehlt</div>
+                <div class="flex flex-wrap gap-1">
+                  <span th:each="vr : ${r.missingVoraussetzungen}"
+                        class="badge badge-outline badge-sm text-error"
+                        th:text="${vr}">Voraussetzung</span>
+                </div>
+              </div>
+              <div th:if="${!r.extraVoraussetzungen.empty}" class="mb-2">
+                <div class="text-xs font-medium text-base-content/50 mb-1">+ Zusätzlich</div>
+                <div class="flex flex-wrap gap-1">
+                  <span th:each="vr : ${r.extraVoraussetzungen}"
+                        class="badge badge-ghost badge-sm"
+                        th:text="${vr}">Voraussetzung</span>
+                </div>
+              </div>
+              <div th:if="${r.matchingVoraussetzungen.empty and r.missingVoraussetzungen.empty and r.extraVoraussetzungen.empty}"
+                   class="text-xs text-base-content/50">
+                Keine Voraussetzungen definiert
+              </div>
+            </div>
+          </details>
         </div>
 
         <div class="card-actions mt-3">

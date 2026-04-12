@@ -79,10 +79,31 @@ public class MatchRepository {
           WHERE sk.pflicht = TRUE
             AND sk.stelle_id IN (SELECT id FROM geo_kandidaten)
             AND NOT EXISTS (
-              SELECT 1 FROM person_kompetenz pk
-              JOIN kompetenz_closure cc ON cc.vorfahre_id = pk.kompetenz_id
-              WHERE pk.person_id = :person_id
-                AND cc.nachfahre_id = sk.kompetenz_id
+              SELECT 1 FROM person_kompetenz pk 
+              WHERE pk.person_id = :person_id 
+                AND pk.kompetenz_id = sk.kompetenz_id
+            )
+            AND NOT (
+              -- Sprachlevel-Matching (A1-C2) - Person hat gleiche oder höhere Stufe
+              (SELECT name FROM bis_kompetenz WHERE id = sk.kompetenz_id) ~ '^[A-C][12] - '
+              AND EXISTS (
+                SELECT 1 FROM person_kompetenz pk
+                JOIN bis_kompetenz pk_k ON pk_k.id = pk.kompetenz_id
+                WHERE pk.person_id = :person_id
+                  AND pk_k.name ~ '^[A-C][12] - '
+                  AND regexp_replace(pk_k.name, '^[A-C][12] - .* ', '') = regexp_replace(
+                    (SELECT name FROM bis_kompetenz WHERE id = sk.kompetenz_id), '^[A-C][12] - .* ', ''
+                  )
+                  AND pk_k.name >= (SELECT name FROM bis_kompetenz WHERE id = sk.kompetenz_id)
+              )
+            )
+            AND NOT EXISTS (
+              SELECT 1 FROM kompetenz_closure cc
+              JOIN person_kompetenz pk ON pk.kompetenz_id = cc.vorfahre_id
+              WHERE cc.nachfahre_id = sk.kompetenz_id 
+                AND pk.person_id = :person_id
+                -- Ausschluss für Sprachlevel: nur non-language matches via closure
+                AND (SELECT name FROM bis_kompetenz WHERE id = sk.kompetenz_id) !~ '^[A-C][12] - '
             )
         ),
         arbeitszeit_ko AS (
@@ -113,6 +134,13 @@ public class MatchRepository {
             bd.qm,
             bd.matching_ko,
             bd.missing_ko,
+            bd.extra_ko,
+            bd.matching_ig,
+            bd.missing_ig,
+            bd.extra_ig,
+            bd.matching_vr,
+            bd.missing_vr,
+            bd.extra_vr,
             CASE s.typ
               WHEN 'STANDARD'   THEN
                 (:w_beruf     * bd.om + :w_kompetenz * bd.sm)
@@ -125,12 +153,19 @@ public class MatchRepository {
           FROM stelle s
           CROSS JOIN LATERAL (
             SELECT
-              match_beruf(:person_id, s.id)           AS om,
-              match_kompetenz(:person_id, s.id)       AS sm,
-              match_interessen(:person_id, s.id)      AS fm,
-              match_voraussetzungen(:person_id, s.id) AS qm,
-              ARRAY(SELECT match_kompetenz_details(:person_id, s.id)) AS matching_ko,
-              ARRAY(SELECT missing_kompetenz_details(:person_id, s.id)) AS missing_ko
+              match_beruf(:person_id, s.id)                AS om,
+              match_kompetenz(:person_id, s.id)            AS sm,
+              match_interessen(:person_id, s.id)           AS fm,
+              match_voraussetzungen(:person_id, s.id)      AS qm,
+              ARRAY(SELECT match_kompetenz_details(:person_id, s.id))    AS matching_ko,
+              ARRAY(SELECT missing_kompetenz_details(:person_id, s.id))  AS missing_ko,
+              ARRAY(SELECT extra_kompetenz_details(:person_id, s.id))    AS extra_ko,
+              ARRAY(SELECT match_interessen_details(:person_id, s.id))   AS matching_ig,
+              ARRAY(SELECT missing_interessen_details(:person_id, s.id)) AS missing_ig,
+              ARRAY(SELECT extra_interessen_details(:person_id, s.id))   AS extra_ig,
+              ARRAY(SELECT match_voraussetzung_details(:person_id, s.id))   AS matching_vr,
+              ARRAY(SELECT missing_voraussetzung_details(:person_id, s.id)) AS missing_vr,
+              ARRAY(SELECT extra_voraussetzung_details(:person_id, s.id))   AS extra_vr
           ) bd
           WHERE s.id IN (SELECT id FROM kandidaten)
         )
@@ -140,7 +175,9 @@ public class MatchRepository {
           s.typ,
           s.erstellt_am,
           s.om, s.sm, s.fm, s.qm, s.score,
-          s.matching_ko, s.missing_ko
+          s.matching_ko, s.missing_ko, s.extra_ko,
+          s.matching_ig, s.missing_ig, s.extra_ig,
+          s.matching_vr, s.missing_vr, s.extra_vr
         FROM scores s
         WHERE s.score >= :schwellenwert
         """;
@@ -193,11 +230,29 @@ public class MatchRepository {
             WHERE sk.pflicht = TRUE
               AND sk.stelle_id = :stelle_id
               AND NOT EXISTS (
-                SELECT 1
-                FROM person_kompetenz pk2
-                JOIN kompetenz_closure cc2 ON cc2.vorfahre_id = pk2.kompetenz_id
-                WHERE pk2.person_id = gk.person_id
-                  AND cc2.nachfahre_id = sk.kompetenz_id
+                SELECT 1 FROM person_kompetenz pk WHERE pk.person_id = gk.person_id AND pk.kompetenz_id = sk.kompetenz_id
+              )
+              AND NOT (
+                -- Sprachlevel-Matching (A1-C2) - Person hat gleiche oder höhere Stufe
+                (SELECT name FROM bis_kompetenz WHERE id = sk.kompetenz_id) ~ '^[A-C][12] - '
+                AND EXISTS (
+                  SELECT 1 FROM person_kompetenz pk
+                  JOIN bis_kompetenz pk_k ON pk_k.id = pk.kompetenz_id
+                  WHERE pk.person_id = gk.person_id
+                    AND pk_k.name ~ '^[A-C][12] - '
+                    AND regexp_replace(pk_k.name, '^[A-C][12] - .* ', '') = regexp_replace(
+                      (SELECT name FROM bis_kompetenz WHERE id = sk.kompetenz_id), '^[A-C][12] - .* ', ''
+                    )
+                    AND pk_k.name >= (SELECT name FROM bis_kompetenz WHERE id = sk.kompetenz_id)
+                )
+              )
+              AND NOT EXISTS (
+                SELECT 1 FROM kompetenz_closure cc
+                JOIN person_kompetenz pk ON pk.kompetenz_id = cc.vorfahre_id
+                WHERE cc.nachfahre_id = sk.kompetenz_id 
+                  AND pk.person_id = gk.person_id
+                  -- Ausschluss für Sprachlevel: nur non-language matches via closure
+                  AND (SELECT name FROM bis_kompetenz WHERE id = sk.kompetenz_id) !~ '^[A-C][12] - '
               )
           )
         ),
@@ -225,6 +280,13 @@ public class MatchRepository {
             bd.qm,
             bd.matching_ko,
             bd.missing_ko,
+            bd.extra_ko,
+            bd.matching_ig,
+            bd.missing_ig,
+            bd.extra_ig,
+            bd.matching_vr,
+            bd.missing_vr,
+            bd.extra_vr,
             CASE (SELECT typ FROM stelle_data)
               WHEN 'STANDARD'   THEN
                 (:w_beruf     * bd.om + :w_kompetenz * bd.sm)
@@ -237,12 +299,19 @@ public class MatchRepository {
           FROM person p
           CROSS JOIN LATERAL (
             SELECT
-              match_beruf(p.id, :stelle_id)           AS om,
-              match_kompetenz(p.id, :stelle_id)       AS sm,
-              match_interessen(p.id, :stelle_id)      AS fm,
-              match_voraussetzungen(p.id, :stelle_id) AS qm,
-              ARRAY(SELECT match_kompetenz_details(p.id, :stelle_id)) AS matching_ko,
-              ARRAY(SELECT missing_kompetenz_details(p.id, :stelle_id)) AS missing_ko
+              match_beruf(p.id, :stelle_id)                AS om,
+              match_kompetenz(p.id, :stelle_id)            AS sm,
+              match_interessen(p.id, :stelle_id)           AS fm,
+              match_voraussetzungen(p.id, :stelle_id)      AS qm,
+              ARRAY(SELECT match_kompetenz_details(p.id, :stelle_id))    AS matching_ko,
+              ARRAY(SELECT missing_kompetenz_details(p.id, :stelle_id))  AS missing_ko,
+              ARRAY(SELECT extra_kompetenz_details(p.id, :stelle_id))    AS extra_ko,
+              ARRAY(SELECT match_interessen_details(p.id, :stelle_id))   AS matching_ig,
+              ARRAY(SELECT missing_interessen_details(p.id, :stelle_id)) AS missing_ig,
+              ARRAY(SELECT extra_interessen_details(p.id, :stelle_id))   AS extra_ig,
+              ARRAY(SELECT match_voraussetzung_details(p.id, :stelle_id))   AS matching_vr,
+              ARRAY(SELECT missing_voraussetzung_details(p.id, :stelle_id)) AS missing_vr,
+              ARRAY(SELECT extra_voraussetzung_details(p.id, :stelle_id))   AS extra_vr
           ) bd
           WHERE p.id IN (SELECT id FROM kandidaten)
         )
@@ -252,7 +321,9 @@ public class MatchRepository {
           (SELECT typ FROM stelle_data) AS typ,
           p.erstellt_am,
           p.om, p.sm, p.fm, p.qm, p.score,
-          p.matching_ko, p.missing_ko
+          p.matching_ko, p.missing_ko, p.extra_ko,
+          p.matching_ig, p.missing_ig, p.extra_ig,
+          p.matching_vr, p.missing_vr, p.extra_vr
         FROM scores p
         WHERE p.score >= :schwellenwert
         """;
@@ -315,35 +386,72 @@ public class MatchRepository {
                 rs.getDouble("qm"));
 
         List<MatchResult.KompetenzMatch> matching = new ArrayList<>();
-        List<MatchResult.KompetenzMatch> missing = new ArrayList<>();
+        List<MatchResult.KompetenzMatch> missing  = new ArrayList<>();
+        List<MatchResult.KompetenzMatch> extra    = new ArrayList<>();
+        List<String> matchingIg  = new ArrayList<>();
+        List<String> missingIg   = new ArrayList<>();
+        List<String> extraIg     = new ArrayList<>();
+        List<String> matchingVr  = new ArrayList<>();
+        List<String> missingVr   = new ArrayList<>();
+        List<String> extraVr     = new ArrayList<>();
 
         try {
-            java.sql.Array matchingArr = rs.getArray("matching_ko");
-            if (matchingArr != null) {
-                Object obj = matchingArr.getArray();
-                if (obj instanceof Object[] rows) {
-                    for (Object row : rows) {
-                        MatchResult.KompetenzMatch km = parsePgComposite(row, true);
-                        if (km != null) matching.add(km);
-                    }
-                }
-            }
-
-            java.sql.Array missingArr = rs.getArray("missing_ko");
-            if (missingArr != null) {
-                Object obj = missingArr.getArray();
-                if (obj instanceof Object[] rows) {
-                    for (Object row : rows) {
-                        MatchResult.KompetenzMatch km = parsePgComposite(row, false);
-                        if (km != null) missing.add(km);
-                    }
-                }
-            }
+            matching  = parseKompetenzArray(rs.getArray("matching_ko"), true);
+            missing   = parseKompetenzArray(rs.getArray("missing_ko"),  false);
+            extra     = parseKompetenzArray(rs.getArray("extra_ko"),    false);
+            matchingIg = parseStringArray(rs.getArray("matching_ig"));
+            missingIg  = parseStringArray(rs.getArray("missing_ig"));
+            extraIg    = parseStringArray(rs.getArray("extra_ig"));
+            matchingVr = parseStringArray(rs.getArray("matching_vr"));
+            missingVr  = parseStringArray(rs.getArray("missing_vr"));
+            extraVr    = parseStringArray(rs.getArray("extra_vr"));
         } catch (Exception e) {
             // ignore – columns absent or empty
         }
 
-        return new MatchResult(targetId, targetName, score, typ, erstelltAm, breakdown, matching, missing);
+        return new MatchResult(targetId, targetName, score, typ, erstelltAm, breakdown,
+                matching, missing, extra,
+                matchingIg, missingIg, extraIg,
+                matchingVr, missingVr, extraVr);
+    }
+
+    private static List<MatchResult.KompetenzMatch> parseKompetenzArray(
+            java.sql.Array arr, boolean hasScore) throws java.sql.SQLException {
+        List<MatchResult.KompetenzMatch> result = new ArrayList<>();
+        if (arr == null) return result;
+        Object obj = arr.getArray();
+        if (obj instanceof Object[] rows) {
+            for (Object row : rows) {
+                MatchResult.KompetenzMatch km = parsePgComposite(row, hasScore);
+                if (km != null) result.add(km);
+            }
+        }
+        return result;
+    }
+
+    private static List<String> parseStringArray(java.sql.Array arr) throws java.sql.SQLException {
+        List<String> result = new ArrayList<>();
+        if (arr == null) return result;
+        Object obj = arr.getArray();
+        if (obj instanceof Object[] rows) {
+            for (Object row : rows) {
+                if (row == null) continue;
+                // PGobject wrapping a single-column composite "(name)"
+                String raw;
+                try {
+                    raw = (String) row.getClass().getMethod("getValue").invoke(row);
+                } catch (Exception e) {
+                    raw = row.toString();
+                }
+                if (raw == null || raw.isBlank()) continue;
+                // Strip outer parens from composite: "(Teamarbeit)" → "Teamarbeit"
+                String name = raw.startsWith("(") && raw.endsWith(")")
+                        ? raw.substring(1, raw.length() - 1)
+                        : raw;
+                if (!name.isBlank()) result.add(name);
+            }
+        }
+        return result;
     }
 
     /**
@@ -364,7 +472,7 @@ public class MatchRepository {
     private static MatchResult.KompetenzMatch parsePgComposite(Object row, boolean hasScore) {
         if (row == null) return null;
 
-        // PGobject.getValue() liefert den Rohstring, z.B. "(Java,0.8,t)"
+        // PGobject.getValue() liefert den Rohstring, z.B. "(Java,0.8,t)" oder "(\"A2 - Elementare Deutschkenntnisse\",1,t)"
         // Wir rufen getValue() per Reflection auf, um den compile-time import zu vermeiden.
         String value;
         try {
@@ -381,6 +489,11 @@ public class MatchRepository {
                 ? value.substring(1, value.length() - 1)
                 : value;
 
+        // Strip leading/trailing quotes (PostgreSQL quotes composite elements with special chars)
+        if (inner.startsWith("\"") && inner.endsWith("\"")) {
+            inner = inner.substring(1, inner.length() - 1);
+        }
+
         // Split on first two commas only – name may contain no commas (BIS names don't)
         String[] parts = inner.split(",", hasScore ? 3 : 2);
         if (parts.length < (hasScore ? 3 : 2)) return null;
@@ -389,8 +502,8 @@ public class MatchRepository {
         boolean pflicht = "t".equalsIgnoreCase(parts[hasScore ? 2 : 1].trim())
                        || "true".equalsIgnoreCase(parts[hasScore ? 2 : 1].trim());
         double score = 0.0;
-        if (hasScore && !parts[1].isBlank()) {
-            try { score = Double.parseDouble(parts[1]); } catch (NumberFormatException ignored) {}
+        if (hasScore && parts.length > 1 && !parts[1].isBlank()) {
+            try { score = Double.parseDouble(parts[1].trim()); } catch (NumberFormatException ignored) {}
         }
 
         return new MatchResult.KompetenzMatch(name, score, pflicht);

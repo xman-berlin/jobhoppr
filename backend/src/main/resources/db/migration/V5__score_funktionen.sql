@@ -15,27 +15,27 @@ RETURNS FLOAT LANGUAGE SQL STABLE AS $$
   ) THEN 1.0 ELSE 0.0 END
 $$;
 
--- SM: Kompetenzmatching mit Closure Table (Spec-Formel exakt implementiert)
--- SM(J,O) = Σ_{s ∈ M(O)} [ |S(J) ∩ W(s)| / |W(s)| ] / |M(O)|
--- S(J): alle direkt zugeordneten Kompetenzen der Person (person_kompetenz)
--- W(s): Pfad der Stelle-Kompetenz s bis Root (= alle Einträge in kompetenz_closure WHERE nachfahre_id = s)
--- KORREKTUR (P2): beide Subqueries korrelieren explizit über sk.kompetenz_id —
--- kein eigenständiger SELECT-Block der nur einmal ausgewertet wird.
+-- SM: Kompetenzmatching mit Closure Table
+-- Spec: "Wenn Person die exakte Kompetenz ODER einen Vorfahren hat → 100%, sonst 0%"
+-- W(s): alle Vorfahren der Stelle-Kompetenz s (inkl. s selbst)
+-- S(J): Kompetenzen der Person
 CREATE OR REPLACE FUNCTION match_kompetenz(p_id UUID, s_id UUID)
 RETURNS FLOAT LANGUAGE SQL STABLE AS $$
   SELECT COALESCE(AVG(
-    (SELECT COUNT(*)::FLOAT
-     FROM kompetenz_closure cc
-     WHERE cc.nachfahre_id = sk.kompetenz_id
-       AND cc.vorfahre_id IN (
-         SELECT kompetenz_id FROM person_kompetenz WHERE person_id = p_id
-       ))
-    /
-    NULLIF(
-      (SELECT COUNT(*)::FLOAT FROM kompetenz_closure cc2
-       WHERE cc2.nachfahre_id = sk.kompetenz_id),
-      0
-    )
+    CASE 
+      WHEN EXISTS (
+        SELECT 1 FROM person_kompetenz pk 
+        WHERE pk.person_id = p_id 
+          AND pk.kompetenz_id = sk.kompetenz_id
+      ) THEN 1.0  -- Person hat die exakte Kompetenz
+      WHEN EXISTS (
+        SELECT 1 FROM kompetenz_closure cc
+        JOIN person_kompetenz pk ON pk.kompetenz_id = cc.vorfahre_id
+        WHERE cc.nachfahre_id = sk.kompetenz_id
+          AND pk.person_id = p_id
+      ) THEN 1.0  -- Person hat einen Vorfahren (Generalisierung)
+      ELSE 0.0
+    END
   ), 0.0)
   FROM stelle_kompetenz sk
   WHERE sk.stelle_id = s_id

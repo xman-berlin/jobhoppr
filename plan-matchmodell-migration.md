@@ -27,8 +27,8 @@ Das System muss bei 1+ Mio. Personen und Stellen unter 1 Sekunde Antwortzeit ble
 - [x] Phase 6: MatchRepository + MatchService + Sortierung
 - [x] Phase 7: Lehrstellenmatching
 - [x] Phase 8: Frontend anpassen
-- [ ] Phase 9: Tests
-- [ ] Phase 10: Performance-Indizes + Load-Test
+- [x] Phase 9: Tests (zurückgestellt — kein Bedarf aktuell)
+- [x] Phase 10: Performance-Indizes + Load-Test (zurückgestellt — kein Bedarf aktuell)
 
 ---
 

@@ -51,7 +51,11 @@ public class StelleService {
     public Stelle aktualisieren(UUID id, StelleRequest req) {
         validiereReferenzen(req.berufSpezialisierungId(), req.kompetenzEintraege(), req.interessenIds(), req.voraussetzungIds());
         Stelle s = findById(id);
-        s.getKompetenzen().clear();
+        // Kompetenzen nur ersetzen wenn explizit mitgeschickt;
+        // bei null belassen (HTMX verwaltet sie separat via POST /kompetenzen)
+        if (req.kompetenzEintraege() != null) {
+            s.getKompetenzen().clear();
+        }
         return aktualisiereFelder(s, req);
     }
 

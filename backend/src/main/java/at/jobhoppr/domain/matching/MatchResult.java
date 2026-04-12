@@ -16,7 +16,14 @@ public record MatchResult(
         OffsetDateTime erstelltAm,
         Breakdown breakdown,
         List<KompetenzMatch> matchingKompetenzen,
-        List<KompetenzMatch> missingKompetenzen
+        List<KompetenzMatch> missingKompetenzen,
+        List<KompetenzMatch> extraKompetenzen,
+        List<String> matchingInteressen,
+        List<String> missingInteressen,
+        List<String> extraInteressen,
+        List<String> matchingVoraussetzungen,
+        List<String> missingVoraussetzungen,
+        List<String> extraVoraussetzungen
 ) {
     /** Score-Breakdown aus dem CROSS JOIN LATERAL (ein DB-Aufruf pro Kandidat). */
     public record Breakdown(double om, double sm, double fm, double qm) {}
