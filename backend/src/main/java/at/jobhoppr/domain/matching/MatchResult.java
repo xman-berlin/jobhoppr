@@ -23,7 +23,8 @@ public record MatchResult(
         List<String> extraInteressen,
         List<String> matchingVoraussetzungen,
         List<String> missingVoraussetzungen,
-        List<String> extraVoraussetzungen
+        List<String> extraVoraussetzungen,
+        List<String> matchingArbeitszeiten
 ) {
     /** Score-Breakdown aus dem CROSS JOIN LATERAL (ein DB-Aufruf pro Kandidat). */
     public record Breakdown(double om, double sm, double fm, double qm) {}

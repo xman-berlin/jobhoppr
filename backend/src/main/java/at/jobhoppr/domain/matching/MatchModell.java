@@ -42,6 +42,9 @@ public class MatchModell {
     @Column(name = "gewicht_voraussetzungen", nullable = false)
     private Double gewichtVoraussetzungen = 0.40;
 
+    @Column(name = "gewicht_arbeitszeit", nullable = false)
+    private Double gewichtArbeitszeit = 0.0;
+
     @Column(name = "erstellt_am", insertable = false, updatable = false)
     private OffsetDateTime erstelltAm;
 }

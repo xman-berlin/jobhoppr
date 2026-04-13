@@ -52,7 +52,7 @@
           </div>
 
           <!-- Gewicht Beruf -->
-          <div class="form-control mb-6">
+          <div class="form-control mb-4">
             <label class="label">
               <span class="label-text font-medium">Beruf-Gewicht</span>
               <span class="label-text-alt font-bold text-secondary"
@@ -66,6 +66,26 @@
             <div class="w-full flex justify-between text-xs px-2 mt-1 text-base-content/40">
               <span>0</span><span>0.25</span><span>0.5</span><span>0.75</span><span>1</span>
             </div>
+          </div>
+
+          <!-- Gewicht Arbeitszeit -->
+          <div class="form-control mb-6">
+            <label class="label">
+              <span class="label-text font-medium">Arbeitszeit-Gewicht</span>
+              <span class="label-text-alt font-bold text-warning"
+                    id="lbl-arbeitszeit"
+                    th:text="${#numbers.formatDecimal(modell.gewichtArbeitszeit, 1, 2)}">0.00</span>
+            </label>
+            <input type="range" name="gewichtArbeitszeit" min="0" max="1" step="0.05"
+                   class="range range-warning range-sm"
+                   th:value="${modell.gewichtArbeitszeit}"
+                   oninput="updateGewichteStandard(this)"/>
+            <div class="w-full flex justify-between text-xs px-2 mt-1 text-base-content/40">
+              <span>0</span><span>0.25</span><span>0.5</span><span>0.75</span><span>1</span>
+            </div>
+            <p class="text-xs text-base-content/50 ml-1 mt-1">
+              Wie stark Arbeitszeit-Übereinstimmung den Score beeinflusst. 0 = kein Einfluss (KO-Filter läuft immer).
+            </p>
           </div>
 
           <!-- Score-Schwellenwert -->
@@ -151,21 +171,39 @@
       const form = document.getElementById('modell-form');
       const kInput = form.querySelector('[name="gewichtKompetenz"]');
       const bInput = form.querySelector('[name="gewichtBeruf"]');
+      const aInput = form.querySelector('[name="gewichtArbeitszeit"]');
       const kLabel = document.getElementById('lbl-kompetenz');
       const bLabel = document.getElementById('lbl-beruf');
+      const aLabel = document.getElementById('lbl-arbeitszeit');
 
-      if (el.name === 'gewichtKompetenz') {
-        const val = parseFloat(el.value);
+      const val = parseFloat(el.value);
+      const remaining = Math.max(0, 1 - val);
+
+      if (el.name === 'gewichtArbeitszeit') {
+        aLabel.textContent = val.toFixed(2);
+        // Distribute remaining between kompetenz and beruf proportionally
+        const kCur = parseFloat(kInput.value);
+        const bCur = parseFloat(bInput.value);
+        const total = kCur + bCur;
+        if (total <= 0) {
+          const half = Math.round(remaining / 2 * 20) / 20;
+          kInput.value = half.toFixed(2); kLabel.textContent = half.toFixed(2);
+          bInput.value = (remaining - half).toFixed(2); bLabel.textContent = (remaining - half).toFixed(2);
+        } else {
+          const kNew = Math.round(remaining * (kCur / total) * 20) / 20;
+          kInput.value = kNew.toFixed(2); kLabel.textContent = kNew.toFixed(2);
+          bInput.value = (remaining - kNew).toFixed(2); bLabel.textContent = (remaining - kNew).toFixed(2);
+        }
+      } else if (el.name === 'gewichtKompetenz') {
         kLabel.textContent = val.toFixed(2);
-        const bVal = Math.max(0, Math.min(1, 1 - val));
-        bInput.value = bVal.toFixed(2);
-        bLabel.textContent = bVal.toFixed(2);
+        const aVal = parseFloat(aInput.value);
+        const bNew = Math.max(0, Math.min(1, 1 - val - aVal));
+        bInput.value = bNew.toFixed(2); bLabel.textContent = bNew.toFixed(2);
       } else {
-        const val = parseFloat(el.value);
         bLabel.textContent = val.toFixed(2);
-        const kVal = Math.max(0, Math.min(1, 1 - val));
-        kInput.value = kVal.toFixed(2);
-        kLabel.textContent = kVal.toFixed(2);
+        const aVal = parseFloat(aInput.value);
+        const kNew = Math.max(0, Math.min(1, 1 - val - aVal));
+        kInput.value = kNew.toFixed(2); kLabel.textContent = kNew.toFixed(2);
       }
     }
 

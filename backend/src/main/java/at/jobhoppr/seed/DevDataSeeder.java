@@ -191,6 +191,15 @@ public class DevDataSeeder implements ApplicationRunner {
                 insertPersonKompetenz(personId, KOMPETENZ_TEAMFAEHIGKEIT, "FORTGESCHRITTEN");
                 insertPersonKompetenz(personId, KOMPETENZ_KOMMUNIKATION,  "FORTGESCHRITTEN");
 
+                // Arbeitszeit-Ausschlüsse: showcase persons (first 5) have none.
+                // Others: ~20% exclude NACHT, ~15% WOCHENENDE, ~10% TEILZEIT (deterministic via index).
+                if (p >= 5) {
+                    if (personIdx % 5 == 0) insertPersonArbeitszeitAusschluss(personId, "NACHT");
+                    if (personIdx % 7 == 0) insertPersonArbeitszeitAusschluss(personId, "WOCHENENDE");
+                    if (personIdx % 10 == 0) insertPersonArbeitszeitAusschluss(personId, "TEILZEIT");
+                    if (personIdx % 13 == 0) insertPersonArbeitszeitAusschluss(personId, "NACHT"); // extra NACHT coverage
+                }
+
                 personIdx++;
                 stadtIdx++;
             }
@@ -270,6 +279,28 @@ public class DevDataSeeder implements ApplicationRunner {
                 }
                 // Cross-skill: Teamfähigkeit optional
                 insertStelleKompetenz(stelleId, KOMPETENZ_TEAMFAEHIGKEIT, false);
+
+                // Arbeitszeit: all standard positions offer VOLLZEIT (pflicht=true for most).
+                // Cluster-specific extras: IKT also offers TEILZEIT optional; Gesundheit offers NACHT+WOCHENENDE pflicht.
+                insertStelleArbeitszeit(stelleId, "VOLLZEIT", s % 5 != 4);   // 80% pflicht, 20% optional
+                switch (c) {
+                    case 0 -> { // IKT: also optional TEILZEIT
+                        if (s % 3 == 0) insertStelleArbeitszeit(stelleId, "TEILZEIT", false);
+                    }
+                    case 1 -> { // Finanzen: some GERINGFUEGIG optional
+                        if (s % 4 == 0) insertStelleArbeitszeit(stelleId, "GERINGFUEGIG", false);
+                    }
+                    case 2 -> { // Gesundheit: shift work — NACHT and WOCHENENDE pflicht
+                        insertStelleArbeitszeit(stelleId, "NACHT",      s % 2 == 0);
+                        insertStelleArbeitszeit(stelleId, "WOCHENENDE", s % 2 == 0);
+                    }
+                    case 3 -> { // Bildung: TEILZEIT common
+                        if (s % 2 == 0) insertStelleArbeitszeit(stelleId, "TEILZEIT", false);
+                    }
+                    case 4 -> { // Technik: shift NACHT optional for some
+                        if (s % 3 == 1) insertStelleArbeitszeit(stelleId, "NACHT", false);
+                    }
+                }
 
                 stadtIdx++;
             }
@@ -397,6 +428,18 @@ public class DevDataSeeder implements ApplicationRunner {
     }
 
     // ── Insert helpers ───────────────────────────────────────────────────────
+
+    private void insertPersonArbeitszeitAusschluss(UUID personId, String modell) {
+        jdbc.update(
+            "INSERT INTO person_arbeitszeit_ausschluss (person_id, modell) VALUES (?::uuid, ?) ON CONFLICT DO NOTHING",
+            personId.toString(), modell);
+    }
+
+    private void insertStelleArbeitszeit(UUID stelleId, String modell, boolean pflicht) {
+        jdbc.update(
+            "INSERT INTO stelle_arbeitszeit (stelle_id, modell, pflicht) VALUES (?::uuid, ?, ?) ON CONFLICT DO NOTHING",
+            stelleId.toString(), modell, pflicht);
+    }
 
     private UUID insertPerson(String vorname, String nachname, int berufSpezialisierungId) {
         UUID id = UUID.randomUUID();

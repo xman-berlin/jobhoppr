@@ -26,6 +26,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PersonController {
 
+    private static final List<String> ARBEITSZEIT_MODELLE =
+            List.of("VOLLZEIT", "TEILZEIT", "GERINGFUEGIG", "NACHT", "WOCHENENDE");
+
     private final PersonService personService;
     private final BerufSpezialisierungRepository berufSpezialisierungRepository;
     private final KompetenzRepository kompetenzRepository;
@@ -48,6 +51,7 @@ public class PersonController {
         model.addAttribute("alleInteressen", interessensgebietRepository.findAll());
         model.addAttribute("alleVoraussetzungen", voraussetzungRepository.findAll());
         model.addAttribute("bundeslaender", geoLocationRepository.findByEbeneOrderByName("BUNDESLAND"));
+        model.addAttribute("arbeitszeitAusschluesse", java.util.Set.of());
         return "personen/formular";
     }
 
@@ -56,6 +60,7 @@ public class PersonController {
         Person person = personService.findById(id);
         model.addAttribute("person", person);
         model.addAttribute("isNeu", false);
+        model.addAttribute("arbeitszeitAusschluesse", new java.util.HashSet<>(person.getArbeitszeitAusschluesse()));
         if (person.getBerufSpezialisierungId() != null) {
             berufSpezialisierungRepository.findByIdWithPfad(person.getBerufSpezialisierungId())
                     .ifPresent(b -> model.addAttribute("berufName", b.getName()));
@@ -73,6 +78,7 @@ public class PersonController {
         model.addAttribute("alleInteressen", interessensgebietRepository.findAll());
         model.addAttribute("alleVoraussetzungen", voraussetzungRepository.findAll());
         model.addAttribute("bundeslaender", geoLocationRepository.findByEbeneOrderByName("BUNDESLAND"));
+        model.addAttribute("arbeitszeitModelle", ARBEITSZEIT_MODELLE);
         return "personen/formular";
     }
 
@@ -85,11 +91,13 @@ public class PersonController {
             @RequestParam(required = false) Boolean suchtLehrstelle,
             @RequestParam(required = false) Set<Integer> interessenIds,
             @RequestParam(required = false) Set<Integer> voraussetzungIds,
-            @RequestParam(required = false) List<Integer> kompetenzIds) {
+            @RequestParam(required = false) List<Integer> kompetenzIds,
+            @RequestParam(required = false) Set<String> arbeitszeitAusschluesse) {
 
         Person p = personService.erstellen(new PersonService.PersonCreateRequest(
                 vorname, nachname, email, berufSpezialisierungId,
-                suchtLehrstelle, interessenIds, voraussetzungIds, kompetenzIds));
+                suchtLehrstelle, interessenIds, voraussetzungIds, kompetenzIds,
+                arbeitszeitAusschluesse));
         return "redirect:/personen/" + p.getId();
     }
 
@@ -103,11 +111,13 @@ public class PersonController {
             @RequestParam(required = false) Boolean suchtLehrstelle,
             @RequestParam(required = false) Set<Integer> interessenIds,
             @RequestParam(required = false) Set<Integer> voraussetzungIds,
-            @RequestParam(required = false) List<Integer> kompetenzIds) {
+            @RequestParam(required = false) List<Integer> kompetenzIds,
+            @RequestParam(required = false) Set<String> arbeitszeitAusschluesse) {
 
         personService.aktualisieren(id, new PersonService.PersonCreateRequest(
                 vorname, nachname, email, berufSpezialisierungId,
-                suchtLehrstelle, interessenIds, voraussetzungIds, kompetenzIds));
+                suchtLehrstelle, interessenIds, voraussetzungIds, kompetenzIds,
+                arbeitszeitAusschluesse));
         return "redirect:/personen/" + id;
     }
 

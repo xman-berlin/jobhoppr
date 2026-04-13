@@ -59,6 +59,7 @@ public class PersonService {
         p.setSuchtLehrstelle(req.suchtLehrstelle() != null && req.suchtLehrstelle());
         if (req.interessenIds() != null) p.getInteressenIds().addAll(req.interessenIds());
         if (req.voraussetzungIds() != null) p.getVoraussetzungIds().addAll(req.voraussetzungIds());
+        if (req.arbeitszeitAusschluesse() != null) p.getArbeitszeitAusschluesse().addAll(req.arbeitszeitAusschluesse());
         personRepository.save(p);
         // Jetzt Kompetenzen setzen (UUID ist bekannt)
         if (req.kompetenzIds() != null) {
@@ -113,11 +114,13 @@ public class PersonService {
         p.setEmail(req.email());
         p.setBerufSpezialisierungId(req.berufSpezialisierungId());
         p.setSuchtLehrstelle(req.suchtLehrstelle() != null && req.suchtLehrstelle());
-        // Interessen + Voraussetzungen ersetzen
+        // Interessen + Voraussetzungen + Arbeitszeitausschlüsse ersetzen
         p.getInteressenIds().clear();
         if (req.interessenIds() != null) p.getInteressenIds().addAll(req.interessenIds());
         p.getVoraussetzungIds().clear();
         if (req.voraussetzungIds() != null) p.getVoraussetzungIds().addAll(req.voraussetzungIds());
+        p.getArbeitszeitAusschluesse().clear();
+        if (req.arbeitszeitAusschluesse() != null) p.getArbeitszeitAusschluesse().addAll(req.arbeitszeitAusschluesse());
         // Kompetenzen hinzufügen (nur neue — vorhandene bleiben erhalten)
         if (req.kompetenzIds() != null) {
             for (Integer kid : req.kompetenzIds()) {
@@ -182,7 +185,7 @@ public class PersonService {
             String vorname, String nachname, String email,
             Integer berufSpezialisierungId, Boolean suchtLehrstelle,
             Set<Integer> interessenIds, Set<Integer> voraussetzungIds,
-            List<Integer> kompetenzIds) {}
+            List<Integer> kompetenzIds, Set<String> arbeitszeitAusschluesse) {}
 
     public record OrtRequest(
             String ortRolle, String ortTyp, String bezeichnung,

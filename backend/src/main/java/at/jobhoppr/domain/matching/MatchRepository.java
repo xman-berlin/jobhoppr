@@ -106,20 +106,10 @@ public class MatchRepository {
                 AND (SELECT name FROM bis_kompetenz WHERE id = sk.kompetenz_id) !~ '^[A-C][12] - '
             )
         ),
-        arbeitszeit_ko AS (
-          SELECT DISTINCT sa.stelle_id
-          FROM stelle_arbeitszeit sa
-          WHERE sa.pflicht = TRUE
-            AND sa.stelle_id IN (SELECT id FROM geo_kandidaten)
-            AND sa.stelle_id NOT IN (SELECT stelle_id FROM muss_ko)
-            AND sa.modell IN (
-              SELECT modell FROM person_arbeitszeit_ausschluss WHERE person_id = :person_id
-            )
-        ),
+        -- arbeitszeit_ko removed: only score impact, no KO filter
         kandidaten AS (
           SELECT id FROM geo_kandidaten
           EXCEPT SELECT stelle_id FROM muss_ko
-          EXCEPT SELECT stelle_id FROM arbeitszeit_ko
         ),
         scores AS (
           SELECT
@@ -143,8 +133,13 @@ public class MatchRepository {
             bd.extra_vr,
             CASE s.typ
               WHEN 'STANDARD'   THEN
-                (:w_beruf     * bd.om + :w_kompetenz * bd.sm)
-                / NULLIF(:w_beruf + :w_kompetenz, 0)
+                CASE WHEN :w_arbeitszeit > 0 THEN
+                  (:w_beruf     * bd.om + :w_kompetenz * bd.sm + :w_arbeitszeit * bd.am)
+                  / NULLIF(:w_beruf + :w_kompetenz + :w_arbeitszeit, 0)
+                ELSE
+                  (:w_beruf * bd.om + :w_kompetenz * bd.sm)
+                  / NULLIF(:w_beruf + :w_kompetenz, 0)
+                END
               WHEN 'LEHRSTELLE' THEN
                 (:w_lehrberuf * bd.om + :w_interessen * bd.fm + :w_voraussetzungen * bd.qm)
                 / NULLIF(:w_lehrberuf + :w_interessen + :w_voraussetzungen, 0)
@@ -157,6 +152,7 @@ public class MatchRepository {
               match_kompetenz(:person_id, s.id)            AS sm,
               match_interessen(:person_id, s.id)           AS fm,
               match_voraussetzungen(:person_id, s.id)      AS qm,
+              match_arbeitszeit(:person_id, s.id)          AS am,
               ARRAY(SELECT match_kompetenz_details(:person_id, s.id))    AS matching_ko,
               ARRAY(SELECT missing_kompetenz_details(:person_id, s.id))  AS missing_ko,
               ARRAY(SELECT extra_kompetenz_details(:person_id, s.id))    AS extra_ko,
@@ -178,6 +174,7 @@ public class MatchRepository {
           s.matching_ko, s.missing_ko, s.extra_ko,
           s.matching_ig, s.missing_ig, s.extra_ig,
           s.matching_vr, s.missing_vr, s.extra_vr
+          , NULL::TEXT[] AS matching_az
         FROM scores s
         WHERE s.score >= :schwellenwert
         """;
@@ -256,18 +253,10 @@ public class MatchRepository {
               )
           )
         ),
-        arbeitszeit_ko AS (
-          SELECT DISTINCT pa.person_id
-          FROM person_arbeitszeit_ausschluss pa
-          JOIN stelle_arbeitszeit sa ON sa.modell = pa.modell AND sa.pflicht = TRUE
-          WHERE sa.stelle_id = :stelle_id
-            AND pa.person_id IN (SELECT person_id FROM geo_kandidaten)
-            AND pa.person_id NOT IN (SELECT person_id FROM muss_ko)
-        ),
+        -- arbeitszeit_ko removed: only score impact, no KO filter
         kandidaten AS (
           SELECT person_id AS id FROM geo_kandidaten
           EXCEPT SELECT person_id FROM muss_ko
-          EXCEPT SELECT person_id FROM arbeitszeit_ko
         ),
         scores AS (
           SELECT
@@ -289,8 +278,13 @@ public class MatchRepository {
             bd.extra_vr,
             CASE (SELECT typ FROM stelle_data)
               WHEN 'STANDARD'   THEN
-                (:w_beruf     * bd.om + :w_kompetenz * bd.sm)
-                / NULLIF(:w_beruf + :w_kompetenz, 0)
+                CASE WHEN :w_arbeitszeit > 0 THEN
+                  (:w_beruf     * bd.om + :w_kompetenz * bd.sm + :w_arbeitszeit * bd.am)
+                  / NULLIF(:w_beruf + :w_kompetenz + :w_arbeitszeit, 0)
+                ELSE
+                  (:w_beruf * bd.om + :w_kompetenz * bd.sm)
+                  / NULLIF(:w_beruf + :w_kompetenz, 0)
+                END
               WHEN 'LEHRSTELLE' THEN
                 (:w_lehrberuf * bd.om + :w_interessen * bd.fm + :w_voraussetzungen * bd.qm)
                 / NULLIF(:w_lehrberuf + :w_interessen + :w_voraussetzungen, 0)
@@ -303,6 +297,7 @@ public class MatchRepository {
               match_kompetenz(p.id, :stelle_id)            AS sm,
               match_interessen(p.id, :stelle_id)           AS fm,
               match_voraussetzungen(p.id, :stelle_id)      AS qm,
+              match_arbeitszeit(p.id, :stelle_id)          AS am,
               ARRAY(SELECT match_kompetenz_details(p.id, :stelle_id))    AS matching_ko,
               ARRAY(SELECT missing_kompetenz_details(p.id, :stelle_id))  AS missing_ko,
               ARRAY(SELECT extra_kompetenz_details(p.id, :stelle_id))    AS extra_ko,
@@ -324,6 +319,7 @@ public class MatchRepository {
           p.matching_ko, p.missing_ko, p.extra_ko,
           p.matching_ig, p.missing_ig, p.extra_ig,
           p.matching_vr, p.missing_vr, p.extra_vr
+          , NULL::TEXT[] AS matching_az
         FROM scores p
         WHERE p.score >= :schwellenwert
         """;
@@ -361,6 +357,7 @@ public class MatchRepository {
                 .addValue("w_lehrberuf",         m.getGewichtLehrberuf())
                 .addValue("w_interessen",        m.getGewichtInteressen())
                 .addValue("w_voraussetzungen",   m.getGewichtVoraussetzungen())
+                .addValue("w_arbeitszeit",       m.getGewichtArbeitszeit())
                 .addValue("schwellenwert",       m.getScoreSchwellenwert());
     }
 
@@ -394,6 +391,7 @@ public class MatchRepository {
         List<String> matchingVr  = new ArrayList<>();
         List<String> missingVr   = new ArrayList<>();
         List<String> extraVr     = new ArrayList<>();
+        List<String> matchingAz  = new ArrayList<>();
 
         try {
             matching  = parseKompetenzArray(rs.getArray("matching_ko"), true);
@@ -405,6 +403,7 @@ public class MatchRepository {
             matchingVr = parseStringArray(rs.getArray("matching_vr"));
             missingVr  = parseStringArray(rs.getArray("missing_vr"));
             extraVr    = parseStringArray(rs.getArray("extra_vr"));
+            matchingAz = parseStringArray(rs.getArray("matching_az"));
         } catch (Exception e) {
             // ignore – columns absent or empty
         }
@@ -412,7 +411,8 @@ public class MatchRepository {
         return new MatchResult(targetId, targetName, score, typ, erstelltAm, breakdown,
                 matching, missing, extra,
                 matchingIg, missingIg, extraIg,
-                matchingVr, missingVr, extraVr);
+                matchingVr, missingVr, extraVr,
+                matchingAz);
     }
 
     private static List<MatchResult.KompetenzMatch> parseKompetenzArray(

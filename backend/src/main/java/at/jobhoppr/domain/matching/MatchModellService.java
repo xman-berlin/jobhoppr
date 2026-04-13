@@ -27,6 +27,8 @@ public class MatchModellService {
         m.setGewichtLehrberuf(req.gewichtLehrberuf());
         m.setGewichtInteressen(req.gewichtInteressen());
         m.setGewichtVoraussetzungen(req.gewichtVoraussetzungen());
+        m.setGewichtArbeitszeit(req.gewichtArbeitszeit());
+        m.setGewichtArbeitszeit(req.gewichtArbeitszeit());
         return matchModellRepository.save(m);
     }
 
@@ -37,5 +39,6 @@ public class MatchModellService {
             double scoreSchwellenwert,
             double gewichtLehrberuf,
             double gewichtInteressen,
-            double gewichtVoraussetzungen) {}
+            double gewichtVoraussetzungen,
+            double gewichtArbeitszeit) {}
 }

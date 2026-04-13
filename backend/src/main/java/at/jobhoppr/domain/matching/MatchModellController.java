@@ -30,11 +30,13 @@ public class MatchModellController {
             @RequestParam(defaultValue = "0.25") double scoreSchwellenwert,
             @RequestParam(defaultValue = "0.20") double gewichtLehrberuf,
             @RequestParam(defaultValue = "0.40") double gewichtInteressen,
-            @RequestParam(defaultValue = "0.40") double gewichtVoraussetzungen) {
+            @RequestParam(defaultValue = "0.40") double gewichtVoraussetzungen,
+            @RequestParam(defaultValue = "0.0") double gewichtArbeitszeit) {
 
         matchModellService.aktualisieren(new MatchModellService.MatchModellRequest(
                 geoAktiv, gewichtKompetenz, gewichtBeruf,
-                scoreSchwellenwert, gewichtLehrberuf, gewichtInteressen, gewichtVoraussetzungen));
+                scoreSchwellenwert, gewichtLehrberuf, gewichtInteressen, gewichtVoraussetzungen,
+                gewichtArbeitszeit));
 
         return ResponseEntity.ok()
                 .header("HX-Trigger", "{\"showToast\":\"Gespeichert\"}")

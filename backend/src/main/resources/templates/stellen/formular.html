@@ -128,20 +128,15 @@
               <label class="label"><span class="label-text font-medium">Arbeitszeitmodelle</span></label>
               <div id="arbeitszeit-rows" class="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 border border-base-300 rounded-lg">
                 <th:block th:each="modell : ${ {'VOLLZEIT','TEILZEIT','GERINGFUEGIG','NACHT','WOCHENENDE'} }">
-                  <div class="flex items-center gap-3" th:data-modell="${modell}">
+                  <label class="flex items-center gap-3 cursor-pointer" th:data-modell="${modell}">
                     <input type="checkbox" class="az-modell checkbox checkbox-sm"
                            th:data-value="${modell}"
                            th:checked="${aktiveAzModelle.contains(modell)}"/>
-                    <span class="text-sm flex-1" th:text="${modell}">VOLLZEIT</span>
-                    <label class="flex items-center gap-1 text-xs">
-                      <input type="checkbox" class="az-pflicht checkbox checkbox-xs checkbox-error"
-                             th:checked="${pflichtAzModelle.contains(modell)}"/>
-                      <span>Pflicht</span>
-                    </label>
-                  </div>
+                    <span class="text-sm" th:text="${modell}">VOLLZEIT</span>
+                  </label>
                 </th:block>
               </div>
-              <div class="label"><span class="label-text-alt text-base-content/60">Pflicht-Modelle schließen Personen aus, die dieses Modell explizit ausschließen.</span></div>
+              <div class="label"><span class="label-text-alt text-base-content/60"> Modell beeinflusst den Score wenn gewichtArbeitszeit &gt; 0.</span></div>
             </div>
           </div>
 
@@ -316,20 +311,14 @@
       // Remove any previously injected hidden inputs
       form.querySelectorAll('input[data-az-injected]').forEach(el => el.remove());
       // Walk each arbeitszeit row; only emit entries for checked modell checkboxes
-      document.querySelectorAll('#arbeitszeit-rows [data-modell]').forEach(function(row) {
+      document.querySelectorAll('#arbeitszeit-rows label[data-modell]').forEach(function(row) {
         var modellCb = row.querySelector('.az-modell');
         if (!modellCb || !modellCb.checked) return;
-        var pflichtCb = row.querySelector('.az-pflicht');
         var modellVal = modellCb.dataset.value;
-        var pflichtVal = (pflichtCb && pflichtCb.checked) ? 'true' : 'false';
         var m = document.createElement('input');
         m.type = 'hidden'; m.name = 'arbeitszeitModelle'; m.value = modellVal;
         m.dataset.azInjected = '1';
-        var p = document.createElement('input');
-        p.type = 'hidden'; p.name = 'arbeitszeitPflicht'; p.value = pflichtVal;
-        p.dataset.azInjected = '1';
         form.appendChild(m);
-        form.appendChild(p);
       });
     }
 

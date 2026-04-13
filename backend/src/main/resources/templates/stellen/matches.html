@@ -216,6 +216,17 @@
           </details>
         </div>
 
+        <!-- Arbeitszeit-Details (nur STANDARD, nur wenn Modelle vorhanden) -->
+        <div th:if="${(r.stelleTyp == null or r.stelleTyp.name() == 'STANDARD') and !r.matchingArbeitszeiten.empty}"
+             class="mt-2">
+          <div class="flex flex-wrap gap-1 items-center">
+            <span class="text-xs text-base-content/50 mr-1">Arbeitszeit:</span>
+            <span th:each="az : ${r.matchingArbeitszeiten}"
+                  class="badge badge-warning badge-outline badge-xs"
+                  th:text="${az}">VOLLZEIT</span>
+          </div>
+        </div>
+
         <div class="card-actions mt-3">
           <a th:href="@{/personen/{id}(id=${r.targetId})}"
              class="btn btn-xs btn-outline w-full">Person bearbeiten</a>

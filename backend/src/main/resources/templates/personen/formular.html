@@ -19,7 +19,9 @@
       <div class="card-body">
         <h2 class="card-title text-lg mb-4">Stammdaten</h2>
         <form th:action="${isNeu} ? '/personen' : '/personen/' + ${person.id}"
-              method="post">
+              method="post"
+              id="person-form"
+              onsubmit="serializeArbeitszeitAusschluesse(this)">
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="form-control">
@@ -104,6 +106,22 @@
             </div>
           </div>
 
+          <!-- Arbeitszeitmodelle (Ausschlüsse) -->
+          <div class="form-control sm:col-span-2">
+            <label class="label"><span class="label-text font-medium">Arbeitszeitmodelle</span></label>
+            <div id="arbeitszeit-ausschluss-rows" class="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 border border-base-300 rounded-lg">
+              <th:block th:each="modell : ${ {'VOLLZEIT','TEILZEIT','GERINGFUEGIG','NACHT','WOCHENENDE'} }">
+                <div class="flex items-center gap-3" th:data-modell="${modell}">
+                  <input type="checkbox" class="az-modell checkbox checkbox-sm"
+                         th:data-value="${modell}"
+                         th:checked="${arbeitszeitAusschluesse != null and arbeitszeitAusschluesse.contains(modell)}"/>
+                  <span class="text-sm" th:text="${modell}">VOLLZEIT</span>
+                </div>
+              </th:block>
+            </div>
+            <div class="label"><span class="label-text-alt text-base-content/60">Angehakte Modelle sind <strong>gewünscht</strong>.</span></div>
+          </div>
+
           <div class="card-actions justify-end mt-6">
             <a href="/personen" class="btn btn-ghost">Abbrechen</a>
             <button type="submit" class="btn btn-primary">
@@ -184,6 +202,7 @@
         </div>
       </div>
 
+      <!-- Gefahrenzone -->
       <div class="card bg-base-100 shadow border border-error/20">
         <div class="card-body">
           <h2 class="card-title text-base text-error">Gefahrenzone</h2>
@@ -328,6 +347,22 @@
       bereich.style.display = checked ? '' : 'none';
     }
 
+    function serializeArbeitszeitAusschluesse(form) {
+      // Remove previously injected hidden inputs
+      form.querySelectorAll('input[data-az-injected]').forEach(el => el.remove());
+      // Inject one hidden input per checked Ausschluss-Checkbox
+      document.querySelectorAll('#arbeitszeit-ausschluss-rows [data-modell]').forEach(function(row) {
+        var cb = row.querySelector('.az-modell');
+        if (!cb || !cb.checked) return;
+        var inp = document.createElement('input');
+        inp.type = 'hidden';
+        inp.name = 'arbeitszeitAusschluesse';
+        inp.value = row.dataset.modell;
+        inp.dataset.azInjected = '1';
+        form.appendChild(inp);
+      });
+    }
+
     // Wird aufgerufen wenn User auf einen Basis-Kompetenz-Vorschlag klickt
     document.addEventListener('click', function(e) {
       var btn = e.target.closest('.basis-kompetenz-btn');
@@ -419,6 +454,14 @@
       document.getElementById('kompetenz-id').value = '';
       document.getElementById('kompetenz-input').value = '';
     }
+
+    // Restore Arbeitszeit checkbox state from server-rendered data-checked attribute
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('#arbeitszeit-ausschluss-rows .az-ausschluss-row').forEach(function(row) {
+        var cb = row.querySelector('.az-ausschluss');
+        if (cb && row.dataset.checked === 'true') cb.checked = true;
+      });
+    });
   </script>
 
 </div>
