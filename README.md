@@ -173,6 +173,7 @@ The active `MatchModell` (weights + flags) is edited at `/match-modell` and take
 - [x] Phase 5: Frontend (Thymeleaf + HTMX + DaisyUI — lists, forms, match views)
 - [x] Phase 6: Docker Compose, DevDataSeeder, full integration
 - [x] Phase 7–10: Vollständiges Matchmodell (BIS-Hierarchie, Closure Tables, Score-Funktionen, Lehrstellenmatching, Dashboard, Performance-Indizes)
+- [x] Phase 11: BIS-Kompetenz-Vorschläge in Formularen — nach Beruf-Auswahl werden passende Basis- und fachliche Kompetenzen aus BIS als klickbare Badges angezeigt (getrennte Abschnitte, 6.830 Mappings aus `stammberufe.xml`)
 
 ## License
 

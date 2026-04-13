@@ -21,6 +21,12 @@
         document.getElementById('beruf-id').value = this.dataset.id;
         document.getElementById('beruf-input').value = this.dataset.name;
         document.getElementById('beruf-vorschlaege').innerHTML = '';
+        // Basis-Kompetenzen für gewählten Beruf laden
+        var vorschlaegeDiv = document.getElementById('basis-kompetenzen-vorschlaege');
+        if (vorschlaegeDiv) {
+          htmx.ajax('GET', '/bis/berufe/' + this.dataset.id + '/kompetenzen',
+            { target: '#basis-kompetenzen-vorschlaege', swap: 'innerHTML' });
+        }
       });
     });
   </script>

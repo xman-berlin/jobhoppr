@@ -45,7 +45,36 @@ public class StelleService {
     public Stelle erstellen(StelleRequest req) {
         validiereReferenzen(req.berufSpezialisierungId(), req.kompetenzEintraege(), req.interessenIds(), req.voraussetzungIds());
         Stelle s = new Stelle();
-        return aktualisiereFelder(s, req);
+        // Erst ohne Kompetenzen speichern, damit die UUID generiert wird
+        s.setTitel(req.titel());
+        s.setUnternehmen(req.unternehmen());
+        s.setBeschreibung(req.beschreibung());
+        s.setOrtBezeichnung(req.ortBezeichnung());
+        s.setOrtLat(req.ortLat());
+        s.setOrtLon(req.ortLon());
+        s.setBerufSpezialisierungId(req.berufSpezialisierungId());
+        s.setGeoLocationId(req.geoLocationId());
+        s.setTyp(req.typ() != null ? req.typ() : StelleTyp.STANDARD);
+        if (req.interessenIds() != null) s.getInteressenIds().addAll(req.interessenIds());
+        if (req.voraussetzungIds() != null) s.getVoraussetzungIds().addAll(req.voraussetzungIds());
+        if (req.arbeitszeiten() != null) {
+            for (ArbeitszeitEintrag ae : req.arbeitszeiten()) {
+                s.getArbeitszeiten().add(new StelleArbeitszeit(s, ae.modell(), ae.pflicht()));
+            }
+        }
+        stelleRepository.save(s);
+        // Jetzt Kompetenzen setzen (UUID ist bekannt)
+        if (req.kompetenzEintraege() != null) {
+            for (KompetenzEintrag ke : req.kompetenzEintraege()) {
+                StelleKompetenz sk = new StelleKompetenz();
+                sk.setId(new StelleKompetenz.StelleKompetenzId(s.getId(), ke.kompetenzId()));
+                sk.setStelle(s);
+                sk.setPflicht(ke.pflicht());
+                s.getKompetenzen().add(sk);
+            }
+            stelleRepository.save(s);
+        }
+        return s;
     }
 
     public Stelle aktualisieren(UUID id, StelleRequest req) {

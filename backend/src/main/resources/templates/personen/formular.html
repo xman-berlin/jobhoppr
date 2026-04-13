@@ -50,6 +50,8 @@
               <input type="hidden" id="beruf-id" name="berufSpezialisierungId"
                      th:value="${person.berufSpezialisierungId}"/>
               <div id="beruf-vorschlaege" class="relative z-10"></div>
+              <!-- Basis-Kompetenzen Vorschläge (geladen nach Beruf-Auswahl) -->
+              <div id="basis-kompetenzen-vorschlaege"></div>
             </div>
 
             <!-- Sucht Lehrstelle -->
@@ -317,11 +319,47 @@
     </div>
   </div>
 
-  <script>
+  <script th:inline="javascript">
+    var IS_NEU = /*[[${isNeu}]]*/ true;
+    var PERSON_ID = /*[[${person.id}]]*/ null;
+
     function onSuchtLehrstelleChange(checked) {
       var bereich = document.getElementById('lehrstelle-bereich');
       bereich.style.display = checked ? '' : 'none';
     }
+
+    // Wird aufgerufen wenn User auf einen Basis-Kompetenz-Vorschlag klickt
+    document.addEventListener('click', function(e) {
+      var btn = e.target.closest('.basis-kompetenz-btn');
+      if (!btn) return;
+      var kompetenzId   = btn.dataset.kompetenzId;
+      var kompetenzName = btn.dataset.kompetenzName;
+      if (!kompetenzId) return;
+
+      if (IS_NEU) {
+        // Noch kein POST möglich — Kompetenz in hidden inputs sammeln
+        var form = document.querySelector('form');
+        // Doppelt verhindern
+        if (form.querySelector('input[name="kompetenzIds"][value="' + kompetenzId + '"]')) return;
+        var hidden = document.createElement('input');
+        hidden.type = 'hidden';
+        hidden.name = 'kompetenzIds';
+        hidden.value = kompetenzId;
+        form.appendChild(hidden);
+        // Button deaktivieren als visuelles Feedback
+        btn.classList.add('badge-primary');
+        btn.classList.remove('badge-outline');
+        btn.disabled = true;
+      } else {
+        // Direkt per HTMX an Person anhängen
+        htmx.ajax('POST', '/personen/' + PERSON_ID + '/kompetenzen',
+          { target: '#kompetenzen-liste', swap: 'beforeend',
+            values: { kompetenzId: kompetenzId, niveau: 'GRUNDKENNTNISSE' } });
+        btn.classList.add('badge-primary');
+        btn.classList.remove('badge-outline');
+        btn.disabled = true;
+      }
+    });
 
     function ortTypChanged(typ) {
       var gps = document.getElementById('ort-gps-felder');

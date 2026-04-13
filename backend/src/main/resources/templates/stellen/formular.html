@@ -114,6 +114,8 @@
                      th:value="${berufName}"
                      autocomplete="off"/>
               <div id="beruf-vorschlaege" class="relative z-10"></div>
+              <!-- Basis-Kompetenzen Vorschläge (geladen nach Beruf-Auswahl) -->
+              <div id="basis-kompetenzen-vorschlaege"></div>
             </div>
             <div class="form-control sm:col-span-2">
               <label class="label"><span class="label-text font-medium">Beschreibung</span></label>
@@ -273,7 +275,43 @@
     </div>
   </div>
 
-  <script>
+  <script th:inline="javascript">
+    var IS_NEU = /*[[${isNeu}]]*/ true;
+    var STELLE_ID = /*[[${stelle.id}]]*/ null;
+
+    // Wird aufgerufen wenn User auf einen Basis-Kompetenz-Vorschlag klickt
+    document.addEventListener('click', function(e) {
+      var btn = e.target.closest('.basis-kompetenz-btn');
+      if (!btn) return;
+      var kompetenzId   = btn.dataset.kompetenzId;
+      var kompetenzName = btn.dataset.kompetenzName;
+      if (!kompetenzId) return;
+
+      if (IS_NEU) {
+        // Noch kein POST möglich — Kompetenz in hidden inputs sammeln
+        var form = document.getElementById('stelle-form');
+        // Doppelt verhindern
+        if (form.querySelector('input[name="kompetenzIds"][value="' + kompetenzId + '"]')) return;
+        var hidden = document.createElement('input');
+        hidden.type = 'hidden';
+        hidden.name = 'kompetenzIds';
+        hidden.value = kompetenzId;
+        form.appendChild(hidden);
+        // Button deaktivieren als visuelles Feedback
+        btn.classList.add('badge-primary');
+        btn.classList.remove('badge-outline');
+        btn.disabled = true;
+      } else {
+        // Direkt per HTMX an Stelle anhängen
+        htmx.ajax('POST', '/stellen/' + STELLE_ID + '/kompetenzen',
+          { target: '#kompetenzen-liste', swap: 'beforeend',
+            values: { kompetenzId: kompetenzId, pflicht: 'false' } });
+        btn.classList.add('badge-primary');
+        btn.classList.remove('badge-outline');
+        btn.disabled = true;
+      }
+    });
+
     function serializeArbeitszeiten(form) {
       // Remove any previously injected hidden inputs
       form.querySelectorAll('input[data-az-injected]').forEach(el => el.remove());

@@ -50,6 +50,42 @@ mvn test -Dtest="*IT"                        # Alle Integrationstests
 mvn package -DskipTests                      # JAR bauen ohne Tests
 ```
 
+### Runtime-Verifikation (Backend starten + testen, innerhalb eines Agenten)
+
+`mvn spring-boot:run` blockiert und überschreitet das 120 s-Timeout des Bash-Tools — der JVM-Prozess
+läuft danach als Zombie weiter und blockiert Port 8080 für alle weiteren Versuche.
+
+**Immer dieses Muster verwenden:**
+
+```bash
+# Schritt 1 — Port freimachen (eigener Bash-Call)
+lsof -ti :8080 | xargs kill -9 2>/dev/null; sleep 1
+
+# Schritt 2 — Detached starten mit setsid (eigener Bash-Call)
+# setsid öffnet eine neue Process-Session — der JVM-Prozess überlebt das Ende des Bash-Tool-Shells.
+# nohup allein reicht NICHT: der Shell sendet beim Exit SIGTERM an die Prozessgruppe.
+setsid mvn spring-boot:run > /tmp/jobhoppr-boot.log 2>&1 &
+echo "PID=$!"
+
+# Schritt 3 — Polling bis Started (eigener Bash-Call, NICHT mit && verkettet)
+for i in $(seq 1 30); do
+  sleep 2
+  grep -q "Started JobhopprApplication" /tmp/jobhoppr-boot.log 2>/dev/null && echo "UP" && break
+  grep -q "APPLICATION FAILED\|BUILD FAILURE" /tmp/jobhoppr-boot.log 2>/dev/null && tail -30 /tmp/jobhoppr-boot.log && break
+done
+
+# Schritt 4 — Endpoint testen
+curl -s -H "HX-Request: true" "http://localhost:8080/..."
+
+# Schritt 5 — Backend wieder stoppen
+lsof -ti :8080 | xargs kill -9 2>/dev/null
+```
+
+**Regeln:**
+- Nie `mvn spring-boot:run` und curl in einem einzigen `&&`-Befehl verketten.
+- Immer Port 8080 freimachen bevor neu gestartet wird.
+- Start-Befehl und Poll-Schleife in **separate** Bash-Tool-Calls aufteilen.
+
 ### Linting
 ```bash
 # Kein dedizierter Linter; Checkstyle/SpotBugs ggf. später

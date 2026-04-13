@@ -43,10 +43,15 @@ public class BerufHierarchieSeedRunner implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
         Integer count = jdbc.queryForObject("SELECT COUNT(*) FROM beruf_bereich", Integer.class);
-        if (count != null && count > 0) {
+        if (count == null || count == 0) {
+            seedHierarchie();
+        } else {
             log.debug("Beruf-Hierarchie bereits vorhanden, überspringe Seed.");
-            return;
         }
+        seedBasisKompetenzen();
+    }
+
+    private void seedHierarchie() throws Exception {
 
         log.info("Seede Beruf-Hierarchie (berufsfelder, stammberufe)...");
         try (InputStream in = new ClassPathResource("seed/bis_berufe_hierarchie.json").getInputStream()) {
@@ -109,6 +114,38 @@ public class BerufHierarchieSeedRunner implements ApplicationRunner {
                     " Spezialisierungen, gefunden: " + seeded +
                     ". V4b darf erst nach vollständigem Seed deployed werden.");
             }
+        }
+    }
+
+    // ── beruf_basis_kompetenz ─────────────────────────────────────────────────
+
+    private void seedBasisKompetenzen() throws Exception {
+        // Determine expected count from JSON to detect stale seed (e.g. after adding typ column).
+        try (InputStream in = new ClassPathResource("seed/bis_beruf_kompetenzen.json").getInputStream()) {
+            JsonNode mappings = objectMapper.readTree(in);
+            int expected = mappings.size();
+
+            Integer existing = jdbc.queryForObject("SELECT COUNT(*) FROM beruf_basis_kompetenz", Integer.class);
+            if (existing != null && existing == expected) {
+                log.debug("Beruf-Basis-Kompetenzen bereits vollständig vorhanden ({} Einträge), überspringe.", existing);
+                return;
+            }
+
+            // Stale or empty — truncate and re-seed (table has no incoming FKs).
+            log.info("Seede Beruf-Basis-Kompetenzen (vorher: {}, erwartet: {})...", existing, expected);
+            jdbc.execute("TRUNCATE TABLE beruf_basis_kompetenz");
+
+            int inserted = 0;
+            for (JsonNode m : mappings) {
+                int berufId     = m.get("berufId").asInt();
+                int kompetenzId = m.get("kompetenzId").asInt();
+                String typ      = m.get("typ").asText("basis");
+                int rows = jdbc.update(
+                    "INSERT INTO beruf_basis_kompetenz (beruf_id, kompetenz_id, typ) VALUES (?, ?, ?) ON CONFLICT DO NOTHING",
+                    berufId, kompetenzId, typ);
+                inserted += rows;
+            }
+            log.info("Beruf-Basis-Kompetenzen geseedet: {} Einträge (basis + fach).", inserted);
         }
     }
 

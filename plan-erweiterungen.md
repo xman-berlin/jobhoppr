@@ -19,8 +19,8 @@ Nach Abschluss des vollständigen Matchmodells sollen folgende Erweiterungen umg
 - [ ] Phase 1: Standort CRUD mit Geo-Hierarchie (Bundesland → Bezirk → Ort)
 - [ ] Phase 2: Berufe/Kompetenzen Cards entfernen vom Dashboard
 - [ ] Phase 3: Stellen + Lehrstellen zu einer Card zusammenführen
-- [ ] Phase 4: Match-Details — gematchte/nicht-gematchte Kompetenzen anzeigen
-- [ ] Phase 5: Basis-Kompetenzen aus BIS automatisch laden
+- [x] Phase 4: Match-Details — gematchte/nicht-gematchte Kompetenzen anzeigen
+- [ ] Phase 5: Basis-Kompetenzen aus BIS automatisch laden → [tasks/basis-kompetenzen.md](tasks/basis-kompetenzen.md)
 
 ---
 
@@ -199,10 +199,10 @@ Unverändert:
 
 ### Phase 4: Match-Details
 
-- [ ] `MatchResult` erweitern: Listen für Kompetenzen
-- [ ] `MatchRepository` SQL erweitern
-- [ ] `personen/matches.html` — Kompetenzen-Listen
-- [ ] `stellen/matches.html` — analog
+- [x] `MatchResult` erweitern: Listen für Kompetenzen
+- [x] `MatchRepository` SQL erweitern
+- [x] `personen/matches.html` — Kompetenzen-Listen
+- [x] `stellen/matches.html` — analog
 
 ### Phase 5: Basis-Kompetenzen
 

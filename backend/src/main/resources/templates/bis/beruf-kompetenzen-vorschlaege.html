@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="vorschlaege">
+  <div th:if="${not #lists.isEmpty(basisVorschlaege) or not #lists.isEmpty(fachVorschlaege)}"
+       class="mt-2 p-3 bg-base-200 rounded-lg space-y-3">
+
+    <!-- Basis-Kompetenzen -->
+    <div th:if="${not #lists.isEmpty(basisVorschlaege)}">
+      <p class="text-xs font-semibold text-base-content/60 mb-2">Basis-Kompetenzen:</p>
+      <div class="flex flex-wrap gap-1">
+        <button th:each="k : ${basisVorschlaege}"
+                type="button"
+                class="badge badge-outline badge-sm cursor-pointer hover:badge-primary transition-colors basis-kompetenz-btn"
+                th:data-kompetenz-id="${k.id}"
+                th:data-kompetenz-name="${k.name}"
+                th:text="'+ ' + ${k.name}">
+          + Kompetenz
+        </button>
+      </div>
+    </div>
+
+    <!-- Fachliche Kompetenzen -->
+    <div th:if="${not #lists.isEmpty(fachVorschlaege)}">
+      <p class="text-xs font-semibold text-base-content/60 mb-2">Fachliche Kompetenzen:</p>
+      <div class="flex flex-wrap gap-1">
+        <button th:each="k : ${fachVorschlaege}"
+                type="button"
+                class="badge badge-outline badge-sm cursor-pointer hover:badge-secondary transition-colors basis-kompetenz-btn"
+                th:data-kompetenz-id="${k.id}"
+                th:data-kompetenz-name="${k.name}"
+                th:text="'+ ' + ${k.name}">
+          + Kompetenz
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

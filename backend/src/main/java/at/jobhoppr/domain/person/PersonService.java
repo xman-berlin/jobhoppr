@@ -51,7 +51,27 @@ public class PersonService {
     public Person erstellen(PersonCreateRequest req) {
         validiereReferenzen(req.berufSpezialisierungId(), req.kompetenzIds(), req.interessenIds(), req.voraussetzungIds());
         Person p = new Person();
-        return aktualisiereFelder(p, req);
+        // Erst ohne Kompetenzen speichern, damit die UUID generiert wird
+        p.setVorname(req.vorname());
+        p.setNachname(req.nachname());
+        p.setEmail(req.email());
+        p.setBerufSpezialisierungId(req.berufSpezialisierungId());
+        p.setSuchtLehrstelle(req.suchtLehrstelle() != null && req.suchtLehrstelle());
+        if (req.interessenIds() != null) p.getInteressenIds().addAll(req.interessenIds());
+        if (req.voraussetzungIds() != null) p.getVoraussetzungIds().addAll(req.voraussetzungIds());
+        personRepository.save(p);
+        // Jetzt Kompetenzen setzen (UUID ist bekannt)
+        if (req.kompetenzIds() != null) {
+            for (Integer kid : req.kompetenzIds()) {
+                PersonKompetenz pk = new PersonKompetenz();
+                pk.setId(new PersonKompetenz.PersonKompetenzId(p.getId(), kid));
+                pk.setPerson(p);
+                pk.setNiveau("GRUNDKENNTNISSE");
+                p.getKompetenzen().add(pk);
+            }
+            personRepository.save(p);
+        }
+        return p;
     }
 
     public Person aktualisieren(UUID id, PersonCreateRequest req) {
@@ -98,6 +118,20 @@ public class PersonService {
         if (req.interessenIds() != null) p.getInteressenIds().addAll(req.interessenIds());
         p.getVoraussetzungIds().clear();
         if (req.voraussetzungIds() != null) p.getVoraussetzungIds().addAll(req.voraussetzungIds());
+        // Kompetenzen hinzufügen (nur neue — vorhandene bleiben erhalten)
+        if (req.kompetenzIds() != null) {
+            for (Integer kid : req.kompetenzIds()) {
+                boolean exists = p.getKompetenzen().stream()
+                        .anyMatch(pk -> pk.getId().getKompetenzId().equals(kid));
+                if (!exists) {
+                    PersonKompetenz pk = new PersonKompetenz();
+                    pk.setId(new PersonKompetenz.PersonKompetenzId(p.getId(), kid));
+                    pk.setPerson(p);
+                    pk.setNiveau("GRUNDKENNTNISSE");
+                    p.getKompetenzen().add(pk);
+                }
+            }
+        }
         return personRepository.save(p);
     }
 
