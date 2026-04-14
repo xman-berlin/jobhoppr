@@ -138,6 +138,7 @@ jobhoppr/
 | `BundeslandSeedRunner` | 9 Austrian states with centroid + radius | Hard-coded |
 | `PlzSeedRunner` | 18,957 Austrian postal codes with coordinates | GeoNames AT.txt (CC-BY 4.0) |
 | `BisSeedRunner` | 25 Berufe + 35 Kompetenzen across 5 clusters | Simplified BIS data |
+| `BerufHierarchieSeedRunner` | 4-tier Beruf hierarchy + kompetenz_closure table | BIS scraping |
 | `DevDataSeeder` | 200 Personen + 80 Stellen with realistic Austrian names | `@Profile("dev")` only |
 
 ## Matching Algorithm
@@ -145,24 +146,33 @@ jobhoppr/
 The matching runs as a single PostgreSQL CTE query (`MatchRepository`):
 
 1. **Geo-filter** (mandatory when `geoAktiv=true`): `ST_DWithin(person_ort.standort, stelle.standort, umkreis_km * 1000)`
-2. **Beruf-filter** (optional, when `berufFilterStrikt=true`): exact Beruf ID match
-3. **Kompetenz-score**: weighted intersection of Pflicht and optional Kompetenzen
+2. **Beruf-filter**: hierarchical match on BUG-level (4-tier hierarchy)
+3. **Kompetenz-score**: weighted intersection of Pflicht (mandatory) and optional Kompetenzen via closure table
 4. **Arbeitszeit-score**: intersection of Stelle's offered work models and Person's desired models
 5. **Total score**: `(gewicht_beruf × beruf_score + gewicht_kompetenz × kompetenz_score + gewicht_arbeitszeit × arbeitszeit_score)`
-5. **Top 50** by total score descending
+6. **Top 50** by total score descending
 
 The active `MatchModell` (weights + flags) is edited at `/match-modell` and takes effect immediately on all subsequent queries.
+
+Match results include detailed breakdowns:
+- Beruf score (om)
+- Kompetenz score (sm) — with list of matching and missing Kompetenzen
+- Interessen score (fm) — for Lehrstellen
+- Voraussetzungen score (qm) — for Lehrstellen
+- Arbeitszeit score (am) — with list of matched work models
 
 ## Key Domain Terms
 
 | Term | Meaning |
 |------|---------|
 | `Person` | Job seeker |
-| `Stelle` | Job posting |
+| `Stelle` | Job posting (includes Lehrstellen) |
 | `Beruf` | Occupation (from BIS) |
 | `Kompetenz` | Skill/competency (from BIS) |
 | `PersonOrt` | Location entry for a person (Wohnort or Arbeitsort) |
 | `OrtRolle` | `WOHNORT` (home) / `ARBEITSORT` (work) |
+| `OrtTyp` | `GENAU` (precise location with radius) / `REGION` (regional area) |
+| `MatchTyp` | `UMKREIS` (radius-based) / `EXAKT` (exact match) |
 | `MatchModell` | Active weighting configuration |
 
 ## Project Status
@@ -176,6 +186,9 @@ The active `MatchModell` (weights + flags) is edited at `/match-modell` and take
 - [x] Phase 7–10: Vollständiges Matchmodell (BIS-Hierarchie, Closure Tables, Score-Funktionen, Lehrstellenmatching, Dashboard, Performance-Indizes)
 - [x] Phase 11: BIS-Kompetenz-Vorschläge in Formularen — nach Beruf-Auswahl werden passende Basis- und fachliche Kompetenzen aus BIS als klickbare Badges angezeigt (getrennte Abschnitte, 6.830 Mappings aus `stammberufe.xml`)
 - [x] Phase 12: Arbeitszeitmodelle (VOLLZEIT, TEILZEIT, GERINGFUEGIG, NACHT, WOCHENENDE) — Personen geben Wunsch-Modelle an, Stellen bieten Modelle an; `gewichtArbeitszeit` im MatchModell steuerbar; gematchte Modelle als Badges in Matches-Karten
+- [x] Phase 13: Ort-Autocomplete-Suche — Standort-Auswahl via Autocomplete (Bundesland, Bezirk, PLZ-Ort) mit Lazy-Fetch für Hierarchie
+- [x] Phase 14: Match-Details — gematchte und fehlende Kompetenzen in separaten Listen anzeigen
+- [x] Phase 15: Lat/Lon verstecken — Koordinaten nur intern für Matching, nicht in UI
 
 ## License
 
