@@ -106,10 +106,25 @@ public class MatchRepository {
                 AND (SELECT name FROM bis_kompetenz WHERE id = sk.kompetenz_id) !~ '^[A-C][12] - '
             )
         ),
-        -- arbeitszeit_ko removed: only score impact, no KO filter
+        -- arbeitszeit_ko: KO wenn beide Seiten Modelle haben und Schnittmenge leer
+        arbeitszeit_ko AS (
+          SELECT DISTINCT s.id
+          FROM stelle s
+          WHERE s.id IN (SELECT id FROM geo_kandidaten)
+            AND EXISTS (SELECT 1 FROM stelle_arbeitszeit WHERE stelle_id = s.id)
+            AND EXISTS (SELECT 1 FROM person_arbeitszeit_ausschluss WHERE person_id = :person_id)
+            AND NOT EXISTS (
+              SELECT 1 FROM stelle_arbeitszeit sa
+              WHERE sa.stelle_id = s.id
+                AND sa.modell IN (
+                  SELECT modell FROM person_arbeitszeit_ausschluss WHERE person_id = :person_id
+                )
+            )
+        ),
         kandidaten AS (
           SELECT id FROM geo_kandidaten
           EXCEPT SELECT stelle_id FROM muss_ko
+          EXCEPT SELECT id FROM arbeitszeit_ko
         ),
         scores AS (
           SELECT
@@ -255,10 +270,24 @@ public class MatchRepository {
               )
           )
         ),
-        -- arbeitszeit_ko removed: only score impact, no KO filter
+        -- arbeitszeit_ko: KO wenn beide Seiten Modelle haben und Schnittmenge leer
+        arbeitszeit_ko AS (
+          SELECT DISTINCT gk.person_id
+          FROM geo_kandidaten gk
+          WHERE EXISTS (SELECT 1 FROM stelle_arbeitszeit WHERE stelle_id = :stelle_id)
+            AND EXISTS (SELECT 1 FROM person_arbeitszeit_ausschluss WHERE person_id = gk.person_id)
+            AND NOT EXISTS (
+              SELECT 1 FROM stelle_arbeitszeit sa
+              WHERE sa.stelle_id = :stelle_id
+                AND sa.modell IN (
+                  SELECT modell FROM person_arbeitszeit_ausschluss WHERE person_id = gk.person_id
+                )
+            )
+        ),
         kandidaten AS (
           SELECT person_id AS id FROM geo_kandidaten
           EXCEPT SELECT person_id FROM muss_ko
+          EXCEPT SELECT person_id FROM arbeitszeit_ko
         ),
         scores AS (
           SELECT
