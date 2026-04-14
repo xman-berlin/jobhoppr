@@ -28,7 +28,6 @@ public class MatchModellService {
         m.setGewichtInteressen(req.gewichtInteressen());
         m.setGewichtVoraussetzungen(req.gewichtVoraussetzungen());
         m.setGewichtArbeitszeit(req.gewichtArbeitszeit());
-        m.setGewichtArbeitszeit(req.gewichtArbeitszeit());
         return matchModellRepository.save(m);
     }
 

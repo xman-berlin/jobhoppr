@@ -147,7 +147,8 @@ The matching runs as a single PostgreSQL CTE query (`MatchRepository`):
 1. **Geo-filter** (mandatory when `geoAktiv=true`): `ST_DWithin(person_ort.standort, stelle.standort, umkreis_km * 1000)`
 2. **Beruf-filter** (optional, when `berufFilterStrikt=true`): exact Beruf ID match
 3. **Kompetenz-score**: weighted intersection of Pflicht and optional Kompetenzen
-4. **Total score**: `(gewicht_beruf × beruf_score + gewicht_kompetenz × kompetenz_score)`
+4. **Arbeitszeit-score**: intersection of Stelle's offered work models and Person's desired models
+5. **Total score**: `(gewicht_beruf × beruf_score + gewicht_kompetenz × kompetenz_score + gewicht_arbeitszeit × arbeitszeit_score)`
 5. **Top 50** by total score descending
 
 The active `MatchModell` (weights + flags) is edited at `/match-modell` and takes effect immediately on all subsequent queries.
@@ -174,6 +175,7 @@ The active `MatchModell` (weights + flags) is edited at `/match-modell` and take
 - [x] Phase 6: Docker Compose, DevDataSeeder, full integration
 - [x] Phase 7–10: Vollständiges Matchmodell (BIS-Hierarchie, Closure Tables, Score-Funktionen, Lehrstellenmatching, Dashboard, Performance-Indizes)
 - [x] Phase 11: BIS-Kompetenz-Vorschläge in Formularen — nach Beruf-Auswahl werden passende Basis- und fachliche Kompetenzen aus BIS als klickbare Badges angezeigt (getrennte Abschnitte, 6.830 Mappings aus `stammberufe.xml`)
+- [x] Phase 12: Arbeitszeitmodelle (VOLLZEIT, TEILZEIT, GERINGFUEGIG, NACHT, WOCHENENDE) — Personen geben Wunsch-Modelle an, Stellen bieten Modelle an; `gewichtArbeitszeit` im MatchModell steuerbar; gematchte Modelle als Badges in Matches-Karten
 
 ## License
 

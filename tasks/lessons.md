@@ -45,3 +45,35 @@ lsof -ti :8080 | xargs kill -9 2>/dev/null
 - **Always** use `setsid ... &` (not `nohup`) — `nohup` alone doesn't prevent SIGTERM on shell exit.
   `setsid` creates a new process session so the JVM is fully detached from the shell's process group.
 - **Separate** the start command and the poll loop into two distinct Bash tool calls.
+
+---
+
+## 2026-04-14 — Flyway migrations must be created even for already-running DBs
+
+### Problem
+PostgreSQL functions (`match_arbeitszeit`, `match_arbeitszeit_details`) were created directly
+via `docker exec psql` in an earlier session. On a fresh DB (after `docker compose down -v`) they
+were missing → app started but matching returned 0 results or failed at runtime.
+
+### Rule
+- **Every** schema/function change must live in a Flyway migration file.
+- Never create DB objects directly via `psql` — always add a `V<n>__<description>.sql` migration.
+- If you discover an object that exists in the running DB but has no migration, create the migration
+  immediately and verify it runs cleanly on a fresh DB.
+
+---
+
+## 2026-04-14 — NULL::TEXT[] placeholders in SQL queries cause silent bugs
+
+### Problem
+`MatchRepository` had `NULL::TEXT[] AS matching_az` as a placeholder in both CTE queries.
+The outer SELECT referenced `s.matching_az` / `p.matching_az` but `bd.matching_az` was missing
+from the `scores` CTE — so the column was always NULL even after adding the real function call.
+
+### Rule
+- SQL `NULL::TYPE AS column` is a valid placeholder but leaves a subtle trap: you must also
+  propagate the column through every downstream CTE that references it.
+- After replacing a NULL placeholder with a real expression, grep for the column alias in ALL
+  downstream CTEs and the final SELECT to ensure full propagation.
+- Write a quick smoke-test after: if the field is always empty/null in the UI, the propagation
+  chain is broken somewhere.

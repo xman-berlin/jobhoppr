@@ -455,13 +455,6 @@
       document.getElementById('kompetenz-input').value = '';
     }
 
-    // Restore Arbeitszeit checkbox state from server-rendered data-checked attribute
-    document.addEventListener('DOMContentLoaded', function() {
-      document.querySelectorAll('#arbeitszeit-ausschluss-rows .az-ausschluss-row').forEach(function(row) {
-        var cb = row.querySelector('.az-ausschluss');
-        if (cb && row.dataset.checked === 'true') cb.checked = true;
-      });
-    });
   </script>
 
 </div>

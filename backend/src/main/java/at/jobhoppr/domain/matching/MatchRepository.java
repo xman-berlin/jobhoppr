@@ -131,6 +131,7 @@ public class MatchRepository {
             bd.matching_vr,
             bd.missing_vr,
             bd.extra_vr,
+            bd.matching_az,
             CASE s.typ
               WHEN 'STANDARD'   THEN
                 CASE WHEN :w_arbeitszeit > 0 THEN
@@ -153,15 +154,16 @@ public class MatchRepository {
               match_interessen(:person_id, s.id)           AS fm,
               match_voraussetzungen(:person_id, s.id)      AS qm,
               match_arbeitszeit(:person_id, s.id)          AS am,
-              ARRAY(SELECT match_kompetenz_details(:person_id, s.id))    AS matching_ko,
-              ARRAY(SELECT missing_kompetenz_details(:person_id, s.id))  AS missing_ko,
-              ARRAY(SELECT extra_kompetenz_details(:person_id, s.id))    AS extra_ko,
-              ARRAY(SELECT match_interessen_details(:person_id, s.id))   AS matching_ig,
-              ARRAY(SELECT missing_interessen_details(:person_id, s.id)) AS missing_ig,
-              ARRAY(SELECT extra_interessen_details(:person_id, s.id))   AS extra_ig,
+              ARRAY(SELECT match_kompetenz_details(:person_id, s.id))       AS matching_ko,
+              ARRAY(SELECT missing_kompetenz_details(:person_id, s.id))     AS missing_ko,
+              ARRAY(SELECT extra_kompetenz_details(:person_id, s.id))       AS extra_ko,
+              ARRAY(SELECT match_interessen_details(:person_id, s.id))      AS matching_ig,
+              ARRAY(SELECT missing_interessen_details(:person_id, s.id))    AS missing_ig,
+              ARRAY(SELECT extra_interessen_details(:person_id, s.id))      AS extra_ig,
               ARRAY(SELECT match_voraussetzung_details(:person_id, s.id))   AS matching_vr,
               ARRAY(SELECT missing_voraussetzung_details(:person_id, s.id)) AS missing_vr,
-              ARRAY(SELECT extra_voraussetzung_details(:person_id, s.id))   AS extra_vr
+              ARRAY(SELECT extra_voraussetzung_details(:person_id, s.id))   AS extra_vr,
+              ARRAY(SELECT match_arbeitszeit_details(:person_id, s.id))     AS matching_az
           ) bd
           WHERE s.id IN (SELECT id FROM kandidaten)
         )
@@ -173,8 +175,8 @@ public class MatchRepository {
           s.om, s.sm, s.fm, s.qm, s.score,
           s.matching_ko, s.missing_ko, s.extra_ko,
           s.matching_ig, s.missing_ig, s.extra_ig,
-          s.matching_vr, s.missing_vr, s.extra_vr
-          , NULL::TEXT[] AS matching_az
+          s.matching_vr, s.missing_vr, s.extra_vr,
+          s.matching_az
         FROM scores s
         WHERE s.score >= :schwellenwert
         """;
@@ -276,6 +278,7 @@ public class MatchRepository {
             bd.matching_vr,
             bd.missing_vr,
             bd.extra_vr,
+            bd.matching_az,
             CASE (SELECT typ FROM stelle_data)
               WHEN 'STANDARD'   THEN
                 CASE WHEN :w_arbeitszeit > 0 THEN
@@ -298,15 +301,16 @@ public class MatchRepository {
               match_interessen(p.id, :stelle_id)           AS fm,
               match_voraussetzungen(p.id, :stelle_id)      AS qm,
               match_arbeitszeit(p.id, :stelle_id)          AS am,
-              ARRAY(SELECT match_kompetenz_details(p.id, :stelle_id))    AS matching_ko,
-              ARRAY(SELECT missing_kompetenz_details(p.id, :stelle_id))  AS missing_ko,
-              ARRAY(SELECT extra_kompetenz_details(p.id, :stelle_id))    AS extra_ko,
-              ARRAY(SELECT match_interessen_details(p.id, :stelle_id))   AS matching_ig,
-              ARRAY(SELECT missing_interessen_details(p.id, :stelle_id)) AS missing_ig,
-              ARRAY(SELECT extra_interessen_details(p.id, :stelle_id))   AS extra_ig,
+              ARRAY(SELECT match_kompetenz_details(p.id, :stelle_id))       AS matching_ko,
+              ARRAY(SELECT missing_kompetenz_details(p.id, :stelle_id))     AS missing_ko,
+              ARRAY(SELECT extra_kompetenz_details(p.id, :stelle_id))       AS extra_ko,
+              ARRAY(SELECT match_interessen_details(p.id, :stelle_id))      AS matching_ig,
+              ARRAY(SELECT missing_interessen_details(p.id, :stelle_id))    AS missing_ig,
+              ARRAY(SELECT extra_interessen_details(p.id, :stelle_id))      AS extra_ig,
               ARRAY(SELECT match_voraussetzung_details(p.id, :stelle_id))   AS matching_vr,
               ARRAY(SELECT missing_voraussetzung_details(p.id, :stelle_id)) AS missing_vr,
-              ARRAY(SELECT extra_voraussetzung_details(p.id, :stelle_id))   AS extra_vr
+              ARRAY(SELECT extra_voraussetzung_details(p.id, :stelle_id))   AS extra_vr,
+              ARRAY(SELECT match_arbeitszeit_details(p.id, :stelle_id))     AS matching_az
           ) bd
           WHERE p.id IN (SELECT id FROM kandidaten)
         )
@@ -318,8 +322,8 @@ public class MatchRepository {
           p.om, p.sm, p.fm, p.qm, p.score,
           p.matching_ko, p.missing_ko, p.extra_ko,
           p.matching_ig, p.missing_ig, p.extra_ig,
-          p.matching_vr, p.missing_vr, p.extra_vr
-          , NULL::TEXT[] AS matching_az
+          p.matching_vr, p.missing_vr, p.extra_vr,
+          p.matching_az
         FROM scores p
         WHERE p.score >= :schwellenwert
         """;

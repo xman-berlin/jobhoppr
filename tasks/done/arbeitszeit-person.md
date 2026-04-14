@@ -76,63 +76,36 @@ Für die **Anzeige**:
   - JOIN FETCH in `PersonRepository.findByIdWithDetails()`
   - `new HashSet<>(person.getArbeitszeitAusschluesse())` im Controller
 
-- [ ] **Phase 2 — Backend: PersonCreateRequest + Service + Controller**
-  - [ ] `PersonService.PersonCreateRequest`: `Set<String> arbeitszeitAusschluesse` hinzufügen
-  - [ ] `PersonService.erstellen()`: `p.getArbeitszeitAusschluesse().addAll(req.arbeitszeitAusschluesse())` nach erstem save
-  - [ ] `PersonService.aktualisiereFelder()`: `p.getArbeitszeitAusschluesse().clear(); p.getArbeitszeitAusschluesse().addAll(...)`
-  - [ ] `PersonController.erstellen()` + `aktualisieren()`: `@RequestParam(required=false) Set<String> arbeitszeitAusschluesse` + an Request weitergeben
+- [x] **Phase 2 — Backend: PersonCreateRequest + Service + Controller**
+  - [x] `PersonService.PersonCreateRequest`: `Set<String> arbeitszeitAusschluesse` hinzufügen
+  - [x] `PersonService.erstellen()`: `p.getArbeitszeitAusschluesse().addAll(req.arbeitszeitAusschluesse())`
+  - [x] `PersonService.aktualisiereFelder()`: `p.getArbeitszeitAusschluesse().clear(); addAll(...)`
+  - [x] `PersonController.erstellen()` + `aktualisieren()`: `@RequestParam(required=false) Set<String> arbeitszeitAusschluesse`
 
-- [ ] **Phase 3 — MatchModell: gewichtArbeitszeit**
-  - [ ] `V15__match_modell_gewicht_arbeitszeit.sql`: `ALTER TABLE match_modell ADD COLUMN gewicht_arbeitszeit DOUBLE PRECISION NOT NULL DEFAULT 0.0`
-  - [ ] `MatchModell.java`: `private Double gewichtArbeitszeit = 0.0;`
-  - [ ] `MatchModellService.MatchModellRequest`: `double gewichtArbeitszeit`
-  - [ ] `MatchModellService.aktualisieren()`: `m.setGewichtArbeitszeit(req.gewichtArbeitszeit())`
-  - [ ] `MatchModellController.speichern()`: `@RequestParam(defaultValue="0.0") double gewichtArbeitszeit`
-  - [ ] `match-modell/editor.html`: Slider für `gewichtArbeitszeit` im Standard-Abschnitt
+- [x] **Phase 3 — MatchModell: gewichtArbeitszeit**
+  - [x] `V15__arbeitszeit_matching.sql`: `ALTER TABLE match_modell ADD COLUMN IF NOT EXISTS gewicht_arbeitszeit`
+  - [x] `MatchModell.java`: `private Double gewichtArbeitszeit = 0.0;`
+  - [x] `MatchModellService.MatchModellRequest`: `double gewichtArbeitszeit`
+  - [x] `MatchModellService.aktualisieren()`: `m.setGewichtArbeitszeit(req.gewichtArbeitszeit())`
+  - [x] `MatchModellController.speichern()`: `@RequestParam(defaultValue="0.0") double gewichtArbeitszeit`
+  - [x] `match-modell/editor.html`: Slider für `gewichtArbeitszeit`
 
-- [ ] **Phase 4 — MatchRepository: Scoring + Details**
-  - [ ] `V15` (oder separate `V16`): PostgreSQL-Funktion `match_arbeitszeit(person_id UUID, stelle_id UUID) RETURNS FLOAT`
-    ```sql
-    -- Score: Anteil angebotener Modelle die Person NICHT ausgeschlossen hat
-    -- 0 Modelle an Stelle → 1.0
-    CREATE OR REPLACE FUNCTION match_arbeitszeit(p_id UUID, s_id UUID) RETURNS FLOAT AS $$
-      SELECT CASE
-        WHEN COUNT(sa.modell) = 0 THEN 1.0
-        ELSE COUNT(CASE WHEN sa.modell NOT IN (
-               SELECT modell FROM person_arbeitszeit_ausschluss WHERE person_id = p_id
-             ) THEN 1 END)::FLOAT / COUNT(sa.modell)
-      END
-      FROM stelle_arbeitszeit sa
-      WHERE sa.stelle_id = s_id
-    $$ LANGUAGE sql STABLE;
-    ```
-  - [ ] `V15/V16`: Funktion `match_arbeitszeit_details(p_id UUID, s_id UUID) RETURNS TABLE(modell TEXT)`
-    ```sql
-    -- Gibt gematchte Modelle zurück (Stelle bietet an, Person hat nicht ausgeschlossen)
-    CREATE OR REPLACE FUNCTION match_arbeitszeit_details(p_id UUID, s_id UUID)
-    RETURNS TABLE(modell TEXT) AS $$
-      SELECT sa.modell
-      FROM stelle_arbeitszeit sa
-      WHERE sa.stelle_id = s_id
-        AND sa.modell NOT IN (
-          SELECT modell FROM person_arbeitszeit_ausschluss WHERE person_id = p_id
-        )
-      ORDER BY sa.modell
-    $$ LANGUAGE sql STABLE;
-    ```
-  - [ ] `MatchRepository.STELLEN_FOR_PERSON_BASE`: `match_arbeitszeit(:person_id, s.id) AS am` + `ARRAY(SELECT match_arbeitszeit_details(...))` in CROSS JOIN LATERAL; Score-Formel um `w_arbeitszeit * am` erweitern; `matching_az` in SELECT
-  - [ ] `MatchRepository.PERSONEN_FOR_STELLE_BASE`: symmetrisch
-  - [ ] `MatchRepository.baseParams()`: `w_arbeitszeit` hinzufügen
-  - [ ] `MatchRepository.mapRowStatic()`: `matching_az` parsen → `List<String>`
-  - [ ] `MatchResult.java`: `List<String> matchingArbeitszeiten` Feld hinzufügen (nach `extraVoraussetzungen`)
+- [x] **Phase 4 — MatchRepository: Scoring + Details**
+  - [x] `V15__arbeitszeit_matching.sql`: `match_arbeitszeit()` + `match_arbeitszeit_details()` Funktionen
+    - Semantik: markierte Modelle (in `person_arbeitszeit_ausschluss`) = **gewünscht**
+    - Score = |Schnittmenge(Stelle-Modelle ∩ Person-Wünsche)| / |Stelle-Modelle|; 1.0 wenn Stelle keine Modelle hat
+  - [x] `MatchRepository`: `match_arbeitszeit_details()` in CROSS JOIN LATERAL (`matching_az`); `NULL::TEXT[]` ersetzt
+  - [x] `MatchRepository.baseParams()`: `w_arbeitszeit` vorhanden
+  - [x] `MatchRepository.mapRowStatic()`: `matching_az` → `matchingAz` via `parseStringArray()`
+  - [x] `MatchResult.java`: `List<String> matchingArbeitszeiten`
 
-- [ ] **Phase 5 — Matches-Templates**
-  - [ ] `personen/matches.html`: Arbeitszeit-Badges pro Match-Karte (falls `matchingArbeitszeiten` nicht leer)
-  - [ ] `stellen/matches.html`: dasselbe
+- [x] **Phase 5 — Matches-Templates**
+  - [x] `personen/matches.html`: Arbeitszeit-Badges (badge-warning)
+  - [x] `stellen/matches.html`: dasselbe
 
-- [ ] **Phase 6 — DevDataSeeder: Arbeitszeitmodelle seeden**
-- [ ] **Phase 7 — Build-Verifikation**: `mvn package -DskipTests` → BUILD SUCCESS
-- [ ] **Phase 8 — Browser-Verifikation**: Backend starten, Puppeteer-Tests
+- [x] **Phase 6 — DevDataSeeder: Arbeitszeitmodelle seeden**
+- [x] **Phase 7 — Build-Verifikation**: `mvn test` → BUILD SUCCESS
+- [ ] **Phase 8 — Browser-Verifikation**: Backend starten, App im Browser testen
 
 ---
 
@@ -201,4 +174,10 @@ backend/src/main/
 
 ## Review
 
-_Wird nach Abschluss ergänzt._
+- **V15__arbeitszeit_matching.sql** neu angelegt — war die einzige fehlende Datei (Funktionen existierten nur direkt in der laufenden DB, nie als Migration)
+- **Semantik korrigiert**: `match_arbeitszeit()` verwendet positive Logik (`IN` statt `NOT IN`) — markierte Modelle = gewünscht = matcht
+- **`matching_az`** in beiden SQL-Queries von `NULL::TEXT[]` auf `ARRAY(SELECT match_arbeitszeit_details(...))` umgestellt — Badges in Matches-Templates funktionieren jetzt
+- `bd.matching_az` ins `scores`-CTE aufgenommen damit outer SELECT darauf zugreifen kann
+- Duplicate `setGewichtArbeitszeit()` in `MatchModellService` entfernt
+- Dead-code DOMContentLoaded-Block (falsche CSS-Selektoren) in `personen/formular.html` entfernt
+- `mvn test` → BUILD SUCCESS
