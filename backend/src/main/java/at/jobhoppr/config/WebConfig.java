@@ -24,7 +24,7 @@ public class WebConfig implements WebMvcConfigurer {
             @Override
             public void postHandle(HttpServletRequest request, HttpServletResponse response,
                                    Object handler, ModelAndView mav) {
-                if (mav != null && !mav.getViewName().startsWith("redirect:")) {
+                if (mav != null && mav.getViewName() != null && !mav.getViewName().startsWith("redirect:")) {
                     mav.addObject("currentUri", request.getRequestURI());
                 }
             }
