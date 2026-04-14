@@ -178,7 +178,7 @@ public class MatchRepository {
               ARRAY(SELECT match_voraussetzung_details(:person_id, s.id))   AS matching_vr,
               ARRAY(SELECT missing_voraussetzung_details(:person_id, s.id)) AS missing_vr,
               ARRAY(SELECT extra_voraussetzung_details(:person_id, s.id))   AS extra_vr,
-              ARRAY(SELECT (match_arbeitszeit_details(:person_id, s.id)).modell) AS matching_az
+              ARRAY(SELECT modell FROM match_arbeitszeit_details(:person_id, s.id)) AS matching_az
           ) bd
           WHERE s.id IN (SELECT id FROM kandidaten)
         )
@@ -339,7 +339,7 @@ public class MatchRepository {
               ARRAY(SELECT match_voraussetzung_details(p.id, :stelle_id))   AS matching_vr,
               ARRAY(SELECT missing_voraussetzung_details(p.id, :stelle_id)) AS missing_vr,
               ARRAY(SELECT extra_voraussetzung_details(p.id, :stelle_id))   AS extra_vr,
-              ARRAY(SELECT (match_arbeitszeit_details(p.id, :stelle_id)).modell) AS matching_az
+              ARRAY(SELECT modell FROM match_arbeitszeit_details(p.id, :stelle_id)) AS matching_az
           ) bd
           WHERE p.id IN (SELECT id FROM kandidaten)
         )
