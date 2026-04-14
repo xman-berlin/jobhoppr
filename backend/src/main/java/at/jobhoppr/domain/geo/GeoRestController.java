@@ -30,17 +30,45 @@ public class GeoRestController {
     private volatile long lastNominatimCall = 0;
 
     @GetMapping("/suche")
-    public List<OrtResult> suche(@RequestParam(defaultValue = "") String q) {
+    public List<GeoSearchResult> suche(@RequestParam(defaultValue = "") String q) {
         if (q.isBlank()) return List.of();
-        return plzOrtRepository.suche(q).stream()
-                .map(p -> new OrtResult(
-                        p.getId().plz() + " " + p.getId().ortName(),
-                        p.getId().ortName(),
-                        p.getId().plz(),
-                        p.getBundesland(),
-                        p.getLat(),
-                        p.getLon()))
-                .toList();
+
+        List<GeoSearchResult> results = new java.util.ArrayList<>();
+
+        String search = "%" + q.toLowerCase() + "%";
+        String searchNoAccent = "%" + removeAccents(q.toLowerCase()) + "%";
+
+        // 1. Bundesländer (aus geo_location, Ebene BUNDESLAND)
+        List<GeoLocation> bundeslaender = geoLocationRepository
+                .findByEbeneAndNameWithParent("BUNDESLAND", search);
+        for (GeoLocation bl : bundeslaender) {
+            results.add(new GeoSearchResult("BUNDESLAND", bl.getId(), bl.getName(), 
+                    bl.getName() + " (Bundesland)", bl.getLat(), bl.getLon(), null, null, null, null));
+        }
+
+        // 2. Bezirke (aus geo_location, Ebene BEZIRK)
+        List<GeoLocation> bezirke = geoLocationRepository
+                .findByEbeneAndNameWithParent("BEZIRK", search);
+        for (GeoLocation bz : bezirke) {
+            String parentName = bz.getParent() != null ? bz.getParent().getName() : null;
+            results.add(new GeoSearchResult("BEZIRK", bz.getId(), bz.getName(),
+                    bz.getName() + (parentName != null ? " (" + parentName + ")" : ""),
+                    bz.getLat(), bz.getLon(), null, null, null, parentName));
+        }
+
+        // 3. PLZ-Ort Kombinationen (with accent-insensitive search)
+        String plzSearch = "%" + q + "%";
+        List<PlzOrt> orte = plzOrtRepository.sucheVolltext(search, searchNoAccent, plzSearch);
+        for (PlzOrt po : orte) {
+            String label = po.getId().plz() + " " + po.getId().ortName();
+            if (po.getBezirk() != null) label += " (" + po.getBezirk() + ")";
+            results.add(new GeoSearchResult("PLZ_ORT", null, po.getId().ortName(),
+                    label, po.getLat(), po.getLon(), 
+                    po.getId().plz(), po.getBundesland(), po.getBezirk(), null));
+        }
+
+        // Limit to 30 total results
+        return results.stream().limit(30).toList();
     }
 
     @GetMapping("/bundeslaender")
@@ -107,4 +135,21 @@ public class GeoRestController {
                                    double umkreisKm) {}
     public record GeoLocationResult(Integer id, String name, String ebene,
                                     Integer parentId, Double lat, Double lon) {}
+
+    /** Combined search result for autocomplete: Bundesland, Bezirk, or PLZ-Ort */
+    public record GeoSearchResult(
+            String typ,          // BUNDESLAND, BEZIRK, PLZ_ORT
+            Integer id,          // geo_location id (or null for PLZ_ORT)
+            String name,         // plain name
+            String label,        // display label
+            Double lat, Double lon,  // coordinates
+            String plz, String bundesland, String bezirk, String bezirkParent) {}
+
+    private static String removeAccents(String input) {
+        if (input == null) return null;
+        return input.replace("ö", "o").replace("Ö", "O")
+                    .replace("ä", "a").replace("Ä", "A")
+                    .replace("ü", "u").replace("Ü", "U")
+                    .replace("ß", "ss");
+    }
 }

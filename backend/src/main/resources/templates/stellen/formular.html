@@ -50,58 +50,36 @@
                      th:value="${stelle.unternehmen}" placeholder="GmbH / AG"/>
             </div>
             <div class="form-control">
-              <label class="label"><span class="label-text font-medium">Ort *</span></label>
-              <input type="text" name="ortBezeichnung" class="input input-bordered"
-                     th:value="${stelle.ortBezeichnung}" required placeholder="Wien, 1010"/>
+              <label class="label"><span class="label-text font-medium">Ort suchen</span></label>
+              <input type="text" id="stelle-ort-suche" class="input input-bordered"
+                     placeholder="z.B. 1020 Wien, Leopoldstadt, Wien..."
+                     hx-get="/stellen/orte/suche"
+                     hx-trigger="keyup changed delay:300ms"
+                     hx-target="#stelle-suche-ergebnisse"
+                     name="q"
+                     th:value="${stelle.ortBezeichnung}"
+                     autocomplete="off"/>
+              <div id="stelle-suche-ergebnisse" class="relative z-10 mt-1"></div>
+              <input type="hidden" id="stelle-selected-id" name="ortBezeichnung"/>
+              <input type="hidden" id="stelle-selected-typ" name="matchTyp"/>
             </div>
 
-            <!-- Ort-Typ + Bundesweit -->
+            <!-- Match-Typ Toggle -->
             <div class="form-control">
-              <label class="label"><span class="label-text font-medium">Standort-Typ</span></label>
-              <select name="ortTypStelle" id="stelle-ort-typ" class="select select-bordered"
-                      onchange="stelleOrtTypChanged(this.value)">
-                <option value="GENAU">Genauer Ort (GPS)</option>
-                <option value="REGION">Region (Bundesland/Bezirk)</option>
-              </select>
-            </div>
-
-            <!-- GPS fields -->
-            <div id="stelle-gps-felder" class="contents">
-              <div class="form-control">
-                <label class="label"><span class="label-text font-medium">Breitengrad (lat) *</span></label>
-                <input type="number" step="0.0001" name="ortLat" id="stelle-lat" class="input input-bordered"
-                       th:value="${stelle.ortLat != null} ? ${stelle.ortLat} : 48.2082" required/>
-              </div>
-              <div class="form-control">
-                <label class="label"><span class="label-text font-medium">Längengrad (lon) *</span></label>
-                <input type="number" step="0.0001" name="ortLon" id="stelle-lon" class="input input-bordered"
-                       th:value="${stelle.ortLon != null} ? ${stelle.ortLon} : 16.3738" required/>
+              <label class="label cursor-pointer justify-start gap-3">
+                <input type="checkbox" id="stelle-exakt-match" class="checkbox checkbox-sm checkbox-primary"
+                       onchange="stelleMatchTypChanged(this.checked)"/>
+                <span class="label-text font-medium">Exakter Match (gleiche PLZ + Ort)</span>
+              </label>
+              <div class="label-text-alt text-base-content/60 ml-8" id="stelle-umkreis-hinweis">
+                Falls nicht exakt: Umkreis-Suche mit 10km Radius
               </div>
             </div>
 
-            <!-- Region fields -->
-            <div id="stelle-region-felder" class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4" style="display:none">
-              <div class="form-control">
-                <label class="label"><span class="label-text font-medium">Bundesland</span></label>
-                <select id="stelle-bundesland" class="select select-bordered"
-                        hx-get="/stellen/orte/bezirke"
-                        hx-trigger="change"
-                        hx-target="#stelle-bezirk-wrap"
-                        hx-swap="innerHTML"
-                        name="parentId">
-                  <option value="">Bundesland wählen...</option>
-                  <th:block th:each="bl : ${bundeslaender}">
-                    <option th:value="${bl.id}" th:text="${bl.name}">Bundesland</option>
-                  </th:block>
-                </select>
-              </div>
-              <div id="stelle-bezirk-wrap" class="form-control">
-                <!-- Bezirk dropdown loaded via HTMX -->
-              </div>
-              <input type="hidden" name="geoLocationId" id="stelle-geo-id"/>
-              <input type="hidden" name="ortLat" id="stelle-lat-hidden" value="0"/>
-              <input type="hidden" name="ortLon" id="stelle-lon-hidden" value="0"/>
-            </div>
+            <!-- Hidden fields for lat/lon (internal use only) -->
+            <input type="hidden" name="ortLat" id="stelle-lat" value="0"/>
+            <input type="hidden" name="ortLon" id="stelle-lon" value="0"/>
+            <input type="hidden" name="ortTyp" value="GENAU"/>
             <div class="form-control sm:col-span-2">
               <label class="label"><span class="label-text font-medium">Beruf (BIS)</span></label>
               <input type="hidden" id="beruf-id" name="berufSpezialisierungId" th:value="${stelle.berufSpezialisierungId}"/>
@@ -347,9 +325,27 @@
     }
 
     function stelleBezirkChanged(id, lat, lon) {
-      document.getElementById('stelle-geo-id').value = id;
+      // Load orte for the selected bezirk
+      if (id) {
+        var url = '/stellen/orte/orte?parentId=' + id;
+        htmx.ajax('GET', url, { target: '#stelle-ort-wrap', swap: 'innerHTML' });
+      } else {
+        document.getElementById('stelle-ort-wrap').innerHTML = '';
+      }
+      document.getElementById('stelle-geo-id').value = '';
       document.getElementById('stelle-lat-hidden').value = lat || 0;
       document.getElementById('stelle-lon-hidden').value = lon || 0;
+    }
+
+    function stelleOrtChanged(id, lat, lon, name) {
+      document.getElementById('stelle-geo-id').value = id || '';
+      document.getElementById('stelle-lat-hidden').value = lat || 0;
+      document.getElementById('stelle-lon-hidden').value = lon || 0;
+      // Set bezeichnung to ort name if not already set
+      var bezeichnung = document.querySelector('input[name="bezeichnung"]');
+      if (bezeichnung && !bezeichnung.value && name) {
+        bezeichnung.value = name;
+      }
     }
 
     function addKompetenz(btn) {
@@ -362,6 +358,27 @@
           values: { kompetenzId: kompetenzId, pflicht: pflicht } });
       document.getElementById('kompetenz-id').value = '';
       document.getElementById('kompetenz-input').value = '';
+    }
+
+    function stelleMatchTypChanged(isExact) {
+      var umkreisHint = document.getElementById('stelle-umkreis-hinweis');
+      var matchTypInput = document.getElementById('stelle-selected-typ');
+      if (isExact) {
+        umkreisHint.textContent = 'Exakter Match: Nur Personen mit exakt gleicher PLZ + Ort';
+        matchTypInput.value = 'EXAKT';
+      } else {
+        umkreisHint.textContent = 'Falls nicht exakt: Umkreis-Suche mit 10km Radius';
+        matchTypInput.value = 'UMKREIS';
+      }
+    }
+
+    function selectStelleOrtResult(typ, id, name, label, lat, lon, plz, bundesland, bezirk) {
+      document.getElementById('stelle-selected-id').value = name;
+      document.getElementById('stelle-lat').value = lat || 0;
+      document.getElementById('stelle-lon').value = lon || 0;
+      document.getElementById('stelle-ort-suche').value = label;
+      document.getElementById('stelle-suche-ergebnisse').innerHTML = '';
+      document.getElementById('stelle-selected-typ').value = 'UMKREIS';
     }
   </script>
 

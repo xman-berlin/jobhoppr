@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="suchergebnisse" class="absolute z-20 w-full bg-base-100 border border-base-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+  <th:block th:each="r : ${sucheErgebnisse}">
+    <div class="px-3 py-2 hover:bg-base-200 cursor-pointer border-b border-base-200 last:border-0"
+         th:attr="onclick=|selectOrtResult('${r.typ}', ${r.id}, '${r.name}', '${r.label}', ${r.lat}, ${r.lon}, '${r.plz}', '${r.bundesland}', '${r.bezirk}')|">
+      <div class="text-sm font-medium" th:text="${r.label}">Label</div>
+      <div class="text-xs text-base-content/60" th:if="${r.typ == 'BUNDESLAND'}">Bundesland</div>
+      <div class="text-xs text-base-content/60" th:if="${r.typ == 'BEZIRK'}">Bezirk</div>
+      <div class="text-xs text-base-content/60" th:if="${r.typ == 'PLZ_ORT'}">
+        <span th:text="${r.plz}">PLZ</span> · <span th:text="${r.bundesland}">Bundesland</span>
+      </div>
+    </div>
+  </th:block>
+  <div th:if="${sucheErgebnisse == null or sucheErgebnisse.empty}" class="px-3 py-2 text-sm text-base-content/50">
+    Keine Ergebnisse gefunden
+  </div>
+</div>
+</body>
+</html>

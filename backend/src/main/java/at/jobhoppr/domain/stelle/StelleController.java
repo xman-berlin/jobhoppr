@@ -5,6 +5,7 @@ import at.jobhoppr.domain.bis.InteressensgebietRepository;
 import at.jobhoppr.domain.bis.KompetenzRepository;
 import at.jobhoppr.domain.bis.VoraussetzungRepository;
 import at.jobhoppr.domain.geo.GeoLocationRepository;
+import at.jobhoppr.domain.geo.GeoRestController;
 import io.github.wimdeblauwe.htmx.spring.boot.mvc.HxRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -32,6 +33,7 @@ public class StelleController {
     private final InteressensgebietRepository interessensgebietRepository;
     private final VoraussetzungRepository voraussetzungRepository;
     private final GeoLocationRepository geoLocationRepository;
+    private final GeoRestController geoRestController;
 
     @GetMapping
     public String liste(@RequestParam(defaultValue = "0") int page,
@@ -216,6 +218,22 @@ public class StelleController {
     public String bezirkeDropdown(@RequestParam Integer parentId, Model model) {
         model.addAttribute("bezirke", geoLocationRepository.findByParentIdOrderByName(parentId));
         return "stellen/bezirk-fragment :: bezirk-select";
+    }
+
+    /** HTMX: returns Orte <select> for the given Bezirk parent. */
+    @GetMapping("/orte/orte")
+    @HxRequest
+    public String orteDropdown(@RequestParam Integer parentId, Model model) {
+        model.addAttribute("orte", geoLocationRepository.findByParentIdOrderByName(parentId));
+        return "stellen/ort-dropdown-fragment :: ort-select";
+    }
+
+    /** HTMX: returns search results for autocomplete */
+    @GetMapping("/orte/suche")
+    @HxRequest
+    public String ortSuche(@RequestParam String q, Model model) {
+        model.addAttribute("sucheErgebnisse", geoRestController.suche(q));
+        return "stellen/suche-ergebnis-fragment :: suchergebnisse";
     }
 
     private void addArbeitszeitModelle(Model model, Stelle stelle) {

@@ -25,7 +25,8 @@ public class WebConfig implements WebMvcConfigurer {
             public void postHandle(HttpServletRequest request, HttpServletResponse response,
                                    Object handler, ModelAndView mav) {
                 if (mav != null && mav.getViewName() != null && !mav.getViewName().startsWith("redirect:")) {
-                    mav.addObject("currentUri", request.getRequestURI());
+                    String uri = request.getRequestURI();
+                    mav.addObject("currentUri", uri != null ? uri : "");
                 }
             }
         });

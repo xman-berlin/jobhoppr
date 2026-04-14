@@ -16,4 +16,7 @@ public interface PlzOrtRepository extends JpaRepository<PlzOrt, PlzOrt.PlzOrtId>
         LIMIT 20
         """)
     List<PlzOrt> suche(@Param("q") String q);
+
+    @Query("SELECT p FROM PlzOrt p WHERE LOWER(p.id.ortName) LIKE :search OR LOWER(p.id.ortName) LIKE :searchNoAccent OR LOWER(REPLACE(REPLACE(REPLACE(p.id.ortName, 'ö','o'),'ä','a'),'ü','u')) LIKE :searchNoAccent OR LOWER(p.bezirk) LIKE :search OR LOWER(p.bezirk) LIKE :searchNoAccent OR LOWER(p.bundesland) LIKE :search OR p.id.plz LIKE :plzSearch ORDER BY p.id.plz, p.id.ortName")
+    List<PlzOrt> sucheVolltext(@Param("search") String search, @Param("searchNoAccent") String searchNoAccent, @Param("plzSearch") String plzSearch);
 }

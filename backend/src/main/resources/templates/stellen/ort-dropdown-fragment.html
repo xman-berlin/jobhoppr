@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="ort-select">
+  <label class="label"><span class="label-text font-medium">Ort</span></label>
+  <select id="stelle-ort" class="select select-bordered"
+          onchange="stelleOrtChanged(this.value, this.options[this.selectedIndex].dataset.lat, this.options[this.selectedIndex].dataset.lon, this.options[this.selectedIndex].text)">
+    <option value="">Ort wählen...</option>
+    <th:block th:each="o : ${orte}">
+      <option th:value="${o.id}"
+              th:text="${o.name}"
+              th:attr="data-lat=${o.lat}, data-lon=${o.lon}">Ort</option>
+    </th:block>
+  </select>
+</div>
+</body>
+</html>

@@ -120,19 +120,25 @@ public class BerufHierarchieSeedRunner implements ApplicationRunner {
     // ── beruf_basis_kompetenz ─────────────────────────────────────────────────
 
     private void seedBasisKompetenzen() throws Exception {
-        // Determine expected count from JSON to detect stale seed (e.g. after adding typ column).
         try (InputStream in = new ClassPathResource("seed/bis_beruf_kompetenzen.json").getInputStream()) {
             JsonNode mappings = objectMapper.readTree(in);
-            int expected = mappings.size();
+            int jsonCount = mappings.size();
 
             Integer existing = jdbc.queryForObject("SELECT COUNT(*) FROM beruf_basis_kompetenz", Integer.class);
-            if (existing != null && existing == expected) {
-                log.debug("Beruf-Basis-Kompetenzen bereits vollständig vorhanden ({} Einträge), überspringe.", existing);
+            Integer lastInserted = null;
+            try {
+                lastInserted = jdbc.queryForObject(
+                    "SELECT wert::int FROM seed_info WHERE key = 'beruf_basis_kompetenzen_inserted'", Integer.class);
+            } catch (org.springframework.dao.EmptyResultDataAccessException e) {
+                // key doesn't exist yet, that's ok
+            }
+
+            if (existing != null && lastInserted != null && existing.equals(lastInserted)) {
+                log.debug("Beruf-Basis-Kompetenzen bereits vollständig ({} Einträge), überspringe.", existing);
                 return;
             }
 
-            // Stale or empty — truncate and re-seed (table has no incoming FKs).
-            log.info("Seede Beruf-Basis-Kompetenzen (vorher: {}, erwartet: {})...", existing, expected);
+            log.info("Seede Beruf-Basis-Kompetenzen (vorher: {}, JSON: {})...", existing, jsonCount);
             jdbc.execute("TRUNCATE TABLE beruf_basis_kompetenz");
 
             int inserted = 0;
@@ -145,7 +151,12 @@ public class BerufHierarchieSeedRunner implements ApplicationRunner {
                     berufId, kompetenzId, typ);
                 inserted += rows;
             }
-            log.info("Beruf-Basis-Kompetenzen geseedet: {} Einträge (basis + fach).", inserted);
+
+            jdbc.update("INSERT INTO seed_info (key, wert) VALUES ('beruf_basis_kompetenzen_inserted', ?) "
+                + "ON CONFLICT (key) DO UPDATE SET wert = EXCLUDED.wert", inserted);
+
+            Integer afterInsert = jdbc.queryForObject("SELECT COUNT(*) FROM beruf_basis_kompetenz", Integer.class);
+            log.info("Beruf-Basis-Kompetenzen geseedet: {} von {} möglichen Einträgen.", afterInsert, jsonCount);
         }
     }
 

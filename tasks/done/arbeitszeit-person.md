@@ -105,7 +105,14 @@ Für die **Anzeige**:
 
 - [x] **Phase 6 — DevDataSeeder: Arbeitszeitmodelle seeden**
 - [x] **Phase 7 — Build-Verifikation**: `mvn test` → BUILD SUCCESS
-- [ ] **Phase 8 — Browser-Verifikation**: Backend starten, App im Browser testen
+- [x] **Phase 8 — Browser-Verifikation**: Backend starten, App im Browser testen
+- [x] **Phase 9 — Bug-Fixes (post-merge)**
+  - [x] `WebConfig.java`: `getViewName() != null` vor `startsWith()` — Dashboard NPE bei `@ResponseBody`-Endpunkten gefixt (Commit `252f7c8`)
+  - [x] `MatchRepository`: `ARRAY(SELECT modell FROM match_arbeitszeit_details(...))` in beiden Queries — Badges waren leer weil Row-Composites statt `text[]` geliefert wurden (Commit `252f7c8`)
+  - [x] SQL-Syntax: `ARRAY(SELECT spalte FROM func())` statt `(func()).spalte` (PostgreSQL-Composite-Zugriff funktioniert nicht mit `RETURNS TABLE`) (Commit `ff4d4a0`)
+- [x] **Phase 10 — Arbeitszeit als harter KO-Filter**
+  - [x] `arbeitszeit_ko`-CTE in `STELLEN_FOR_PERSON_BASE` und `PERSONEN_FOR_STELLE_BASE` eingebaut (Commit `b7f7b47`)
+  - [x] Semantik: Beide Seiten haben Modelle angegeben UND Schnittmenge leer → KO. Eine Seite ohne Modelle → kein KO.
 
 ---
 
@@ -181,3 +188,8 @@ backend/src/main/
 - Duplicate `setGewichtArbeitszeit()` in `MatchModellService` entfernt
 - Dead-code DOMContentLoaded-Block (falsche CSS-Selektoren) in `personen/formular.html` entfernt
 - `mvn test` → BUILD SUCCESS
+
+**Post-merge Bug-Fixes (Commits `252f7c8`, `ff4d4a0`, `b7f7b47`):**
+- `WebConfig.java`: `mav.getViewName() != null` Guard — verhindert NPE bei `@ResponseBody`-Endpunkten im Dashboard-Interceptor
+- `ARRAY(SELECT modell FROM func())` — korrekte PostgreSQL-Syntax für `RETURNS TABLE`-Funktionen; `(func()).spalte` ist Composite-Zugriff und funktioniert nicht
+- `arbeitszeit_ko`-CTE in beide Match-Queries eingebaut — Person NACHT + Stelle VOLLZEIT wird jetzt korrekt ausgeschlossen; KO nur wenn beide Seiten Modelle angegeben haben und Schnittmenge leer ist

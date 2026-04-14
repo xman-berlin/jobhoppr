@@ -77,3 +77,21 @@ from the `scores` CTE — so the column was always NULL even after adding the re
   downstream CTEs and the final SELECT to ensure full propagation.
 - Write a quick smoke-test after: if the field is always empty/null in the UI, the propagation
   chain is broken somewhere.
+
+---
+
+## 2026-04-14 — Plan before implementing non-trivial tasks
+
+### Problem
+I jumped into implementing Phase 1 of the geo-hierarchy feature without first creating a detailed plan.
+The task had multiple steps (new endpoints, new fragments, UI changes in two templates, JavaScript handlers).
+AGENTS.md already specifies the workflow, but I skipped it.
+
+### Rule
+For ANY task that involves 3+ distinct implementation steps or architectural decisions:
+1. Create a task file in `tasks/` (or update existing one)
+2. Write the plan with specific implementation steps
+3. Verify the plan before starting
+4. Mark items as completed while working
+
+This applies even when the plan already exists in a planning doc — the act of creating a task file ensures conscious thought about scope.
