@@ -124,7 +124,7 @@ jobhoppr/
         │       ├── application-dev.properties
         │       ├── db/migration/     V1__schema.sql, V2__fix_char_columns.sql
         │       ├── seed/             AT_plz.tsv (GeoNames), bis_berufe.json, bis_kompetenzen.json
-        │       └── templates/        Thymeleaf: layout, index, personen/*, stellen/*, match-modell/*
+        │       └── templates/        Thymeleaf: layout, index, personen/*, stellen/*, match-modell/*, bis/*
         └── test/
             └── java/at/jobhoppr/
                 ├── matching/         MatchServiceTest (unit)
@@ -189,6 +189,7 @@ Match results include detailed breakdowns:
 - [x] Phase 13: Ort-Autocomplete-Suche — Standort-Auswahl via Autocomplete (Bundesland, Bezirk, PLZ-Ort) mit Lazy-Fetch für Hierarchie
 - [x] Phase 14: Match-Details — gematchte und fehlende Kompetenzen in separaten Listen anzeigen
 - [x] Phase 15: Lat/Lon verstecken — Koordinaten nur intern für Matching, nicht in UI
+- [x] Phase 16: BIS Explorer — Master-Detail-Seite unter `/bis` zum Durchsuchen aller Berufe und Kompetenzen; Suchfeld sucht parallel in Berufen und Kompetenzen; Accordion zeigt Basis- und Fach-Kompetenzen je Beruf; Detail-Panel für Beruf- und Kompetenz-Details
 
 ## License
 

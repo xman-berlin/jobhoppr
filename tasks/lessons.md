@@ -95,3 +95,93 @@ For ANY task that involves 3+ distinct implementation steps or architectural dec
 4. Mark items as completed while working
 
 This applies even when the plan already exists in a planning doc — the act of creating a task file ensures conscious thought about scope.
+
+---
+
+## 2026-04-14 — Correct workflow for new tasks
+
+### Problem
+I started implementing a task without planning first. The workflow was specified in AGENTS.md/CLAUDE.md but I skipped it.
+
+### Correct workflow
+1. **Don't implement immediately** — plan first
+2. **Write task plan** → `tasks/<feature-name>.md`
+3. **Link in todo.md** as open task
+4. **Wait** for user "ok" / "implementier"
+5. **Only then** implement
+
+### Example
+```
+User: "ich möchte X"
+→ Me: "Moment, ich plane das erst"
+→ tasks/bis-explorer.md schreiben (mit Konzept, Routes, Steps)
+→ tasks/todo.md aktualisieren
+→ User zeigt Mockup/Feedback
+→ User sagt "ok, implementier"
+→ Erst dann: implementieren
+```
+
+### Rule
+- For ANY new feature request: plan → todo.md → wait for go-ahead → implement
+- Don't skip the planning step even if the task seems simple
+- Update `tasks/lessons.md` after ANY correction from user
+
+---
+
+## 2026-04-15 — Always ask before starting implementation
+
+### Problem
+User said "Continue if you have next steps" — I interpreted this as permission to start
+implementing immediately. That is wrong. "Continue" means: explain the next steps and ask
+for explicit go-ahead before touching any code.
+
+### Rule
+- **Always ask explicitly** before starting any implementation, even if the user says
+  "continue" or "go ahead with next steps".
+- The correct response to "continue" is:
+  1. Summarize the next step(s)
+  2. Ask: "Soll ich beginnen?"
+- Never start writing/editing files without a clear "ja", "go", "mach", "implementier" or
+  equivalent affirmative from the user in that same turn.
+
+---
+
+## 2026-04-15 — Thymeleaf Layout Dialect strips content outside layout:fragment
+
+### Problem
+A `<script>` tag was placed outside the `layout:fragment="content"` div (but inside `<body>`).
+The Thymeleaf Layout Dialect only includes content from within named fragments — anything
+outside is silently discarded. The function was absent from the rendered HTML even though the
+template file looked correct.
+
+### Rule
+- All page-specific `<script>` blocks must be **inside** the `layout:fragment="content"` div,
+  typically at the very bottom just before the closing `</div>`.
+- Pattern used in this project: see `stellen/formular.html` lines 251–385.
+
+---
+
+## 2026-04-15 — spring.thymeleaf.cache=true hides template changes
+
+### Problem
+`spring.thymeleaf.cache=true` is set in `application.properties`. After editing a template,
+the old version was served until the app was restarted. This caused confusion: the file was
+correct on disk but the browser received the cached (broken) version.
+
+### Rule
+- After any template edit, always restart the backend when `spring.thymeleaf.cache=true`.
+- Alternatively, set `spring.thymeleaf.cache=false` during development (not currently done
+  in this project — keep this in mind).
+
+---
+
+## 2026-04-15 — DaisyUI badge has white-space: nowrap — long text overflows
+
+### Problem
+DaisyUI `badge` sets `white-space: nowrap` by default. Long competency names caused badges
+to grow beyond the container width and overlap neighboring elements instead of wrapping.
+
+### Rule
+- When using `badge` for variable-length text content, always add:
+  `whitespace-normal h-auto py-0.5 text-left`
+  to allow text wrapping and auto height growth.

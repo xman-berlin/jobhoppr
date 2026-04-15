@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="detail" class="card-body">
+
+  <!-- Header -->
+  <div class="flex items-start gap-3 mb-4">
+    <div class="badge badge-secondary badge-outline mt-1">Kompetenz</div>
+    <div>
+      <h2 class="text-xl font-bold" th:text="${kompetenz.name}">Kompetenzname</h2>
+      <p class="text-sm text-base-content/50 mt-0.5" th:text="${kompetenz.bereich}">Bereich</p>
+    </div>
+  </div>
+
+  <!-- Metadaten -->
+  <div class="flex flex-wrap gap-3 mb-4">
+    <div th:if="${kompetenz.typ != null}">
+      <span class="text-xs font-semibold text-base-content/50 uppercase tracking-wide">Typ</span>
+      <span class="ml-2 badge badge-ghost" th:text="${kompetenz.typ}"></span>
+    </div>
+    <div th:if="${kompetenz.bereich != null}">
+      <span class="text-xs font-semibold text-base-content/50 uppercase tracking-wide">Bereich</span>
+      <span class="ml-2 badge badge-ghost" th:text="${kompetenz.bereich}"></span>
+    </div>
+  </div>
+
+  <!-- Verwandte Kompetenzen (Geschwister) -->
+  <div th:if="${not #lists.isEmpty(verwandte)}">
+    <div class="divider my-2"></div>
+    <h3 class="font-semibold mb-2">
+      Verwandte Kompetenzen
+      <span class="badge badge-sm badge-ghost ml-1" th:text="${#lists.size(verwandte)}"></span>
+    </h3>
+    <div class="flex flex-wrap gap-2">
+      <a th:each="k : ${verwandte}"
+         th:attr="hx-get='/bis/kompetenz/' + ${k.id}"
+         hx-target="#detail-panel"
+         hx-swap="innerHTML"
+         th:text="${k.name}"
+         class="badge badge-outline badge-sm cursor-pointer hover:badge-secondary transition-colors">
+      </a>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

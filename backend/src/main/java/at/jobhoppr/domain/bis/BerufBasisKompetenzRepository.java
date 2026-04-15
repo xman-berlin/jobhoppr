@@ -17,4 +17,11 @@ public interface BerufBasisKompetenzRepository
         ORDER BY k.name
         """)
     List<BerufBasisKompetenz> findKompetenzenByBerufId(@Param("berufId") Integer berufId);
+
+    @Query("""
+        SELECT DISTINCT b.id.berufId
+        FROM BerufBasisKompetenz b
+        WHERE b.id.kompetenzId = :kompetenzId
+        """)
+    List<Integer> findBerufIdsByKompetenzId(@Param("kompetenzId") Integer kompetenzId);
 }

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="detail" class="card-body">
+
+  <!-- Header -->
+  <div class="flex items-start gap-3 mb-4">
+    <div class="badge badge-accent badge-outline mt-1">Beruf</div>
+    <div>
+      <h2 class="text-xl font-bold" th:text="${beruf.name}">Berufsname</h2>
+      <p class="text-sm text-base-content/50 mt-0.5" th:text="${beruf.pfadLabel}">Pfad</p>
+    </div>
+  </div>
+
+  <!-- ISCO-Code -->
+  <div th:if="${beruf.iscoCode != null}" class="mb-4">
+    <span class="text-xs font-semibold text-base-content/50 uppercase tracking-wide">ISCO-Code</span>
+    <span class="ml-2 badge badge-ghost" th:text="${beruf.iscoCode}"></span>
+  </div>
+
+  <div class="divider my-2"></div>
+
+  <!-- Basis-Kompetenzen -->
+  <div th:if="${not #lists.isEmpty(basisKompetenzen)}" class="mb-4">
+    <h3 class="font-semibold mb-2">
+      Basis-Kompetenzen
+      <span class="badge badge-sm badge-ghost ml-1" th:text="${#lists.size(basisKompetenzen)}"></span>
+    </h3>
+    <div class="flex flex-wrap gap-2">
+      <a th:each="k : ${basisKompetenzen}"
+         th:attr="hx-get='/bis/kompetenz/' + ${k.id()}"
+         hx-target="#detail-panel"
+         hx-swap="innerHTML"
+         th:text="${k.name()}"
+         class="badge badge-outline badge-sm cursor-pointer hover:badge-accent transition-colors">
+      </a>
+    </div>
+  </div>
+
+  <!-- Fach-Kompetenzen -->
+  <div th:if="${not #lists.isEmpty(fachKompetenzen)}">
+    <h3 class="font-semibold mb-2">
+      Fach-Kompetenzen
+      <span class="badge badge-sm badge-ghost ml-1" th:text="${#lists.size(fachKompetenzen)}"></span>
+    </h3>
+    <div class="flex flex-wrap gap-2">
+      <a th:each="k : ${fachKompetenzen}"
+         th:attr="hx-get='/bis/kompetenz/' + ${k.id()}"
+         hx-target="#detail-panel"
+         hx-swap="innerHTML"
+         th:text="${k.name()}"
+         class="badge badge-outline badge-sm cursor-pointer hover:badge-secondary transition-colors">
+      </a>
+    </div>
+  </div>
+
+  <!-- Keine Kompetenzen -->
+  <div th:if="${#lists.isEmpty(basisKompetenzen) and #lists.isEmpty(fachKompetenzen)}">
+    <p class="text-sm text-base-content/40">Keine Kompetenzen zugeordnet.</p>
+  </div>
+
+</div>
+</body>
+</html>

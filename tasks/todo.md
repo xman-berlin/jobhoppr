@@ -2,4 +2,3 @@
 
 | Datei | Zusammenfassung | Status |
 |-------|----------------|--------|
-| *(keine aktiven Tasks)* | | |

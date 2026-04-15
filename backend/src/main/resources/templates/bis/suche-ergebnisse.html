@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="ergebnisse">
+
+  <!-- Berufe -->
+  <div th:if="${not #lists.isEmpty(berufe)}">
+    <p class="text-xs font-semibold text-base-content/50 uppercase tracking-wide px-1 mb-1">Berufe</p>
+    <ul class="menu menu-sm bg-base-100 rounded-box w-full p-1 shadow">
+      <li th:each="beruf : ${berufe}">
+        <a th:attr="hx-get='/bis/beruf/' + ${beruf.id()}"
+           hx-target="#detail-panel"
+           hx-swap="innerHTML"
+           th:text="${beruf.name()}"
+           hx-on:click="document.querySelectorAll('#suche-ergebnisse').forEach(el => el.innerHTML = ''); document.querySelectorAll('input[name=q]').forEach(el => el.value = '')"
+           class="text-sm leading-tight py-1">
+        </a>
+        <span class="text-xs text-base-content/40 px-3 -mt-1 pb-1 block truncate"
+              th:text="${beruf.pfad}"></span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Kompetenzen -->
+  <div th:if="${not #lists.isEmpty(kompetenzen)}">
+    <p class="text-xs font-semibold text-base-content/50 uppercase tracking-wide px-1 mb-1">Kompetenzen</p>
+    <ul class="menu menu-sm bg-base-100 rounded-box w-full p-1 shadow">
+      <li th:each="k : ${kompetenzen}">
+        <a th:attr="hx-get='/bis/kompetenz/' + ${k.id()}"
+           hx-target="#detail-panel"
+           hx-swap="innerHTML"
+           th:text="${k.name()}"
+           hx-on:click="document.querySelectorAll('#suche-ergebnisse').forEach(el => el.innerHTML = ''); document.querySelectorAll('input[name=q]').forEach(el => el.value = '')"
+           class="text-sm py-1">
+        </a>
+        <span class="text-xs text-base-content/40 px-3 -mt-1 pb-1 block"
+              th:text="${k.bereich()}"></span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Keine Ergebnisse -->
+  <div th:if="${#lists.isEmpty(berufe) and #lists.isEmpty(kompetenzen)}">
+    <p class="text-sm text-base-content/40 px-1">Keine Ergebnisse gefunden.</p>
+  </div>
+
+</div>
+</body>
+</html>

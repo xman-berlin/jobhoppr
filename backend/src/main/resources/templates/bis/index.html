@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head><title>BIS Explorer</title></head>
+<body>
+<div layout:fragment="content">
+
+  <h1 class="text-3xl font-bold mb-6">BIS Explorer</h1>
+
+  <div class="flex gap-6 items-start">
+
+    <!-- Sidebar -->
+    <div class="w-80 shrink-0 flex flex-col gap-3">
+
+      <!-- Suchfeld -->
+      <div class="relative">
+        <input type="text"
+               id="bis-suche"
+               class="input input-bordered w-full pr-10"
+               placeholder="Beruf oder Kompetenz suchen …"
+               hx-get="/bis/suche"
+               hx-trigger="input changed delay:300ms"
+               hx-target="#beruf-liste"
+               hx-swap="innerHTML"
+               hx-indicator="#suche-spinner"
+               name="q"/>
+        <span id="suche-spinner"
+              class="htmx-indicator absolute right-3 top-1/2 -translate-y-1/2">
+          <span class="loading loading-spinner loading-sm text-primary"></span>
+        </span>
+      </div>
+
+      <!-- Beruf-Liste (Default + Suchergebnisse) -->
+      <div id="beruf-liste" class="flex flex-col gap-1 overflow-y-auto max-h-[calc(100vh-220px)]">
+        <div th:replace="~{bis/beruf-liste-fragment :: liste}"></div>
+      </div>
+    </div>
+
+    <!-- Detail-Panel -->
+    <div id="detail-panel" class="flex-1 card bg-base-100 shadow min-h-96">
+      <div class="card-body items-center justify-center text-base-content/40">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <p class="text-sm">Wähle einen Beruf aus der Liste.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function toggleKompetenzen(btn) {
+      const targetId = btn.getAttribute('data-target');
+      const panel = document.getElementById(targetId);
+      if (!panel) return;
+      panel.classList.toggle('hidden');
+      const arrow = btn.querySelector('svg');
+      if (arrow) arrow.classList.toggle('rotate-90');
+    }
+  </script>
+
+</div>
+</body>
+</html>

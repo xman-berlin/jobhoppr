@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="inhalt">
+
+  <div th:if="${not #lists.isEmpty(basisKompetenzen)}">
+    <p class="text-xs text-base-content/40 mb-1">Basis:</p>
+    <div class="flex flex-wrap gap-1 mb-2">
+      <a th:each="k : ${basisKompetenzen}"
+         th:attr="hx-get='/bis/kompetenz/' + ${k.id()}"
+         hx-target="#detail-panel"
+         hx-swap="innerHTML"
+         th:text="${k.name()}"
+         class="badge badge-sm badge-outline cursor-pointer hover:badge-accent whitespace-normal h-auto py-0.5 text-left">
+       </a>
+    </div>
+  </div>
+
+  <div th:if="${not #lists.isEmpty(fachKompetenzen)}">
+    <p class="text-xs text-base-content/40 mb-1">Fach:</p>
+    <div class="flex flex-wrap gap-1">
+      <a th:each="k : ${fachKompetenzen}"
+         th:attr="hx-get='/bis/kompetenz/' + ${k.id()}"
+         hx-target="#detail-panel"
+         hx-swap="innerHTML"
+         th:text="${k.name()}"
+         class="badge badge-sm badge-outline cursor-pointer hover:badge-secondary whitespace-normal h-auto py-0.5 text-left">
+      </a>
+    </div>
+  </div>
+
+  <div th:if="${#lists.isEmpty(basisKompetenzen) and #lists.isEmpty(fachKompetenzen)}">
+    <p class="text-xs text-base-content/40">Keine Kompetenzen zugeordnet.</p>
+  </div>
+
+</div>
+</body>
+</html>
